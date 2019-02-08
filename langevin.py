@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from scipy.stats import multivariate_normal as MVN
 from scipy.stats import entropy # KL div
-from scipy.stats import wasserstein_distance
+# from scipy.stats import wasserstein_distance
 
 import itertools as it
 from time import process_time
@@ -310,7 +310,7 @@ class Evaluator:
                     samples = samples[self.burn_in:]
                     measurement = np.histogram(samples, bins=bins, range=(-5, 5), density=True)
 
-                elif measure in ["KL_divergence", "Wasserstein", "total_variation"]:
+                elif measure in ["KL_divergence","total_variation"]: #  ,"Wasserstein"
                     # cut off the burn-in period
                     samples = samples[self.burn_in:]
                     try: # some algorithms blow up
@@ -345,7 +345,7 @@ class Evaluator:
             self.sampler.potential.plot_density(first_coor_only=first_coor_only)
             plt.legend(['true density'] + algorithms)
 
-        elif measure in ["KL_divergence", "Wasserstein", "total_variation"]:
+        elif measure in ["KL_divergence", "total_variation"]: #, "Wasserstein"]:
             data = []
             for algo in algorithms:
                 scores = []
@@ -366,8 +366,8 @@ class Evaluator:
                     ps, qs = p.flatten(), q.flatten()
                     if measure == "KL_divergence":
                         scores.append(entropy(ps/sum(ps), qs/sum(qs) ))
-                    elif measure == "Wasserstein":
-                        scores.append(wasserstein_distance(ps/sum(ps), qs/sum(qs) ))
+                    # elif measure == "Wasserstein":
+                    #     scores.append(wasserstein_distance(ps/sum(ps), qs/sum(qs) ))
                     elif measure == "total_variation":
                         scores.append( sum(abs( ps/sum(ps) - qs/sum(qs) ))/2 )
                 data.append(scores)
@@ -385,7 +385,7 @@ class Evaluator:
 # WARNING 2: do not use "first_coor_only" parameter on KL, Wasserstein or total variation -- gives incorrect results.
 d = 1
 e = Evaluator(potential="double_well", dimension=d, x0=np.array([50]+[0]*(d-1)), burn_in=10000, N=100000, N_sim=3, step=0.1, timer=None)
-e.analysis(algorithms=[ "tULA", "RWM"], measure="histogram", bins=100, first_coor_only=False)
+e.analysis(algorithms=[ "tULA", "RWM"], measure="histogram", bins=50, first_coor_only=False)
 
 
 # check THEORETICCAL BOUNDS
