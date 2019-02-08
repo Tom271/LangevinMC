@@ -38,8 +38,9 @@ class Potential:
             self.inv_sigma = 1. / np.arange(1, self.dim+1, dtype=float) # default
 
     def plot_density(self, first_coor_only=False, rng=(-5, 5)):
-        arr = np.array([np.exp(-self.function(i)) for i in np.arange(rng[0], rng[1], 0.01) ])
-        plt.plot(np.arange(rng[0], rng[1], 0.01), arr / (np.sum(arr) * 0.01))
+        if self.dim == 1:
+            arr = np.array([np.exp(-self.function(i)) for i in np.arange(rng[0], rng[1], 0.01) ])
+            plt.plot(np.arange(rng[0], rng[1], 0.01), arr / (np.sum(arr) * 0.01))
 
     def gaussian(self, x):
         ''' Gaussian potential function. '''
@@ -288,7 +289,7 @@ class Evaluator:
             measurements[algo] = []
             for s in range(self.N_sim):
                 samples = self.sampler.get_samples(algorithm=algo, n_samples=self.N, timer=self.timer)
-                if first_coor_only:
+                if first_coor_only and self.dim > 1:
                     samples = [s[0] for s in samples]
 
                 if measure == "first_moment":
@@ -382,6 +383,26 @@ class Evaluator:
 
 # WARNING 1: set the number of bins to a sensible value based on the dimension.
 # WARNING 2: do not use "first_coor_only" parameter on KL, Wasserstein or total variation -- gives incorrect results.
-d = 10
-e = Evaluator(potential="double_well", dimension=d, x0=np.array([50]+[0]*(d-1)), burn_in=1000, N=10000, N_sim=3, step=0.1, timer=None)
-e.analysis(algorithms=[ "tULA", "tLM"], measure="histogram", bins=100, first_coor_only=True)
+d = 1
+e = Evaluator(potential="double_well", dimension=d, x0=np.array([50]+[0]*(d-1)), burn_in=10000, N=100000, N_sim=3, step=0.1, timer=None)
+e.analysis(algorithms=[ "tULA", "RWM"], measure="histogram", bins=100, first_coor_only=False)
+
+
+# check THEORETICCAL BOUNDS
+# nonasymptotic bounds, theoretical guarantees after n iteratoins
+# stack overflow - wasserstein distance
+#
+# horseracing
+#
+# nonasymptotic results for MALA
+# stochastic gradient - tamed convergence
+#
+#
+#
+# next time:
+#  -  Graphs appearing in tULA, for all of the algorithms (ill conditioned gaussian, gaussian, double well, Ginzburg)
+#  -  Comparison of the theoretical bounds
+#  -  Graphs for wasserstein & variance for lower dimensions
+#
+#
+# How to apply this in machine learning
