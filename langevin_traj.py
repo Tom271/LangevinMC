@@ -3,6 +3,7 @@ from numpy.linalg import norm
 from numpy.random import normal, uniform
 import matplotlib.pyplot as plt
 from time import clock
+from scipy.stats import multivariate_normal as MVN
 
 class Potential:
     """ Represents a potential function. """
@@ -147,7 +148,7 @@ class Evaluator:
                 break
 
             sample[:,i]=x
-            y = x + np.sqrt(2*self.step) * normal(self.dim)
+            y = x + np.sqrt(2*self.step)*normal(size=self.dim)
             logratio = self.potential.function(x) - self.potential.function(y)
             if np.log(uniform(size = 1)) <= logratio:
                 x = y
@@ -254,10 +255,10 @@ class Evaluator:
 
 potential = 'double_well'
 d = 2
-N = 10**2
-burn_in = 10**0
+N = 10**5
+burn_in = 10**2
 N_sim = 1
-x0 = np.array([50] + [50]*(d-1), dtype=float)
+x0 = np.array([0] + [0]*(d-1), dtype=float)
 step = 0.1
 
 # TIMER MODE: number of seconds which we allow the algorithms to run
@@ -268,41 +269,42 @@ e = Evaluator(potential, dimension=d, N=N, burn_in=burn_in, N_sim=N_sim, x0=x0, 
 
 
 MALA_data = e.sampler("MALA")
-tULA_data = e.sampler("tULAc")
+tULA_data = e.sampler("RWM")
 
-fig = plt.figure()
-plt.title("Trace" )
-plt.plot(MALA_data[0],MALA_data[1],'r')
-plt.plot(tULA_data[0],tULA_data[1],'g')
-
-from matplotlib import cm
-from scipy.stats import multivariate_normal as MVN
-
-"""Plot heatmap of 2D MVN distribution """
-# Our 2-dimensional distribution will be over variables X and Y
-N = 600
-X = np.linspace(min(np.append(MALA_data[0], tULA_data[0])), max(np.append(MALA_data[0],tULA_data[0])), N)
-Y = np.linspace(min(np.append(MALA_data[1], tULA_data[1])), max(np.append(MALA_data[1],tULA_data[1])), N)
-X, Y = np.meshgrid(X, Y)
-
-# Mean vector and covariance matrix
-mu = np.array([0., 0])
-Sigma = np.diag(np.arange(1, 3, dtype=float))
-
-# Pack X and Y into a single 3-dimensional array
-pos = np.empty(X.shape + (2,))
-pos[:, :, 0] = X
-pos[:, :, 1] = Y
-
-F = MVN(mu, Sigma)
-Z = F.pdf(pos)
-
-ax = fig.gca()
-ax.contourf(X, Y, Z, zdir='z', levels=9, offset=-0.15, cmap=cm.hot, alpha=0.5)
-cset = plt.contour(X, Y, Z, cmap=cm.hot, alpha=0.5)
-
-plt.show()
 
 plt.hist(MALA_data[0,burn_in:-1], density=True, bins=100)
 plt.hist(tULA_data[0,burn_in:-1], density=True, bins=100)
 plt.show()
+
+# fig = plt.figure()
+# plt.title("Trace" )
+# plt.plot(MALA_data[0],MALA_data[1],'r')
+# plt.plot(tULA_data[0],tULA_data[1],'g')
+#
+# from matplotlib import cm
+# from scipy.stats import multivariate_normal as MVN
+#
+# """Plot heatmap of 2D MVN distribution """
+# # Our 2-dimensional distribution will be over variables X and Y
+# N = 600
+# X = np.linspace(min(np.append(MALA_data[0], tULA_data[0])), max(np.append(MALA_data[0],tULA_data[0])), N)
+# Y = np.linspace(min(np.append(MALA_data[1], tULA_data[1])), max(np.append(MALA_data[1],tULA_data[1])), N)
+# X, Y = np.meshgrid(X, Y)
+#
+# # Mean vector and covariance matrix
+# mu = np.array([0., 0])
+# Sigma = np.diag(np.arange(1, 3, dtype=float))
+#
+# # Pack X and Y into a single 3-dimensional array
+# pos = np.empty(X.shape + (2,))
+# pos[:, :, 0] = X
+# pos[:, :, 1] = Y
+#
+# F = MVN(mu, Sigma)
+# Z = F.pdf(pos)
+#
+# ax = fig.gca()
+# ax.contourf(X, Y, Z, zdir='z', levels=9, offset=-0.15, cmap=cm.hot, alpha=0.5)
+# cset = plt.contour(X, Y, Z, cmap=cm.hot, alpha=0.5)
+#
+# plt.show()
