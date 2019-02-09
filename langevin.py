@@ -5,10 +5,33 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from scipy.stats import multivariate_normal as MVN
 from scipy.stats import entropy # KL div
-# from scipy.stats import wasserstein_distance
+from scipy.stats import wasserstein_distance
 
 import itertools as it
 from time import process_time
+
+
+def sliced_wasserstein_distance(p, q, bin_coors, iters=100):
+    ''' Utility function for the sliced Wasserstein distance. '''
+    dim = len(p.shape)
+    if dim == 1:
+        return wasserstein_distance(bin_coors.flatten(), bin_coors.flatten(), p, q)
+
+    dist = 0
+    for _ in range(iters):
+        proj_vec = normal(size=dim)
+        proj_vec = proj_vec / norm(proj_vec) # sample randomly from dim-1 sphere
+
+        bins, ps, qs = [], [], []
+        # make projections
+        for idx in it.product(*[range(d) for d in p.shape]):
+            bins.append(np.dot( proj_vec, bin_coors[idx] ))
+            ps.append( p[idx] )
+            qs.append( q[idx] )
+
+        dist += wasserstein_distance(bins, bins, ps, qs)
+    return dist/iters
+
 
 
 class Potential:
@@ -37,10 +60,27 @@ class Potential:
         else:
             self.inv_sigma = 1. / np.arange(1, self.dim+1, dtype=float) # default
 
-    def plot_density(self, first_coor_only=False, rng=(-5, 5)):
+    def plot_density(self, rng=(-5, 5)):
         if self.dim == 1:
             arr = np.array([np.exp(-self.function(i)) for i in np.arange(rng[0], rng[1], 0.01) ])
             plt.plot(np.arange(rng[0], rng[1], 0.01), arr / (np.sum(arr) * 0.01))
+
+    def get_histogram(self, edges):
+        ''' Edges - corresponding edges along each dimension, describing the bin'''
+        # calculate the centres of the bins (and thus edges)
+        edges = np.array([np.array([(edge[i] + edge[i+1])/2 for i in range(len(edge)-1)]) for edge in edges])
+
+        # q, the true distribution
+        q = np.zeros(list(len(e) for e in edges))
+        bin_coors = np.zeros(list(len(e) for e in edges) + [self.dim])
+
+        # iterate over dim-dimensional indices
+        for idx in it.product(*[range(len(e)) for e in edges]):
+            # coordinate of the center
+            coors = np.array([e[i] for i, e in zip(idx, edges)])
+            bin_coors[idx] = coors
+            q[idx] = np.exp(- self.function(coors))
+        return q, bin_coors
 
     def gaussian(self, x):
         ''' Gaussian potential function. '''
@@ -271,7 +311,7 @@ class Evaluator:
         self.timer = timer
         self.sampler = Sampler(potential=potential, dimension=dimension, x0=x0, step=step)
 
-    def analysis(self, algorithms=["tULA", "RWM"], measure="histogram", bins=10, first_coor_only=True):
+    def analysis(self, algorithms=["tULA", "RWM"], measure="histogram", bins=10):
         # Print information about the analysis
         print('\n####### Initializing analysis #########\n' + '#'*39)
         print(' ALGORITHMS: {:s}'.format(str(algorithms)))
@@ -289,8 +329,6 @@ class Evaluator:
             measurements[algo] = []
             for s in range(self.N_sim):
                 samples = self.sampler.get_samples(algorithm=algo, n_samples=self.N, timer=self.timer)
-                if first_coor_only and self.dim > 1:
-                    samples = [s[0] for s in samples]
 
                 if measure == "first_moment":
                     # cut off the burn-in period
@@ -310,7 +348,7 @@ class Evaluator:
                     samples = samples[self.burn_in:]
                     measurement = np.histogram(samples, bins=bins, range=(-5, 5), density=True)
 
-                elif measure in ["KL_divergence","total_variation"]: #  ,"Wasserstein"
+                elif measure in ["KL_divergence", "total_variation", "sliced_wasserstein"]:
                     # cut off the burn-in period
                     samples = samples[self.burn_in:]
                     try: # some algorithms blow up
@@ -325,10 +363,8 @@ class Evaluator:
 
         # Plot the results
         if measure in ["first_moment", "second_moment"]:
-            if first_coor_only:
-                data = [[m[0] if self.dim > 1 else m for m in measurements[algo]] for algo in algorithms]
-            else:
-                data = [[norm(m) for m in measurements[algo]] for algo in algorithms]
+            data = [[m[0] for m in measurements[algo]] for algo in algorithms]
+            # data = [[norm(m) for m in measurements[algo]] for algo in algorithms]
             plt.boxplot(data, labels=algorithms)
 
         elif measure == "trace":
@@ -342,39 +378,34 @@ class Evaluator:
                 width = 0.85 * (bins[1] - bins[0])
                 center = (bins[:-1] + bins[1:])/2
                 plt.bar(center, hist, align='center', width=width, alpha=0.6)
-            self.sampler.potential.plot_density(first_coor_only=first_coor_only)
+            self.sampler.potential.plot_density()
             plt.legend(['true density'] + algorithms)
 
-        elif measure in ["KL_divergence", "total_variation"]: #, "Wasserstein"]:
+        elif measure in ["KL_divergence", "total_variation", "sliced_wasserstein"]:
             data = []
             for algo in algorithms:
                 scores = []
-                for p, edg in measurements[algo]:
-                    if type(p) == type(None): continue
-                    edges = np.array([np.array([(edge[i] + edge[i+1])/2 for i in range(len(edge)-1)]) for edge in edg])
+                for p, edges in measurements[algo]:
+                    if type(p) == type(None):
+                        continue
 
-                    # q, the true distribution
-                    q = np.zeros(list(len(e) for e in edges))
-                    # iterate over dim-dimensional indices
-                    for idx in it.product(*[range(len(e)) for e in edges]):
-                        # coordinate of the center
-                        coors = np.array([e[i] for i, e in zip(idx, edges)])
-                        if first_coor_only:
-                            coors = np.concatenate((coors, np.zeros(self.dim - 1)))
-                        q[idx] = np.exp(- self.sampler.potential.function(coors))
+                    # true distribution histogram
+                    q, bin_coors = self.sampler.potential.get_histogram(edges)
 
-                    ps, qs = p.flatten(), q.flatten()
                     if measure == "KL_divergence":
-                        scores.append(entropy(ps/sum(ps), qs/sum(qs) ))
-                    # elif measure == "Wasserstein":
-                    #     scores.append(wasserstein_distance(ps/sum(ps), qs/sum(qs) ))
+                        ps, qs = p.flatten(), q.flatten()
+                        scores.append( entropy(ps/sum(ps), qs/sum(qs) ))
                     elif measure == "total_variation":
+                        ps, qs = p.flatten(), q.flatten()
                         scores.append( sum(abs( ps/sum(ps) - qs/sum(qs) ))/2 )
+                    elif measure == "sliced_wasserstein":
+                        scores.append( sliced_wasserstein_distance( p/np.sum(p), q/np.sum(q), bin_coors ))
+
                 data.append(scores)
             plt.boxplot(data, labels=algorithms)
 
         # Label and show
-        plt.title('Measure: {:s}, '.format(measure) + ('first coordinate' if first_coor_only else '') + '\nPotential: {:s}'.format(self.potential))
+        plt.title('Measure: {:s}, '.format(measure) + '\nPotential: {:s}'.format(self.potential))
         plt.show()
 
 
@@ -383,9 +414,9 @@ class Evaluator:
 
 # WARNING 1: set the number of bins to a sensible value based on the dimension.
 # WARNING 2: do not use "first_coor_only" parameter on KL, Wasserstein or total variation -- gives incorrect results.
-d = 1
-e = Evaluator(potential="double_well", dimension=d, x0=np.array([50]+[0]*(d-1)), burn_in=10000, N=100000, N_sim=3, step=0.1, timer=None)
-e.analysis(algorithms=[ "tULA", "RWM"], measure="histogram", bins=50, first_coor_only=False)
+d = 2
+e = Evaluator(potential="double_well", dimension=d, x0=np.array([50]+[0]*(d-1)), burn_in=1000, N=10000, N_sim=3, step=0.1, timer=None)
+e.analysis(algorithms=[ "tULA", "RWM"], measure="sliced_wasserstein", bins=50)
 
 
 # check THEORETICCAL BOUNDS
