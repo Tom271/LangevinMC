@@ -36,6 +36,8 @@ def sliced_wasserstein_distance(p, q, bin_coors, iters=100):
 
 def sliced_wasserstein_no_histogram(p, q, iters=20):
     ''' p = sampled values; q = density function at the sampled values '''
+    if any(np.isnan(x) for x in p.flatten()):
+        return float('inf')
     if len(set(tuple(x) for x in p)) / len(p) <= 0.1:
         return float('inf')
 
@@ -526,16 +528,16 @@ d = 3
 e = Evaluator(potential="double_well", dimension=d, x0=np.array([50]+[0]*(d-1)), burn_in=1000, N=5000, N_sim=10, step=0.01, timer=None)
 
 # Example of an analysis - produces a plot, doesn't store anything
-e.analysis(algorithms=["tULA", "RWM"], measure="sliced_wasserstein_no_histogram", bins=100)
+e.analysis(algorithms=["ULA", "tULA", "RWM", "tHOLA", "MALA", "LM"], measure="sliced_wasserstein_no_histogram", bins=100)
 
 # Example of an experiment - doesn not produce a plot, stores the results in the experiments folder. Give it a reasonable name.
-e.run_experiment(file_path='Experiments/my_little_experiment', algorithm='tULA', measure='KL_divergence', bins=10)
+#e.run_experiment(file_path='Experiments/my_little_experiment', algorithm='tULA', measure='KL_divergence', bins=10)
 
 
 # How to read an experiment in the future:
-my_little_experiment = pickle.load(open( 'Experiments/my_little_experiment', 'rb' ))
-for k, v in my_little_experiment.items():
-    print(k, ':', v)
+#my_little_experiment = pickle.load(open( 'Experiments/my_little_experiment', 'rb' ))
+#for k, v in my_little_experiment.items():
+#    print(k, ':', v)
 
 
 
