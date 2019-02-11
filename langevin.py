@@ -7,9 +7,10 @@ from scipy.stats import multivariate_normal as MVN
 from scipy.stats import entropy # KL div
 from scipy.stats import wasserstein_distance
 
+import pickle
 import itertools as it
 from time import process_time
-
+EPS = 1e-12
 
 def sliced_wasserstein_distance(p, q, bin_coors, iters=100):
     ''' Utility function for the sliced Wasserstein distance. '''
@@ -29,8 +30,26 @@ def sliced_wasserstein_distance(p, q, bin_coors, iters=100):
             ps.append( p[idx] )
             qs.append( q[idx] )
 
-        dist += wasserstein_distance(bins, bins, ps, qs)
-    return dist/iters
+        dist += wasserstein_distance(bins, bins, ps, qs) ** 2
+    return np.sqrt(dist/iters)
+
+
+def sliced_wasserstein_no_histogram(p, q, iters=20):
+    ''' p = sampled values; q = density function at the sampled values '''
+    if len(set(tuple(x) for x in p)) / len(p) <= 0.1:
+        return float('inf')
+
+    dim = p.shape[1]
+    if dim == 1:
+        return wasserstein_distance(p.flatten(), p.flatten(), np.ones(p.shape[0]) + EPS, q + EPS)
+
+    dist = 0
+    for _ in range(iters):
+        proj_vec = normal(size=dim)
+        proj_vec = proj_vec / norm(proj_vec) # sample randomly from dim-1 sphere
+        bins = [np.dot( proj_vec, pt ) for pt in p]
+        dist += wasserstein_distance(bins, bins, np.ones(p.shape[0]) + EPS, q + EPS) ** 2
+    return np.sqrt(dist/iters)
 
 
 
@@ -81,6 +100,10 @@ class Potential:
             bin_coors[idx] = coors
             q[idx] = np.exp(- self.function(coors))
         return q, bin_coors
+
+    def get_density(self, pts):
+        ''' Applies the density function on given array of points. '''
+        return np.array([ np.exp(- self.function(pt)) for pt in pts])
 
     def gaussian(self, x):
         ''' Gaussian potential function. '''
@@ -311,16 +334,17 @@ class Evaluator:
         self.timer = timer
         self.sampler = Sampler(potential=potential, dimension=dimension, x0=x0, step=step)
 
-    def analysis(self, algorithms=["tULA", "RWM"], measure="histogram", bins=10):
-        # Print information about the analysis
-        print('\n####### Initializing analysis #########\n' + '#'*39)
-        print(' ALGORITHMS: {:s}'.format(str(algorithms)))
-        print(' MEASURE: {:s}'.format(measure))
-        print(' PARAMETERS:')
-        for p in [('Potential', self.potential), ('Dimension', self.dim), ('x0', self.x0), ('Step', self.step), ('Number of iterations', self.N), \
-                  ('Burn-in period', self.burn_in), ('Number of simulations', self.N_sim), ('Time allocation', self.timer)]:
-            print('  ' + '{:>22}:   {:s}'.format(*map(str,p)))
-        print('#'*39 + '\n')
+    def analysis(self, algorithms=["tULA", "RWM"], measure="histogram", bins=10, experiment_mode=False):
+        if not experiment_mode:
+            # Print information about the analysis
+            print('\n####### Initializing analysis #########\n' + '#'*39)
+            print(' ALGORITHMS: {:s}'.format(str(algorithms)))
+            print(' MEASURE: {:s}'.format(measure))
+            print(' PARAMETERS:')
+            for p in [('Potential', self.potential), ('Dimension', self.dim), ('x0', self.x0), ('Step', self.step), ('Number of iterations', self.N), \
+                      ('Burn-in period', self.burn_in), ('Number of simulations', self.N_sim), ('Time allocation', self.timer)]:
+                print('  ' + '{:>22}:   {:s}'.format(*map(str,p)))
+            print('#'*39 + '\n')
 
         # Collect the measurements.
         # For N_sim simulations, we store the measurement we are interested in (first moment, second moment, all samples...)
@@ -329,6 +353,7 @@ class Evaluator:
             measurements[algo] = []
             for s in range(self.N_sim):
                 samples = self.sampler.get_samples(algorithm=algo, n_samples=self.N, timer=self.timer)
+                # print(samples)
 
                 if measure == "first_moment":
                     # cut off the burn-in period
@@ -356,6 +381,9 @@ class Evaluator:
                     except:
                         measurement = None, None
 
+                elif measure == "sliced_wasserstein_no_histogram":
+                    measurement = samples[self.burn_in:]
+
                 measurements[algo].append(measurement)
                 print('   Algorithm: {:>5}, simulation {:d}, collected {:d} samples.'.format(algo, s, len(samples)))
             print()
@@ -365,21 +393,27 @@ class Evaluator:
         if measure in ["first_moment", "second_moment"]:
             data = [[m[0] for m in measurements[algo]] for algo in algorithms]
             # data = [[norm(m) for m in measurements[algo]] for algo in algorithms]
-            plt.boxplot(data, labels=algorithms)
+
+            if not experiment_mode:
+                plt.boxplot(data, labels=algorithms)
+            else:
+                self.experiment_data["results"] = data
 
         elif measure == "trace":
-            for algo in algorithms:
-                plt.plot([p[0] for p in measurements[algo][0] if norm(p)<1e6], [p[1] for p in measurements[algo][0] if norm(p)<1e6], '-', linewidth=1, alpha=0.8)
-            plt.legend(algorithms)
+            if not experiment_mode:
+                for algo in algorithms:
+                    plt.plot([p[0] for p in measurements[algo][0] if norm(p)<1e6], [p[1] for p in measurements[algo][0] if norm(p)<1e6], '-', linewidth=1, alpha=0.8)
+                plt.legend(algorithms)
 
         elif measure == "histogram":
-            for algo in algorithms:
-                hist, bins = measurements[algo][0]
-                width = 0.85 * (bins[1] - bins[0])
-                center = (bins[:-1] + bins[1:])/2
-                plt.bar(center, hist, align='center', width=width, alpha=0.6)
-            self.sampler.potential.plot_density()
-            plt.legend(['true density'] + algorithms)
+            if not experiment_mode:
+                for algo in algorithms:
+                    hist, bins = measurements[algo][0]
+                    width = 0.85 * (bins[1] - bins[0])
+                    center = (bins[:-1] + bins[1:])/2
+                    plt.bar(center, hist, align='center', width=width, alpha=0.6)
+                self.sampler.potential.plot_density()
+                plt.legend(['true density'] + algorithms)
 
         elif measure in ["KL_divergence", "total_variation", "sliced_wasserstein"]:
             data = []
@@ -400,40 +434,120 @@ class Evaluator:
                         scores.append( sum(abs( ps/sum(ps) - qs/sum(qs) ))/2 )
                     elif measure == "sliced_wasserstein":
                         scores.append( sliced_wasserstein_distance( p/np.sum(p), q/np.sum(q), bin_coors ))
-
                 data.append(scores)
-            plt.boxplot(data, labels=algorithms)
 
-        # Label and show
-        plt.title('Measure: {:s}, '.format(measure) + '\nPotential: {:s}'.format(self.potential))
-        plt.show()
+            if not experiment_mode:
+                plt.boxplot(data, labels=algorithms)
+            else:
+                self.experiment_data["results"] = data
+
+        elif measure == "sliced_wasserstein_no_histogram":
+            data = []
+            for algo in algorithms:
+                scores = []
+                for p in measurements[algo]:
+                    scores.append(sliced_wasserstein_no_histogram(p, self.sampler.potential.get_density(p) ))
+                data.append(scores)
+            if not experiment_mode:
+                plt.boxplot(data, labels=algorithms)
+            else:
+                self.experiment_data["results"] = data
+
+        if not experiment_mode:
+            # Label and show
+            plt.title('Measure: {:s}, '.format(measure) + '\nPotential: {:s}'.format(self.potential))
+            plt.show()
+
+
+    def run_experiment(self, file_path, algorithm, measure, bins=None):
+        self.experiment_data = { "algorithm": algorithm,
+                                  "measure": measure,
+                                     "bins": bins,
+                                "potential": self.potential,
+                                "dimension": self.dim,
+                                       "x0": self.x0,
+                                     "step": self.step,
+                                        "N": self.N,
+                                  "burn_in": self.burn_in,
+                                    "N_sim": self.N_sim,
+                                    "timer": self.timer }
+        print('\n####### Running experiment #########\n' + '#'*39)
+        print(' ALGORITHM: {:s}'.format(algorithm))
+        print(' MEASURE: {:s}\n'.format(measure))
+
+        self.analysis(algorithms=[algorithm], measure=measure, bins=bins, experiment_mode=True)
+        pickle.dump( self.experiment_data, open( file_path, "wb" ) )
+        self.experiment_data = {}
+
+        print('\n####### Experiment finished #########\n' + '#'*39)
+        print('Saved at: {:s}\n\n'.format(file_path))
 
 
 
 
-
-# WARNING 1: set the number of bins to a sensible value based on the dimension.
-# WARNING 2: do not use "first_coor_only" parameter on KL, Wasserstein or total variation -- gives incorrect results.
-d = 2
-e = Evaluator(potential="double_well", dimension=d, x0=np.array([50]+[0]*(d-1)), burn_in=1000, N=10000, N_sim=3, step=0.1, timer=None)
-e.analysis(algorithms=[ "tULA", "RWM"], measure="sliced_wasserstein", bins=50)
-
-
-# check THEORETICCAL BOUNDS
-# nonasymptotic bounds, theoretical guarantees after n iteratoins
-# stack overflow - wasserstein distance
+####################################
+# Mini-guide to available measures
+####################################
 #
-# horseracing
+# first_moment:
+#        > in higher dimensions, FIRST COORDINATE only displayed
 #
-# nonasymptotic results for MALA
-# stochastic gradient - tamed convergence
+# second_moment:
+#       > in higher dimensions, FIRST COORDINATE only displayed
 #
+# trace:
+#       > assumes d = 2
 #
+# histogram:
+#       > assumes d = 1
 #
-# next time:
-#  -  Graphs appearing in tULA, for all of the algorithms (ill conditioned gaussian, gaussian, double well, Ginzburg)
-#  -  Comparison of the theoretical bounds
-#  -  Graphs for wasserstein & variance for lower dimensions
+# KL_divergence:
+#       > computes on histograms
+#       > make sure bins^d <= ~10^6
 #
+# total_variation:
+#       > computes on histograms
+#       > make sure bins^d <= ~10^6
 #
-# How to apply this in machine learning
+# sliced_wasserstein:
+#       > computes on histograms
+#       > make sure bins^d <= ~10^6
+#
+# sliced_wasserstein_no_histogram:
+#       > for n samples and iter iterations of slicing, takes roughly  iter * n * log n  time (with larger constant)
+#       > works for ARBITRARY dimensions
+#
+
+
+####################################
+# How to use evaluator
+####################################
+d = 3
+e = Evaluator(potential="double_well", dimension=d, x0=np.array([50]+[0]*(d-1)), burn_in=1000, N=5000, N_sim=10, step=0.01, timer=None)
+
+# Example of an analysis - produces a plot, doesn't store anything
+e.analysis(algorithms=["tULA", "RWM"], measure="sliced_wasserstein_no_histogram", bins=100)
+
+# Example of an experiment - doesn not produce a plot, stores the results in the experiments folder. Give it a reasonable name.
+e.run_experiment(file_path='Experiments/my_little_experiment', algorithm='tULA', measure='KL_divergence', bins=10)
+
+
+# How to read an experiment in the future:
+my_little_experiment = pickle.load(open( 'Experiments/my_little_experiment', 'rb' ))
+for k, v in my_little_experiment.items():
+    print(k, ':', v)
+
+
+
+############################################
+# Sotirios's requirements for the next week:
+############################################
+#
+# - check theoretical bounds: nonasymptotic bounds, guarantees on error after n iterations
+# - horeseracing! more horseracing! even more horseracing!
+# - look if there are any nonasymptotic results for MALA
+# - eventually moved towards stochastic gradient (tamed version ?)
+#
+# GRAPHS TO PRODUCE:
+# - graphs appearing in the TULA paper
+# - comparison of real error to the theoretical bounds
