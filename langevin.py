@@ -76,7 +76,7 @@ class Potential:
         }[potential]
 
         # Quantities to store in the Potential class, to avoid needless re-computation.
-        if gaussian_sigma: # Inverse covariance matrix for Gaussian
+        if type(gaussian_sigma) != type(None): # Inverse covariance matrix for Gaussian
             self.inv_sigma = 1. / gaussian_sigma
         else:
             self.inv_sigma = 1. / np.arange(1, self.dim+1, dtype=float) # default
@@ -302,21 +302,23 @@ class Sampler:
         ''' Coordinate-wise Tamed Leimkuhler-Matthews algorithm. '''
         return self.tLM(lambda g, step: np.divide(g, 1. + step * np.absolute(g)))
 
-    def get_samples(self, algorithm="ULA", n_samples=10, timer=None):
+    def get_samples(self, algorithm="ULA", n_samples=10, timer=None, repeat=1):
         ''' Returns n_samples from a given algorithm. '''
-        algo = self.algorithms[algorithm]()
+        samples = []
 
-        if timer:
-            samples = []
-            start_time = process_time()
-            while 1:
-                if process_time() - start_time < timer:
-                    samples.append(next(algo))
-                else:
-                    break
-            return np.array(samples)
-        else:
-            return np.array([next(algo) for _ in range(n_samples)])
+        for _ in range(repeat):
+            algo = self.algorithms[algorithm]()
+
+            if timer:
+                start_time = process_time()
+                while 1:
+                    if process_time() - start_time < timer:
+                        samples.append(next(algo))
+                    else:
+                        break
+            else:
+                samples.extend( [next(algo) for _ in range(n_samples)] )
+        return np.array(samples)
 
 
 
@@ -336,7 +338,7 @@ class Evaluator:
         self.timer = timer
         self.sampler = Sampler(potential=potential, dimension=dimension, x0=x0, step=step)
 
-    def analysis(self, algorithms=["tULA", "RWM"], measure="histogram", bins=10, experiment_mode=False):
+    def analysis(self, algorithms=["tULA", "RWM"], measure="histogram", bins=10, repeat=1, experiment_mode=False):
         if not experiment_mode:
             # Print information about the analysis
             print('\n####### Initializing analysis #########\n' + '#'*39)
@@ -354,8 +356,7 @@ class Evaluator:
         for algo in algorithms:
             measurements[algo] = []
             for s in range(self.N_sim):
-                samples = self.sampler.get_samples(algorithm=algo, n_samples=self.N, timer=self.timer)
-                # print(samples)
+                samples = self.sampler.get_samples(algorithm=algo, n_samples=self.N, timer=self.timer, repeat=repeat)
 
                 if measure == "first_moment":
                     # cut off the burn-in period
@@ -461,7 +462,7 @@ class Evaluator:
             plt.show()
 
 
-    def run_experiment(self, file_path, algorithm, measure, bins=None):
+    def run_experiment(self, file_path, algorithm, measure, repeat=1, bins=None):
         self.experiment_data = { "algorithm": algorithm,
                                   "measure": measure,
                                      "bins": bins,
@@ -472,12 +473,13 @@ class Evaluator:
                                         "N": self.N,
                                   "burn_in": self.burn_in,
                                     "N_sim": self.N_sim,
-                                    "timer": self.timer }
+                                    "timer": self.timer,
+                                   "repeat": repeat }
         print('\n####### Running experiment #########\n' + '#'*39)
         print(' ALGORITHM: {:s}'.format(algorithm))
         print(' MEASURE: {:s}\n'.format(measure))
 
-        self.analysis(algorithms=[algorithm], measure=measure, bins=bins, experiment_mode=True)
+        self.analysis(algorithms=[algorithm], measure=measure, bins=bins, repeat=repeat, experiment_mode=True)
         pickle.dump( self.experiment_data, open( file_path, "wb" ) )
         self.experiment_data = {}
 
@@ -524,20 +526,30 @@ class Evaluator:
 ####################################
 # How to use evaluator
 ####################################
-d = 3
-e = Evaluator(potential="double_well", dimension=d, x0=np.array([50]+[0]*(d-1)), burn_in=1000, N=5000, N_sim=10, step=0.01, timer=None)
 
-# Example of an analysis - produces a plot, doesn't store anything
-e.analysis(algorithms=["ULA", "tULA", "RWM", "tHOLA", "MALA", "LM"], measure="sliced_wasserstein_no_histogram", bins=100)
+for N, step in [(725435.0, 2.3481638532950921e-05), (71502.0, 0.00018697916781715065), (11235.0, 0.00094325075818563187), (1535.0, 0.0050994091499003621), (72.0, 0.058358268686440291)]:
 
-# Example of an experiment - doesn not produce a plot, stores the results in the experiments folder. Give it a reasonable name.
-#e.run_experiment(file_path='Experiments/my_little_experiment', algorithm='tULA', measure='KL_divergence', bins=10)
+    N = int(N)
+    repeat = int(1.5*10**6//N) # preserve overall total number of samples
 
+    # step = 0.01
 
-# How to read an experiment in the future:
-#my_little_experiment = pickle.load(open( 'Experiments/my_little_experiment', 'rb' ))
-#for k, v in my_little_experiment.items():
-#    print(k, ':', v)
+    exp_name = 'Experiments/Dalalyan_bounds/Gaussian_2d_inc_diagonal_cor1/N_' + str(N) + '_step_' + str(step)
+
+    d = 2
+
+    e = Evaluator(potential="gaussian", dimension=d, x0=np.array([0]+[0]*(d-1)), burn_in=1, N=N+1, N_sim=5, step=step, timer=None)
+
+    # Example of an analysis - produces a plot, doesn't store anything
+    # e.analysis(algorithms=["ULA", "tULA", "RWM"], measure="sliced_wasserstein_no_histogram", bins=100)
+
+    # Example of an experiment - doesn not produce a plot, stores the results in the experiments folder. Give it a reasonable name.
+    e.run_experiment(file_path=exp_name, algorithm='ULA', measure='total_variation', repeat=repeat, bins=77)
+
+    # How to read an experiment in the future:
+    my_little_experiment = pickle.load(open( exp_name, 'rb' ))
+    for k, v in my_little_experiment.items():
+       print(k, ':', v)
 
 
 
