@@ -5,7 +5,7 @@ p = 2 # dimension
 m = 1/p
 M = 1
 
-def corrolary1(eps):
+def corollary1(eps):
     ''' Given epsilon, returns number of steps K and step size h, to run ULA s.t. TV <= epsilon '''
     global p, m, M
     T = 0.5 * (4 * np.log(1/eps) + p * np.log(M / m))/m
@@ -24,4 +24,4 @@ def theorem2(K, h):
     return 0.5 * np.exp(0.25 * p * np.log(M/m) - 0.5 * T * m) + ( (p * M**2 * T * h * alpha) / (4 * (2*alpha - 1)) )**0.5
 
 for eps in (0.02, 0.05, 0.1, 0.2, 0.5):
-    print(corrolary1(eps))
+    print(corollary1(eps))

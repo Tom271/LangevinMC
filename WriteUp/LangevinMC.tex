@@ -35,6 +35,7 @@
 	\newcommand{\R}{\mathbb{R}}
 	\renewcommand{\L}{\mathcal{L}}  
 	\renewcommand{\epsilon}{\varepsilon}
+	\newcommand{\e}{\mathrm{e}}
 
 %Swap bullets for long dash in itemize
 	\renewcommand\labelitemi{---}
@@ -103,7 +104,7 @@
 		\end{array}
 	}
 \title{Langevin MC}
-\author{B. Han, T.M. Hodgson, M. Holden \& M.Puza}
+\author{B. Han, T.M. Hodgson, M. Holden \& M. Puza}
 \usepackage{palatino}
 \begin{document}
 	\maketitle 
@@ -114,11 +115,40 @@
 	What goes wrong with ULA? Good question, we can find that out to motivate introducing other methods!\\
 	\section{Why Bother?}
 	\section{Langevin Equation}
+	The Langevin Equation is a stochastic differential equation (SDE) originally developed to model random particle motion. Indeed, molecular dynamics continues to use and propse novel methods based on the equation. It is given by 	\[\dif X_t = -\nabla U'(X)\dif t +\sqrt{2\gamma}\dif W_t,\]
+	where \(W_t\) is a \(d\)-dimensional Wiener process (Brownian motion). It can be shown that this equation has an invariant measure given by \(\pi(x)=Z^{-1}\e^{-U(x)}\) with \(Z\) a normalising constant -- not sure if this is worth verifying (\(\L^*\pi=0 \)). What requirements on \(U\) are necessary for the SDE to be geometrically ergodic?
+	
+	
+	
 		\subsection{Discretisation: Euler-Maruyama/LM/HOLA}
+		We can discretise the Langevin SDE so that paths can be simulated numerically. The classic method is to use the Euler-Maruyama (EM) method. This gives the following iterative scheme:
+		\[x_{n+1}=x_n - \gamma \nabla U(x) +\sqrt{2\gamma}Z_{n+1} \]
+		where \(Z \sim N(0,1)\). This is equivalent to 
+		\(x_{n+1} = \xi\) where \(\xi \sim N\left(x_n-\gamma \nabla U(x), 2\gamma I_n\right)\)
 		
+		When discretising an SDE, it is important to check that the invariant measure of the SDE is preserved. 
+		
+		In the Euler method, only a first order approximation is used. This can be extended by taking in to consideration more terms in the expansion. This leads to an iterative scheme defined as
+		\subsection{Algorithms}
+		\subsubsection{ULA}
+		+++ Error/Convergence bounds, non-asymptotic and asymptotic? +++
+		\subsubsection{Leimkuhler-Matthews}
+		Leimkuhler and Matthews propose a non-Markovian scheme to sample from the target distribution
+			+++ Error/Convergence bounds +++
+		\subsubsection{Higher Order Langevin Approximation}
+
 	\section{MALA}
+	One way to reduce the issues with the ULA algorithm, Roberts + Tweedie proposed the Metropolis adjusted Langevin algorithm (MALA). Adding a Metropolis rejection step preserves the invariant measure and increases the class of potentials for which the algorithm converges.
+	+++ Convergence/Error bounds --- Non-asymptotic +++ 
 	
 	\section{Taming: Coordinate and otherwise}
+	
+	To deal with superlinear potentials was proposed by Roberts + Tweedie 1996 (MALTA), and also Brosse, Durmus, Moulines, Sabanis (201x) (we call tULA). These involve \emph{taming} the potential by scaling it as follows.
+	
+	\[G_{\gamma} = \frac{\nabla U(x)}{1+\gamma \|\nabla U(x)\|}\]
+	
+	
+	 
 	
 	\section{Applications to Large Datasets}
 		\subsection{Stochastic Gradient Langevin Dynamics}

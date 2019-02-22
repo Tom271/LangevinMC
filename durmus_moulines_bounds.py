@@ -26,6 +26,7 @@ def Pi_h_error(h):
 L = 1
 x_star = 0
 L_twiddles = 0
+<<<<<<< HEAD
 p = 2
 h = 0.01
 x = 0
@@ -34,3 +35,14 @@ Ks = [10,100,1000]
 Pi_h = Pi_h_error(h)
 EM = np.array([EM_error(K, h, x) for K in Ks])
 print(EM+Pi_h)
+=======
+p = 1
+#h = 0.01
+#x = 0
+m=1
+#K = 1e4
+#hs = [1e-2, 1e-1]
+# Pi_h = [Pi_h_error(h) for h in hs]
+# EM = [EM_error(K, h, x) for h in hs]
+# print(EM)
+>>>>>>> 89db782d689b0f298845337dba5ccfc746cdcbac
