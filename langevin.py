@@ -3,14 +3,16 @@ from numpy.linalg import norm
 from numpy.random import normal, uniform
 import matplotlib.pyplot as plt
 from matplotlib import cm
-from scipy.stats import multivariate_normal as MVN
+from scipy.stats import multivariate_normal
 from scipy.stats import entropy # KL div
 from scipy.stats import wasserstein_distance
+from scipy.stats import norm as norm_dist
 
 import pickle
 import itertools as it
 from time import process_time
 EPS = 1e-12
+from durmus_moulines_bounds import EM_error, Pi_h_error
 
 def sliced_wasserstein_distance(p, q, bin_coors, iters=100):
     ''' Utility function for the sliced Wasserstein distance. '''
@@ -320,6 +322,14 @@ class Sampler:
                 samples.extend( [next(algo) for _ in range(n_samples)] )
         return np.array(samples)
 
+    def get_chains(self, algorithm="ULA", n_chains=1e4, n_samples = 1e2):
+        ''' Returns n_chains of length n_samples from a given algorithm.'''
+        chains = np.zeros((n_chains, n_samples, self.dim))
+
+        for i in range(n_chains):
+            chains[i,:,:] = self.get_samples("ULA", n_samples)
+
+        return chains
 
 
 
@@ -327,7 +337,7 @@ class Sampler:
 
 class Evaluator:
     ''' Analyses a set of sampling algoritms based on given parameters. '''
-    def __init__(self, potential="gaussian", dimension=1, x0=np.array([0.0]), step=0.01, N=10, burn_in=10**2, N_sim=3, timer=None):
+    def __init__(self, potential="gaussian", dimension=1, x0=np.array([0.0]), step=0.01, N=10, burn_in=10**2, N_sim=3, N_chains=1, measuring_points=[],timer=None):
         self.potential = potential
         self.dim = dimension
         self.x0 = x0
@@ -335,9 +345,10 @@ class Evaluator:
         self.N = N
         self.burn_in = burn_in
         self.N_sim = N_sim
+        self.N_chains = N_chains
         self.timer = timer
         self.sampler = Sampler(potential=potential, dimension=dimension, x0=x0, step=step)
-
+        self.measuring_points = measuring_points
     def analysis(self, algorithms=["tULA", "RWM"], measure="histogram", bins=10, repeat=1, experiment_mode=False):
         if not experiment_mode:
             # Print information about the analysis
@@ -355,40 +366,60 @@ class Evaluator:
         measurements = {}
         for algo in algorithms:
             measurements[algo] = []
-            for s in range(self.N_sim):
-                samples = self.sampler.get_samples(algorithm=algo, n_samples=self.N, timer=self.timer, repeat=repeat)
+            if self.N_chains > 1:
+                chains = self.sampler.get_chains(algorithm=algo, n_chains=self.N_chains, n_samples=self.N)
+                data = []
+                for i in self.measuring_points:
+                    measurement = np.histogramdd(chains[:,i-1,:], bins=bins)
+                    measurements[algo].append(measurement)
 
-                if measure == "first_moment":
-                    # cut off the burn-in period
-                    samples = samples[self.burn_in:]
-                    measurement = np.sum(samples, axis=0)/len(samples)
+                for algo in algorithms:
+                    scores = []
+                    for p, edges in measurements[algo]:
+                        if type(p) == type(None):
+                            continue
+                            # true distribution histogram
+                        q, bin_coors = self.sampler.potential.get_histogram(edges)
+                        ps, qs = p.flatten(), q.flatten()
+                        scores.append( sum(abs( ps/sum(ps) - qs/sum(qs) ))/2 )
+                    data.append(scores)
+                return(data)
 
-                elif measure == "second_moment":
-                    # cut off the burn-in period
-                    samples = samples[self.burn_in:]
-                    measurement = np.sum(samples**2, axis=0)/len(samples)
+            else:
+                for s in range(self.N_sim):
+                    samples = self.sampler.get_samples(algorithm=algo, n_samples=self.N, timer=self.timer, repeat=repeat)
 
-                elif measure == "trace":
-                    measurement = samples
+                    if measure == "first_moment":
+                        # cut off the burn-in period
+                        samples = samples[self.burn_in:]
+                        measurement = np.sum(samples, axis=0)/len(samples)
 
-                elif measure == "histogram":
-                    # cut off the burn-in period
-                    samples = samples[self.burn_in:]
-                    measurement = np.histogram(samples, bins=bins, range=(-5, 5), density=True)
+                    elif measure == "second_moment":
+                        # cut off the burn-in period
+                        samples = samples[self.burn_in:]
+                        measurement = np.sum(samples**2, axis=0)/len(samples)
 
-                elif measure in ["KL_divergence", "total_variation", "sliced_wasserstein"]:
-                    # cut off the burn-in period
-                    samples = samples[self.burn_in:]
-                    try: # some algorithms blow up
-                        measurement = np.histogramdd(samples, bins=bins)
-                    except:
-                        measurement = None, None
+                    elif measure == "trace":
+                        measurement = samples
 
-                elif measure == "sliced_wasserstein_no_histogram":
-                    measurement = samples[self.burn_in:]
+                    elif measure == "histogram":
+                        # cut off the burn-in period
+                        samples = samples[self.burn_in:]
+                        measurement = np.histogram(samples, bins=bins, range=(-5, 5), density=True)
 
-                measurements[algo].append(measurement)
-                print('   Algorithm: {:>5}, simulation {:d}, collected {:d} samples.'.format(algo, s, len(samples)))
+                    elif measure in ["KL_divergence", "total_variation", "sliced_wasserstein"]:
+                        # cut off the burn-in period
+                        samples = samples[self.burn_in:]
+                        try: # some algorithms blow up
+                            measurement = np.histogramdd(samples, bins=bins)
+                        except:
+                            measurement = None, None
+
+                    elif measure == "sliced_wasserstein_no_histogram":
+                        measurement = samples[self.burn_in:]
+
+                    measurements[algo].append(measurement)
+                    print('   Algorithm: {:>5}, simulation {:d}, collected {:d} samples.'.format(algo, s, len(samples)))
             print()
 
 
@@ -425,7 +456,6 @@ class Evaluator:
                 for p, edges in measurements[algo]:
                     if type(p) == type(None):
                         continue
-
                     # true distribution histogram
                     q, bin_coors = self.sampler.potential.get_histogram(edges)
 
@@ -526,30 +556,81 @@ class Evaluator:
 ####################################
 # How to use evaluator
 ####################################
+d=2
+e = Evaluator(potential="gaussian", dimension=d, x0=np.array([0]+[0]*(d-1)), burn_in=0, N=1000, N_sim=1, step=0.01, N_chains=10000, measuring_points=[10,100,1000],timer=None)
+chains = e.analysis(algorithms=['ULA'], measure='Nth iteration', repeat=1, bins=100)
+print(chains)
+# plt.plot(chains[0,:,1])
+# plt.plot(chains[1,:,1])
+#
+# plt.show()
 
-for N, step in [(725435.0, 2.3481638532950921e-05), (71502.0, 0.00018697916781715065), (11235.0, 0.00094325075818563187), (1535.0, 0.0050994091499003621), (72.0, 0.058358268686440291)]:
 
-    N = int(N)
-    repeat = int(1.5*10**6//N) # preserve overall total number of samples
+# data = []
+# algorithms =
+# for algo in algorithms:
+# scores = []
+# for p, edges in measurements[algo]:
+#     # true distribution histogram
+# q, bin_coors = self.sampler.potential.get_histogram(edges)
+#
+# ps, qs = p.flatten(), q.flatten()
+# scores.append( sum(abs( ps/sum(ps) - qs/sum(qs) ))/2 )
+# data.append(scores)
+# for i in [10**3]:
+#     bins= 50
+#     samples = chains[:,i-1,0]
+#     measurement = np.histogramdd(samples, bins=bins)
+#     plt.hist(samples, bins=bins)
+#     scores = []
+#     for p, edges in measurement:
+#         if type(p) == type(None):
+#             continue
+#         # true distribution histogram
+#         q = MVN(mean=np.array([0]*d)), np.diag(np.arange(1, d+1, dtype=float))
+#         q=q.pdf(edges)
+#         ps, qs = p.flatten(), q.flatten()
+#         scores.append( sum(abs( ps/sum(ps) - qs/sum(qs) ))/2 )
+#     print(scores)
+#     plt.show()
 
-    # step = 0.01
+# for N in range(3,6):
+#     for step in range(-5,0):
+#         exp_name = 'Experiments/Durmus_Moulines_bounds/Gaussian_1d/N_' + str(N) + '_step_' + str(step)
+#         e = Evaluator(potential="gaussian", dimension=d, x0=np.array([0]+[0]*(d-1)), burn_in=0, N=10**N, N_sim=5, step=10**step, timer=None)
+#         e.run_experiment(file_path=exp_name, algorithm='ULA', measure='total_variation', repeat=1, bins=100)
+#         my_little_experiment = pickle.load(open( exp_name, 'rb' ))
+#         for k, v in my_little_experiment.items():
+#             print(k, ':', v)
+#         x=0
+#         Pi_h = Pi_h_error(10**step)
+#         EM = EM_error(10**N, 10**step, x)
+#         print(Pi_h + EM)
 
-    exp_name = 'Experiments/Dalalyan_bounds/Gaussian_2d_inc_diagonal_cor1/N_' + str(N) + '_step_' + str(step)
 
-    d = 2
-
-    e = Evaluator(potential="gaussian", dimension=d, x0=np.array([0]+[0]*(d-1)), burn_in=1, N=N+1, N_sim=5, step=step, timer=None)
-
-    # Example of an analysis - produces a plot, doesn't store anything
-    # e.analysis(algorithms=["ULA", "tULA", "RWM"], measure="sliced_wasserstein_no_histogram", bins=100)
-
-    # Example of an experiment - doesn not produce a plot, stores the results in the experiments folder. Give it a reasonable name.
-    e.run_experiment(file_path=exp_name, algorithm='ULA', measure='total_variation', repeat=repeat, bins=77)
-
-    # How to read an experiment in the future:
-    my_little_experiment = pickle.load(open( exp_name, 'rb' ))
-    for k, v in my_little_experiment.items():
-       print(k, ':', v)
+#for N, step in [(725435.0, 2.3481638532950921e-05), (71502.0, 0.00018697916781715065), (11235.0, 0.00094325075818563187), (1535.0, 0.0050994091499003621), (72.0, 0.058358268686440291)]:
+#
+#     N = int(N)
+#     repeat = int(1.5*10**6//N) # preserve overall total number of samples
+#
+#     # step = 0.01
+#
+#     exp_name = 'Experiments/Dalalyan_bounds/Gaussian_2d_inc_diagonal_cor1/N_' + str(N) + '_step_' + str(step)
+#
+#     d = 2
+#
+#     e = Evaluator(potential="gaussian", dimension=d, x0=np.array([0]+[0]*(d-1)), burn_in=1, N=N+1, N_sim=5, step=step, timer=None)
+#
+#     # Example of an analysis - produces a plot, doesn't store anything
+#     # e.analysis(algorithms=["ULA", "tULA", "RWM"], measure="sliced_wasserstein_no_histogram", bins=100)
+#
+#     # Example of an experiment - doesn not produce a plot, stores the results in the experiments folder. Give it a reasonable name.
+#     e.run_experiment(file_path=exp_name, algorithm='ULA', measure='total_variation', repeat=repeat, bins=77)
+#
+#     # How to read an experiment in the future:
+#     my_little_experiment = pickle.load(open( exp_name, 'rb' ))
+#     for k, v in my_little_experiment.items():
+#        print(k, ':', v)
 
 
 
