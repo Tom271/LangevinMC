@@ -108,6 +108,7 @@
 \usepackage{palatino}
 \begin{document}
 	\maketitle 
+	
 	Aim? Sample efficiently from high dimensional distributions of the form \(\pi(x) = Z^{-1} e^{-U(x)}\) where \(Z\) is a normalising constant.\\
 	How? Use Langevin Dynamics\\
 	Wait, what LD is an SDE? Yup, use a variety of methods to simulate the dynamics of this SDE: ULA, MALA, LM, HOLA. Both tamed and coordinate-wise tamed!\\
@@ -115,7 +116,7 @@
 	What goes wrong with ULA? Good question, we can find that out to motivate introducing other methods!\\
 	\section{Why Bother?}
 	\section{Langevin Equation}
-	The Langevin Equation is a stochastic differential equation (SDE) originally developed to model random particle motion. Indeed, molecular dynamics continues to use and propse novel methods based on the equation. It is given by 	\[\dif X_t = -\nabla U'(X)\dif t +\sqrt{2\gamma}\dif W_t,\]
+	The Langevin Equation is a stochastic differential equation (SDE) originally developed to model random particle motion. Indeed, molecular dynamics continues to use and propse novel methods based on the equation. It is given by 	\[\dif X_t = -\nabla U(X_t)\dif t +\sqrt{2\gamma}\dif W_t,\]
 	where \(W_t\) is a \(d\)-dimensional Wiener process (Brownian motion). It can be shown that this equation has an invariant measure given by \(\pi(x)=Z^{-1}\e^{-U(x)}\) with \(Z\) a normalising constant -- not sure if this is worth verifying (\(\L^*\pi=0 \)). What requirements on \(U\) are necessary for the SDE to be geometrically ergodic?
 	
 	
@@ -140,6 +141,7 @@
 		
 
 	\section{MALA}
+	\cite{RT_MALA}
 	One way to reduce the issues with the ULA algorithm, Roberts + Tweedie proposed the Metropolis adjusted Langevin algorithm (MALA). Adding a Metropolis rejection step preserves the invariant measure and increases the class of potentials for which the algorithm converges.
 	+++ Convergence/Error bounds --- Non-asymptotic +++ 
 	
@@ -154,4 +156,8 @@
 	
 	\section{Applications to Large Datasets}
 		\subsection{Stochastic Gradient Langevin Dynamics}
+		
+		\bibliography{langevinMC.bib}
+		\bibliographystyle{plain}
+		
 \end{document}
