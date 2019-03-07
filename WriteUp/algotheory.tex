@@ -1,9 +1,51 @@
-\section{Langevin Equation}
-The Langevin equation is an SDE with the form 
-\[\dif X_t = -\nabla U(X_t)\dif t +\sqrt{2\gamma}\dif W_t\]
-We call \(U\) the potential function. It is the properties of this function that govern whether each scheme will converge? This equation has \(\pi\) as its invariant distribution, meaning that simply simulating the SDE for long enough will give an approximation of \(\pi\). The obvious way to do this is using the Euler-Maruyama scheme, which gives the following approximation
+The Langevin equation is a stochastic differential equation (SDE) originally developed to model the movement of a Brownian particle 	\cite{Langevin1908}. The form of interest here is the \emph{overdamped} Langevin equation, in which the particle experiences no average acceleration. The equation is thus
+	\begin{equation} \dif X_t = -\nabla U(X_t)\dif t +\sqrt{2}\dif W_t. \label{eq:ODLang}\end{equation}
+Here, \(W_t\) is a \(d\)-dimensional Wiener process (Brownian motion) and \(U:\R^d \to \R\) is the potential function. The equation can be thought of as modelling a particle in a potential well with shape \(U\). As each particle moves randomly, it is natural to ask what is the average position of many particles in such a well? It can be shown that in fact the position of a particle moving according to the above dynamics is exactly \(\pi\) +++Reference to earlier section/first mention of distribution+++. For a diffusion process this is called the \emph{stationary distribution}\footnote{Another common term is \emph{invariant measure} +++} To show that \(\pi\) is indeed the stationary distribution the following lemma
+
+\begin{lemma}
+	For a one-dimensional It\^o diffusion,
+	\[\dif X_t = \mu(X_t)\dif t + \sigma^2(X_t)dW_t,\]
+	the Fokker-Planck operator, \(\L^*\), is
+	\[\L^*:= -\partial_x(\mu(x)\cdot)+\frac{1}{2}\partial^2_x(\sigma^2(x)\cdot).\]
+	A measure \(\pi\) is invariant for the diffusion if and only if
+	\[\L^*\pi = 0\]
+\end{lemma}
+The proof of this is omitted however it can be seen by forming the Fokker-Planck equation for the probability density of the diffusion. The proof that \(\pi\) is the stationary measure of Equation \eqref{eq:ODLang} is given only in the one dimensional case, however it is extendable to higher dimensions. For the Langevin equation, the Fokker-Planck operator is
+
+\[\L^* = \partial_x(U'(x)\cdot)+\partial_{xx}\cdot . \]
+So it remains to calculate \(\L^*\pi\). 
+\begin{align*}
+\L^*\pi &= \pd{}{x}\bigg\lbrack U'(x)\pi(x) + \pd{}{x}\pi(x)\bigg\rbrack\\
+		&= \pd{}{x}\bigg\lbrack U'(x)\mathcal{Z}\e^{-U(x)}+ \left(-U'(x)\mathcal{Z}\e^{-U(x)}\right)\bigg\rbrack\\
+		&= \pd{}{x}\lbrack 0 \rbrack\\
+		&= 0
+\end{align*}
+Hence \(\pi\) is indeed the invariant measure of \eqref{eq:ODLang}. \qed 
+\\
+\\
+Although this shows that the Langevin equation has an invariant measure, the question of convergence to this measure remains unanswered. Roberts and Tweedie give the following restriction \cite{RT_MALA}.
+\begin{theorem}[Theorem 2.1, \cite{RT_MALA}]
+	Let \(P^t_X(x,A) = \P(X_t\in A | X_0 =x_0)\) and suppose that \(\grad U(x)\) is continuously differentiable and that, for some \(N,a,b < \infty\),
+	\[\grad U(x)\cdot x \leq a|x|^2 + b, \qquad |x|>N. \]
+	Then the measure \(\pi\) is invariant for the Langevin diffusion \(X\). Moreover, for all \(x \in \R^d \) and Borel sets \(A\),
+	\[\|P^t_X(x,\cdot) - \pi \| = \frac{1}{2}\sup_A \big|P^t_X(x,A)-\pi(A)\big| \to 0\]
+
+\end{theorem}
++++Should this norm be an integral? Figure of \(U=x^2\)? Very small step EM scheme +++\\
+The problem of sampling from the high dimensional distribution has been reduced to being able to accurately simulate Langevin dynamics. However, this is not as simple as it sounds. To simulate the continuous process  \eqref{eq:ODLang}, it must first be discretised. However, doing so may not preserve the convergence to the invariant measure. The discretised process may not have the same stationary measure or the masure may not even exist. This means that the method used to discretise must be chosen carefully to ensure good convergence properties. The most natural way to discretise an SDE is to use the stochastic analogue of the Euler method used on ordinary differential equations, known as the Euler-Maruyama (EM) method. Doing so leads to the Unadjusted Langevin Algorithm (\texttt{ULA}).
+
+\subsection{The Unadjusted Langevin Algorithm}
+Applying the Euler-Maruyama method to Equation \eqref{eq:ODLang} gives the following iterative scheme.
+
 \[X_{n+1} = X_n -\gamma \nabla U(X_n) +\sqrt{2\gamma} Z_{n+1},\qquad X_0= x_0 \]
-Here \(Z_n \sim N(0,1)\) i.i.d. However, it is well known that this method does not always give the correct answer, and diverges whenever \(\nabla U(x)\) is superlinear (See Roberts \& Tweedie 1996). How can we solve this problem? We can look at either discretising the SDE in a different way (HOLA, LM); or we can modify the Euler scheme to mitigate the issues. Here we will focus on the latter, although our code has algorithms from both approaches. 
+Here the \(Z_n \) are i.i.d. standard normal random variables and \(\gamma\) is the step size. This is equivalent to \(X_{n+1} \sim N(X_n - \gamma\grad U)X_n), 2\gamma I_d \).\footnote{\(I_d\) denotes the \(d \times s\) identity matrix.} A simple example shows that this discretisation does not converge to \(\pi\). Let \(U(x) = |x|^2/2 \) and \(\gamma = 1\). 
+
+
+
+
+
+
+However, it is well known that this method does not always give the correct answer, and diverges whenever \(\nabla U(x)\) is superlinear (See Roberts \& Tweedie 1996). How can we solve this problem? We can look at either discretising the SDE in a different way (HOLA, LM); or we can modify the Euler scheme to mitigate the issues. Here we will focus on the latter, although our code has algorithms from both approaches. 
 
 \section{Taming}
 Taming has been suggested for ULA by Brosse, Durmus, Moulines and Sabanis, as well as by Roberts \& Tweedie for MALA (they called the result MALTA). The idea is to scale the gradient 

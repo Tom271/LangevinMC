@@ -15,14 +15,14 @@
 % Theorem-like environments
 	\let\oldref\ref 
 	\renewcommand{\ref}[1]{(\oldref{#1})}
-	\newtheorem{thm}{Theorem}[section]
-	\newtheorem{cor}[thm]{Corollary}
+	\newtheorem{theorem}{Theorem}[section]
+	\newtheorem{cor}[theorem]{Corollary}
 	\newtheorem*{lemma}{Lemma}
-	\newtheorem{prop}[thm]{Proposition}
+	\newtheorem{prop}[theorem]{Proposition}
 	\theoremstyle{definition}
 	\newtheorem*{note}{Note}
-	\newtheorem{defn}[thm]{Definition}
-	\newtheorem{ex}[thm]{Example}
+	\newtheorem{defn}[theorem]{Definition}
+	\newtheorem{ex}[theorem]{Example}
 	
 	\newenvironment{solution}{\renewcommand\qedsymbol{$\square$}\begin{proof}[Solution]}{\end{proof}}
 	
@@ -100,6 +100,8 @@
 			& #4 & {}\longmapsto{}     & #5
 		\end{array}
 	}
+
+
 \title{Langevin MC, \\
   \large or the curse of dimensionality}
 \author{B. Han, T.M. Hodgson, M. Holden \& M. Puza}
@@ -107,9 +109,11 @@
 % Define new commands for typesetting here
 \newcommand{\R}{\mathbb{R}}
 \renewcommand{\L}{\mathcal{L}}  
+\renewcommand{\P}{\mathbb{P}}
 \renewcommand{\epsilon}{\varepsilon}
 \newcommand{\e}{\mathrm{e}}
 \newcommand{\grad}{\nabla}
+
 \begin{document}
 	\maketitle 
 	\section{Motivation}
