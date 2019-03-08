@@ -113,7 +113,8 @@
 	\end{center}
 If you come across something that isn't in the list that is likely to come up, add it and post the document on slack/GitHub again so we're all aware of the update.\\
 \\
-Put notes or things that need to be changed inside plus signs so that Ctrl+F can be used to find. E.g. +++ Insert reference to foo here +++ . Also allows you to highlight uncertain areas for other people to check.
+Put notes or things that need to be changed inside plus signs so that Ctrl+F can be used to find. E.g. +++ Insert reference to foo here +++ . Also allows you to highlight uncertain areas for other people to check.\\
+
 \begin{center}
 	\begin{tabular}{cc}
 		Diffusion & \(X_t\) \\
@@ -134,32 +135,34 @@ Put notes or things that need to be changed inside plus signs so that Ctrl+F can
 		Strong convexity constant & \(m\) \\ 
 		Number of iterations & \(N\) \\ 
 		Startpoint  & \(X_0 = x_0\) \\ 
-	\end{tabular} 
-
-\vspace{2cm}
-The first ten are Langevin Monte Carlo (LMC) algorithms\\
+	\end{tabular} \\
 \vspace{1cm}
-\begin{tabular}{cc}
-	\textbf{Algorithm} & \textbf{Name} \\ 
-	Unadjusted Langevin Algorithm &\texttt{ ULA} \\ 
-	Tamed Unadjusted Langevin Algorithm &\texttt{ tULA} \\ 
-	Coordinatewise Tamed Unadjusted Langevin Algorithm & \texttt{tULAc} \\ 
+The first ten are Langevin Monte Carlo (LMC) algorithms. Try and drop superscript where possible, it is ugly.\\
+\vspace{1cm}
+\end{center}
+\bgroup
+\def\arraystretch{1.25}
+\begin{center}
+\begin{tabular}{ccc}
+	\textbf{Algorithm} & \textbf{Name} & \textbf{Stationary Distribution} \\ 
+	Unadjusted Langevin Algorithm &\texttt{ ULA} & \(\pi_{\gamma}^{\text{ULA}}\)\\ 
+	Tamed Unadjusted Langevin Algorithm &\texttt{ tULA} & \(\pi_{\gamma}^{\text{tULA}}\) \\ 
+	Coordinatewise Tamed Unadjusted Langevin Algorithm & \texttt{tULAc} & \(\pi_{\gamma}^{\text{tULAc}}\) \\ 
 	&  \\ 
-	Metropolis Adjusted Langevin Algorithm & \texttt{MALA} \\ 
-	Tamed Metropolis Adjusted Langevin Algorithm & \texttt{tMALA} \\ 
-	Coordinatewise Tamed Metropolis Adjusted Langevin Algorithm & \texttt{tMALAc} \\ 
-	Metropolis Adjusted Langevin Truncated  Algorithm & \texttt{MALTA }\\ 
+	Metropolis Adjusted Langevin Algorithm & \texttt{MALA} & \(\pi_{\gamma}^{\text{MALA}}\) \\ 
+	Tamed Metropolis Adjusted Langevin Algorithm & \texttt{tMALA} & \(\pi_{\gamma}^{\text{tMALA}}\) \\ 
+	Coordinatewise Tamed Metropolis Adjusted Langevin Algorithm & \texttt{tMALAc} & \(\pi_{\gamma}^{\text{tMALAc}}\) \\ 
+	Metropolis Adjusted Langevin Truncated  Algorithm & \texttt{MALTA } & \(\pi_{\gamma}^{\text{MALTA}}\)\\ 
 	&  \\ 
-	Higher Order Langevin Algorithm & \texttt{HOLA} \\ 
-	Tamed Higher Order Langevin Algorithm & \texttt{tHOLA} \\ 
-	Coordinatewise Tamed Higher Order Langevin Algorithm & \texttt{tHOLAc} \\ 
+	Higher Order Langevin Algorithm & \texttt{HOLA} & \(\pi_{\gamma}^{\text{HOLA}}\) \\ 
+	Tamed Higher Order Langevin Algorithm & \texttt{tHOLA}  & \(\pi_{\gamma}^{\text{tHOLA}}\)\\ 
+	Coordinatewise Tamed Higher Order Langevin Algorithm & \texttt{tHOLAc}&  \(\pi_{\gamma}^{\text{tHOLAc}}\) \\ 
 	&  \\ 
-	Leimkuhler-Matthews Algorithm & \texttt{LM} \\ 
-	Tamed Leimkuhler-Matthews Algorithm & \texttt{tLM} \\ 
-	Coordinatewise Tamed Leimkuhler-Matthews Algorithm & \texttt{tLMc} \\ 
+	Leimkuhler-Matthews Algorithm & \texttt{LM} & \(\pi_{\gamma}^{\text{LM}}\) \\ 
+	Tamed Leimkuhler-Matthews Algorithm & \texttt{tLM} & \(\pi_{\gamma}^{\text{tLM}}\)\\ 
+	Coordinatewise Tamed Leimkuhler-Matthews Algorithm & \texttt{tLMc} & \(\pi_{\gamma}^{\text{tLMc}}\) \\ 
 	&  \\ 
-	Random Walk Metropolis Algorithm & \texttt{RWM} \\ 
+	Random Walk Metropolis Algorithm & \texttt{RWM} & \(\pi_{\gamma}^{\text{RWM}}\) \\ 
 \end{tabular} 
 \end{center}
-
 \end{document}
