@@ -3,7 +3,7 @@ The Langevin equation is a stochastic differential equation (SDE) originally dev
 Here, \(W_t\) is a \(d\)-dimensional Wiener process (Brownian motion) and \(U:\R^d \to \R\) is the potential function. The equation can be thought of as modelling a particle in a potential well with shape \(U\). As each particle moves randomly, it is natural to ask what is the average position of many particles in such a well? It can be shown that in fact the position of a particle moving according to the above dynamics is exactly \(\pi\) +++Reference to earlier section/first mention of distribution+++. For a diffusion process this is called the \emph{stationary distribution}\footnote{Another common term is \emph{invariant measure} +++} To show that \(\pi\) is indeed the stationary distribution the following lemma
 
 \begin{lemma}
-	For a one-dimensional It\^o diffusion,
+	For a one-dimensional It\^o diffusion +++add conditions on diffusion/drift+++,
 	\[\dif X_t = \mu(X_t)\dif t + \sigma^2(X_t)dW_t,\]
 	the Fokker-Planck operator, \(\L^*\), is
 	\[\L^*:= -\partial_x(\mu(x)\cdot)+\frac{1}{2}\partial^2_x(\sigma^2(x)\cdot).\]
@@ -58,30 +58,49 @@ So the chain converges immediately, but to the wrong distribution. Let \(\pi^{\t
 To mitigate these issues there are two main approaches: taming the gradient and Metropolisation. A further third method involves using a different discretisation scheme.  Our main focus will be the former, although all three approaches will be discussed. 
 
 \section{MALA}
-Before describing the Metropolis-adjusted Langevin algorithm \texttt{MALA}, it is pertinent at this point to recall the Metropolis Hastings algorithm \cite{Metropolis53,Hastings70}.
+Before describing the Metropolis-adjusted Langevin algorithm \texttt{MALA}, it is pertinent at this point to recall the random walk Metropolis-Hastings algorithm \texttt{RWM }\cite{Hastings70, Metropolis53}. This popular variant of the Metropolis-Hastings algorithm \emph{proposes} values and then accepts/rejects them according to some probability \(\alpha\).  So given \(X_n\), propose a candidate \(Y_{n+1}\) as
+\[Y_{n+1} = X_n + \sqrt{2h} Z_{n+1}.\]
+Once again, \(h\) is the stepsize and \(Z\) is a normal random variable. Then, accept or reject this proposal using Metropolis rejection, that is with some probability
+\[\alpha(X_n,Y_{n+1}) = 1\wedge \frac{\pi(Y_{n+1})q(Y_{n+1},X_n)}{\pi(X_n)q(X_n,Y_{n+1})}.\footnote{Here \(t\wedge s = \min\lbrace t,s\rbrace.\) }\]
+Here \(q(x,y)\) is the transition probability, \(\P(Y_{n+1}=y | X_{n}=x)\sim N(X_n, h^2)\). This rejection step is key in creating a kernel that is reversible and thus invariant for the measure \(\pi\). \\
 
 
-Propose \(V_{n+1}\) using Langevin dynamics:
-\[V_{n+1} = X_n -h \nabla U(X_n) +\sqrt{2h} Z_{n+1}\]
-Calculate acceptance probability
-\[\alpha(X_n,V_{n+1}) = 1\wedge \frac{\pi(V_{n+1})q(V_{n+1},X_n)}{\pi(X_n)q(X_n,V_{n+1})}\]
-Here \(q(x,y)\) is the transition probability, \(\P(X_{n+1}=y | X_{n}=x)\). If \texttt{rand}\(\leq\alpha\), 
-\[X_{n+1} = V_{n+1}.\]
-That is,
-\[X_{n+1} = \mathbb{I}(u\leq \alpha)V_{n+1} +\mathbb{I}(u > \alpha)X_n \]
+\texttt{MALA} can be seen as another variant of the Metropolis-Hastings algorithm, using Langevin dynamics to propose new states. It is perhaps better understood as \texttt{ULA} but with an added Metropolis rejection step \cite{RT96}. Adding this rejection step means the algorithm always has the correct invariant distribution, although convergence is still not guaranteed as the following theorem shows.
+
+\begin{theorem}[Theroem 4.2, \cite{RT96}]
+	If \(\pi\) is bounded, and
+		\[\liminf_{|x|\to \infty} \frac{\|\grad U(x)\|}{\|x\|} > \frac{4}{h}\]
+	then the \texttt{MALA} chain is not exponentially ergodic. +++define exp ergodic+++
+\end{theorem}	 
+So it can be seen that \texttt{MALA} is not without its issues, and does not solve all the problems of \texttt{ULA}. The concept of taming was introduced to try and reduce the magnitude of these problems.
+
 
 \section{Taming the Gradient}
-\section{Taming}
-Taming has been suggested for ULA by Brosse, Durmus, Moulines and Sabanis, as well as by Roberts \& Tweedie for MALA (they called the result MALTA). The idea is to scale the gradient 
+We have seen that both \texttt{ULA} and \texttt{MALA} run into issues when the gradient of the potential is superlinear. Taming the drift coefficient is a method to reduce the superlinearity whilst maintaining the invariant distribution of the SDE \cite{Brosse18,RT96,Sabanis13}. Recall that the Langevin dynamics are governed by
+	\begin{equation*} \dif X_t = -\grad U(X_t)\dif t +\sqrt{2}\dif W_t. \end{equation*}
+We have seen that problems arise when the drift coefficient is superlinear, that is
+
+	\[\liminf_{|x|\to \infty} \frac{\|\grad U(x)\|}{\|x\|} = \infty.\]
+For this reason a family of drift functions \((G_h)_{h>0}, \ G_h:\R^d \to \R^d\) and the Markov chain
+\[X_{k+1} =X_k-hG_h(X_k)+\sqrt{2h}Z_{k+1},\qquad  X_0=x_0\]
+ Here we consider three choices of \(G_h\), each of which leads to a convergent scheme. 
+ 
+ \begin{align*}
+ T_h(x) = \frac{\grad U(x)}{1+h\|\grad(x)\|}, &&  T^{\text{\sc \tiny RT}}_h = \frac{D\grad U(x)}{2(D\vee \|\grad U(x)\|)}, \quad D>0
+ \end{align*}
+We name \(T_h\) the taming function from \cite{Brosse18} and \(T^{\text{\sc \tiny RT}}_h\) the RT-taming after \cite{RT96} where it was introduced. 
 
 \subsection{tULA/c}
 \[X_{n+1} = X_n -h T_{h}(X_n) +\sqrt{2h} Z_{n+1},\qquad X_0= x_0 \]
 where \(T_{h}(x) = \frac{\grad U(x)}{1+\|\grad U(x)\|}\) or \(T_{h}(x) =\left(\frac{\grad U(x)}{1+|\partial_i U(x)|}\right)_{i=\lbrace 1, \dots, d\rbrace} \)
 
-ALSO need to define the gamma subscript, i.e. the tamed variables. is gamma best subscript? Although fn depends on gamma it doesn't indicate that taming has occurred.
+ALSO need to define the gamma subscript, i.e. the tamed variables.  Although fn depends on gamma it doesn't indicate that taming has occurred.
+
++++Show ill condition/stiff bad behaviour, how coordinatewise fixes+++
 \subsection{tMALA/c}
 Use the same taming \(T\) as in \texttt{tULA}. Is this sensible? Could compare with \texttt{MALTA}.
 \subsection{MALTA?}\cite{RT96}
+
 Tame with 
 \[T = \frac{ \grad U(x)}{1\vee h |\grad U(x)|}\]
 for some constant \(D>0\)
