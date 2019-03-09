@@ -1,9 +1,17 @@
-Monte Carlo methods are a class of algorithms that use repeated random sampling to calculate numerical approximations of integrals.
+In Bayesian statistics, we are interested in performing inference on the posterior distribution of a parameter, $\theta$.  This is calculated using Bayes rule
+$$
+\pi(\theta | x) = \frac{f(x | \theta) p(\theta)}{f(x)}
+$$
+where $f(x|\theta)$ is the likelihood function of the data, and $p(\theta)$ is the prior distribution on the parameter.  The term on the denominator, $f(x)=\int f(x)|\theta) p(\theta) d\theta$ is a normalising constant, such that $\pi$ is a distribution.  In general, this normalising constant is difficult to calculate, and so the posterior is usually only given up to proportionality.
+$$
+\pi(\theta | x) \propto f(x | \theta) p(\theta)
+$$
+
 
 In this report we consider the problem of sampling from a distribution of the form
 	$$
 	\pi (x) \propto \exp(-U(x))
 	$$
-for some potential function $U$.  In statistical mechanics, this distributions is called a Gibbs distribution, and is often used to model the postions and velocities of particles in a gas. 
+for some potential function $U$.  In statistical mechanics, this distributions is called a Gibbs distribution, and is often used to model the positions and velocities of particles in a gas. 
 
 
