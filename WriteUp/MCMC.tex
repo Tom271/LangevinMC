@@ -1,0 +1,23 @@
+Monte Carlo methods are a class of algorithms that replace difficult or impossible analytical probability calculations with numerical approximations.  Given a random variable $X$ on a probability space $(\Omega,\mathcal{F}, \pi)$ with distribution given by $\pi$ consider the problem of calculating
+$$
+\E_\pi[g(X)] = \int_\Omega g(x) d \pi
+$$
+If the distribution $\pi$ does not take a well-known form, then analytically solving this expectation is very difficult.  Instead, Monte Carlo integration uses the strong law of large numbers to approximate the integral.  If $X_n$ are a sequence of i.i.d. random variables distributed according to $\pi$, then
+$$
+\frac{1}{N} \sum_{n=1}^N g(X_n) \to \E_\pi[g(X)] \quad \text{a.s. as $N \to \infty$.}
+$$
+Hence we can approximate integrals by taking independent samples from the distribution $\pi$.  However, for an arbitrary distribution, it is not necessarily possible to find sample independently in an efficient way.  Markov chain Monte Carlo allows us to dispense with this assumption.  Rather than sampling independently, we can instead construct a Markov chain with $\pi$ as its invariant distribution.  This chain can then be used to generate dependent samples, which can be used for Monte Carlo integration provided the chain is ergodic with respect to $\pi$.
+
+\begin{defn}[Ergodicity]
+Let $T:\Omega \to \Omega$ be a probability-preserving transformation on a probability space $(\Omega,\mathcal{F}, P)$.  Then we say $T$ is \emph{ergodic} if for every $F \in \mathcal{F}$ with $T^{-1}(F)=F$, either $P(F)=0$ or $P(F)=1$.
+\end{defn}
+
+Intuitively, this condition means that the process explores the whole space, without becoming stuck in a subregion.  The ergodic theorem then provides the theoretical justification that permits the use of dependent samples for Monte Carlo integration.
+
+\begin{theorem}[Ergodic Theorem]
+ Let $f$ be measurable, $\E_\pi(|f|) < \infty$, and $T$ be an ergodic probability-preserving transformation. Then with probability 1:
+ $$
+\frac{1}{N} \sum_{n=1}^N f(T^n(x)) \to \E_\pi[f] \quad \text{a.s. as $N \to \infty$.}
+$$
+\end{theorem}
+\noindent In other words, if $T$ is ergodic, time averages converge to space averages.  Hence, if we can construct a Markov chain which is ergodic with respect to a target measure $\pi$, it can be used to generate Monte Carlo samples.  One method of constructing such a Markov chain is by using Langevin dynamics.

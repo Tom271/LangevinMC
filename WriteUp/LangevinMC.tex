@@ -27,6 +27,7 @@
 	
 	\newenvironment{solution}{\renewcommand\qedsymbol{$\square$}\begin{proof}[Solution]}{\end{proof}}
 	
+	
 % Set header and footer
 %	\pagestyle{fancy}
 %	\fancyhf{}
@@ -114,12 +115,17 @@
 \renewcommand{\epsilon}{\varepsilon}
 \newcommand{\e}{\mathrm{e}}
 \newcommand{\grad}{\nabla}
+\newcommand{\E}{\mathbb{E}}
+
+
 
 \begin{document}
-	\maketitle 
-	\section{Motivation}
+	\maketitle
+	\tableofcontents
+	\section{Introduction}
 	\input{Motivation}
-	
+	\subsection{Markov Chain Monte Carlo}
+	\input{MCMC}
 	\section{Langevin Monte Carlo Algorithms}
 	\input{algotheory}	
 	
