@@ -1,0 +1,176 @@
+
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=50, initial-scale=0.5">
+
+  <title>Sampling visualization</title>
+
+</head>
+
+
+  <body>
+
+    <style type="text/css">
+
+        div.controls {
+    			font-size: 13px;
+    			left: 1em;
+          top: 1em;
+          z-index: 1;
+          position: absolute;
+          padding: 0.5em;
+          background-color: rgba(222, 222, 222, 0.6);
+    		}
+      </style>
+
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+
+
+	<div id="demo-wrapper" class="demo-wrapper">
+
+
+
+
+		<div id="mh_visualization_wrapper" class="visualization-wrapper"></div>
+
+
+
+		<!-- <div id="hmc_visualization_wrapper" class="visualization-wrapper"></div> -->
+		<p>
+
+	</div>
+
+	<!-- special place for templates -->
+	<div id="templates" style="display: None;">
+		<div class="visualization-wrapper mc_visualization_wrapper ">
+			<div class="visualization"></div>
+			<div class="controls">
+				<div class="control" style="text-align: left;">
+					Distribution  &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp [move around using arrows] <br />
+					<div class='dataset_control'></div>
+				</div>
+				<div class="control" style="text-align: left;">
+					<label class='method_controls'>
+					method
+					<select class="method_select_control">
+						<option value="mh">Metropolis-Hastings</option>
+						<option value="hmc">Hamiltonian MC</option>
+					</select>
+					<br />
+				</label>
+
+        Method  <br />
+        <select id="method_select_control">
+          <option>ULA</option>
+          <option>tULA</option>
+          <option>tULAc</option>
+          <option>MALA</option>
+          <option>tMALA</option>
+          <option>RWM</option>
+          <option>LM</option>
+          <option>tLM</option>
+      </select>
+
+      <br /> Starting point  <br />
+      <input id="starting_point" style="width:6em" value="1.0, 1.0">
+      <button id="button_sp" style="display:absolute">Change</button>
+
+
+  				<br /> Show <br />
+				<label>
+					<input type="checkbox" value=1 class="show_generated_control"  checked="checked" /> <span class='generated_color'>generated samples</span>
+					<br />
+				</label>
+				<label>
+					<input type="checkbox" class="show_rejected_control" /> <span class='rejected_color'>rejected samples</span>
+					<br />
+				</label>
+				<label>
+					<input type="checkbox" class="show_true_control" checked="checked" /> <span class='true_sample_color'>true samples</span>
+				</label>
+				</div>
+
+
+				<div class="control">
+					<label>
+            	<input type="range" min="0" max="9" value="6" step="1" class="temperature_control">
+						Temperature T: <span class="temperature_display" ></span>
+
+            <br />
+					</label>
+
+          <label>
+            <input type="range" min="0" max="2" value="0" step="1" class="speed_control">
+						Animation: <span class="speed_display" style='font-weight: bold;' ></span>
+
+					</label> <br />
+
+				</div>
+
+				<div class='control hmc_only_control'>
+					<div class=" ">
+						<label>
+							slide time: <span class="trajectory_length_display" ></span>
+							<input type="range" min="0" max="4" value="2" step="1" class="trajectory_length_control">
+						</label>
+					</div>
+					<div class="tempering_only_control">
+						<label>
+							tempering α: <span class="tempering_display" ></span>
+							<input type="range" min="0" max="9" value="0" step="1" class="tempering_control">
+						</label>
+					</div>
+				</div>
+
+				<div class="control mh_only_control">
+					<label>
+            	<input type="range" min="0" max="9" value="3" step="1" class="spread_control">
+						Step size σ: <span class="spread_display" ></span>
+					</label>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<!-- only for fadeIn -->
+	<script type="text/javascript" src="scripts/jquery-2.1.4.js"></script>
+	<script type="text/javascript" src="scripts/external_scripts/three.min.js"></script>
+	<script type="text/javascript" src="scripts/external_scripts/babel-polyfill.min.js"></script>
+
+	<script type="text/javascript" src="scripts/demonstration_scripts/utils-compiled.js"></script>
+
+	<script type="text/javascript" src="scripts/hmc_demonstration/utils-compiled.js"></script>
+	<script type="text/javascript" src="scripts/hmc_demonstration/mcmc-compiled.js"></script>
+	<script type="text/javascript" src="scripts/hmc_demonstration/distributions-compiled.js"></script>
+	<script type="text/javascript" src="scripts/hmc_demonstration/threejs_OrbitControls-compiled.js"></script>
+	<script type="text/javascript" src="scripts/hmc_demonstration/threejs_plotter-compiled.js"></script>
+	<script type="text/javascript" src="scripts/hmc_demonstration/mcmc_explained-compiled.js"></script>
+
+  </article>
+
+  <!-- adding temp info -->
+  <!--
+  <div class='job-looking' style='background: #DEF; font-size: 1.2em; padding: 30px;'  >
+    Psst. Looking for a <strong>research scientist in machine learning</strong> to join your team? <br />
+    Drop me an email, I'm currently open for opportunities! <a href='http://arogozhnikov.github.io/cv/AlexRogozhnikov.html' >My CV</a>.
+  </div>
+  -->
+  <!-- end of temp info -->
+
+</div>
+
+      </div>
+    </div>
+
+  </body>
+
+</html>
