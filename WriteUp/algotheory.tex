@@ -3,7 +3,7 @@ The Langevin equation is a stochastic differential equation (SDE) originally dev
 Here, \(W_t\) is a \(d\)-dimensional Wiener process (Brownian motion) and \(U:\R^d \to \R\) is the potential function. The equation can be thought of as modelling a particle in a potential well with shape \(U\). As each particle moves randomly, it is natural to ask what is the average position of many particles in such a well? It can be shown that in fact the position of a particle moving according to the above dynamics is exactly \(\pi\) +++Reference to earlier subsection/first mention of distribution+++. For a diffusion process this is called the \emph{stationary distribution}\footnote{Another common term is \emph{invariant measure} +++} To show that \(\pi\) is indeed the stationary distribution the following lemma
 
 \begin{lemma}
-	For a one-dimensional It\^o diffusion,
+	For a one-dimensional It\^o diffusion +++add conditions on diffusion/drift+++,
 	\[\dif X_t = \mu(X_t)\dif t + \sigma^2(X_t)dW_t,\]
 	the Fokker-Planck operator, \(\L^*\), is
 	\[\L^*:= -\partial_x(\mu(x)\cdot)+\frac{1}{2}\partial^2_x(\sigma^2(x)\cdot).\]
@@ -13,14 +13,14 @@ Here, \(W_t\) is a \(d\)-dimensional Wiener process (Brownian motion) and \(U:\R
 The proof of this is omitted however it can be seen by forming the Fokker-Planck equation for the probability density of the diffusion. The proof that \(\pi\) is the stationary measure of Equation \eqref{eq:ODLang} is given only in the one dimensional case, however it is extendable to higher dimensions. For the Langevin equation, the Fokker-Planck operator is
 
 \[\L^* = \partial_x(U'(x)\cdot)+\partial_{xx}\cdot . \]
-So it remains to calculate \(\L^*\pi\). 
+So it remains to calculate \(\L^*\pi\).
 \begin{align*}
 \L^*\pi &= \pd{}{x}\bigg\lbrack U'(x)\pi(x) + \pd{}{x}\pi(x)\bigg\rbrack\\
 		&= \pd{}{x}\bigg\lbrack U'(x)\mathcal{Z}\e^{-U(x)}+ \left(-U'(x)\mathcal{Z}\e^{-U(x)}\right)\bigg\rbrack\\
 		&= \pd{}{x}\lbrack 0 \rbrack\\
 		&= 0
 \end{align*}
-Hence \(\pi\) is indeed the invariant measure of \eqref{eq:ODLang}. \qed 
+Hence \(\pi\) is indeed the invariant measure of \eqref{eq:ODLang}. \qed
 \\
 \\
 Although this shows that the Langevin equation has an invariant measure, the question of convergence to this measure remains unanswered. Roberts and Tweedie give the following restriction \cite{RT96}.
@@ -38,15 +38,15 @@ Although this shows that the Langevin equation has an invariant measure, the que
 		\includegraphics[width=\linewidth]{quadraticLD.pdf}
 	\caption{Simulating Langevin dynamics in one dimension with a quadratic potential \(U(x)=x^2/2\)}
 	\label{fig:quadLD}
-\end{figure} 
+\end{figure}
 
-The problem of sampling from the high dimensional distribution has been reduced to being able to accurately simulate Langevin dynamics. However, this is not as simple as it sounds. To simulate the continuous process  \eqref{eq:ODLang}, it must first be discretised. However, doing so may not preserve the convergence to the invariant measure. The discretised process may not have the same stationary measure or the masure may not even exist. This means that the method used to discretise must be chosen carefully to ensure good convergence properties. The most natural way to discretise an SDE is to use the stochastic analogue of the Euler method used on ordinary differential equations, known as the Euler-Maruyama (EM) method. Doing so leads to the Unadjusted Langevin Algorithm (\texttt{ULA}).
+The problem of sampling from the high dimensional distribution has been reduced to being able to accurately simulate Langevin dynamics. However, this is not as simple as it sounds. To simulate the continuous process  \eqref{eq:ODLang}, it must first be discretised. However, doing so may not preserve the convergence to the invariant measure. The discretised process may not have the same stationary measure or it may not even exist. This means that the method used to discretise must be chosen carefully to ensure good convergence properties. The most natural way to discretise an SDE is to use the stochastic analogue of the (forward) Euler method used on ordinary differential equations, known as the Euler-Maruyama (EM) method. Doing so leads to the Unadjusted Langevin Algorithm (\texttt{ULA}).
 
-\subsubsection{The Unadjusted Langevin Algorithm}
+\subsection{The Unadjusted Langevin Algorithm}
 Applying the Euler-Maruyama method to Equation \eqref{eq:ODLang} gives the following iterative scheme.
 
 \[X_{n+1} = X_n -h \nabla U(X_n) +\sqrt{2h} Z_{n+1},\qquad X_0= x_0 \]
-Here the \(Z_n \) are i.i.d. standard normal random variables and \(h\) is the step size. This is equivalent to \(X_{n+1} \sim N(X_n - h\grad U(X_n), 2h I_d )\).\footnote{\(I_d\) denotes the \(d \times d\) identity matrix.} A simple example shows that this discretisation does not converge to \(\pi\). Let \(\pi\) be a standard Gaussian distribution, that is \(U(x) = |x|^2/2 \) and choose \(h = 1\). Then the update is given by 
+Here the \(Z_n \) are i.i.d. standard normal random variables and \(h\) is the step size. This is equivalent to \(X_{n+1} \sim N(X_n - h\grad U(X_n), 2h I_d )\).\footnote{\(I_d\) denotes the \(d \times d\) identity matrix.} A simple example shows that this discretisation does not converge to \(\pi\). Let \(\pi\) be a standard Gaussian distribution, that is \(U(x) = |x|^2/2 \) and choose \(h = 1\). Then the update is given by
 
 \begin{align*}
 	X_{n+1} &\sim N(X_n - \grad U(X_n), 2)\\
@@ -55,62 +55,76 @@ Here the \(Z_n \) are i.i.d. standard normal random variables and \(h\) is the s
 \end{align*}
 So the chain converges immediately, but to the wrong distribution. Let \(\pi^{\text{ULA}}_{h} \) denote the stationary distribution of \texttt{ULA} with a stepsize \(h\). This is not the only issue that can occur. As well as not converging to the correct distribution, the discretised chain may not be  ergodic, even when the continuous diffusion is exponentially ergodic \cite{RT96}. In particular, the algorithm misbehaves when the gradient of the potential is superlinear. That is,
 \[\liminf_{\|x\|\to \infty} \frac{\|\grad U(x)\|}{\|x\|} = +\infty. \]
-To mitigate these issues there are two main approaches: taming the gradient and Metropolisation. A further third method involves using a different discretisation scheme.  Our main focus will be the former, although all three approaches will be discussed. 
+To mitigate these issues there are two main approaches: taming the gradient and Metropolisation. A further third method involves using a different discretisation scheme.  Our main focus will be the former, although all three approaches will be discussed.
 
 \subsection{MALA}
-Before describing the Metropolis-adjusted Langevin algorithm \texttt{MALA}, it is pertinent at this point to recall the Metropolis Hastings algorithm \cite{Metropolis53,Hastings70}.
+Before describing the Metropolis-adjusted Langevin algorithm \texttt{MALA}, it is pertinent at this point to recall the random walk Metropolis-Hastings algorithm \texttt{RWM }\cite{Hastings70, Metropolis53}. This popular variant of the Metropolis-Hastings algorithm \emph{proposes} values and then accepts/rejects them according to some probability \(\alpha\).  So given \(X_n\), propose a candidate \(Y_{n+1}\) as
+\[Y_{n+1} = X_n + \sqrt{2h} Z_{n+1}.\]
+Once again, \(h\) is the stepsize and \(Z\) is a normal random variable. Then, accept or reject this proposal using Metropolis rejection, that is with some probability
+\[\alpha(X_n,Y_{n+1}) = 1\wedge \frac{\pi(Y_{n+1})q(Y_{n+1},X_n)}{\pi(X_n)q(X_n,Y_{n+1})}.\footnote{Here \(t\wedge s = \min\lbrace t,s\rbrace.\) }\]
+Here \(q(x,y)\) is the transition probability, \(\P(Y_{n+1}=y | X_{n}=x)\sim N(X_n, h^2)\). This rejection step is key in creating a kernel that is reversible and thus invariant for the measure \(\pi\). \\
 
 
-Propose \(V_{n+1}\) using Langevin dynamics:
-\[V_{n+1} = X_n -h \nabla U(X_n) +\sqrt{2h} Z_{n+1}\]
-Calculate acceptance probability
-\[\alpha(X_n,V_{n+1}) = 1\wedge \frac{\pi(V_{n+1})q(V_{n+1},X_n)}{\pi(X_n)q(X_n,V_{n+1})}\]
-Here \(q(x,y)\) is the transition probability, \(\P(X_{n+1}=y | X_{n}=x)\). If \texttt{rand}\(\leq\alpha\), 
-\[X_{n+1} = V_{n+1}.\]
-That is,
-\[X_{n+1} = \mathbb{I}(u\leq \alpha)V_{n+1} +\mathbb{I}(u > \alpha)X_n \]
+\texttt{MALA} can be seen as another variant of the Metropolis-Hastings algorithm, using Langevin dynamics to propose new states. It is perhaps better understood as \texttt{ULA} but with an added Metropolis rejection step \cite{RT96}. Adding this rejection step means the algorithm always has the correct invariant distribution, although convergence is still not guaranteed as the following theorem shows.
+
+\begin{theorem}[Theroem 4.2, \cite{RT96}]
+	If \(\pi\) is bounded, and
+		\[\liminf_{\|x\|\to \infty} \frac{\|\grad U(x)\|}{\|x\|} > \frac{4}{h}\]
+	then the \texttt{MALA} chain is not exponentially ergodic. +++define exp ergodic+++
+\end{theorem}
+So it can be seen that \texttt{MALA} is not without its issues, and does not solve all the problems of \texttt{ULA}. The concept of taming was introduced to try and reduce the magnitude of these problems.
 
 \subsection{Taming the Gradient}
-\subsection{Taming}
-Taming has been suggested for ULA by Brosse, Durmus, Moulines and Sabanis, as well as by Roberts \& Tweedie for MALA (they called the result MALTA). The idea is to scale the gradient 
+We have seen that both \texttt{ULA} and \texttt{MALA} run into issues when the gradient of the potential is superlinear. Given an SDE such as \eqref{eq:ODLang}, taming adjusts the drift coefficient in such a way that preserves the invariant measure and improves speed of convergence \cite{Brosse18tULA,RT96,Sabanis13}. To do this, a family of drift functions \((G_h)_{h>0}, \ G_h:\R^d \to \R^d\) are introduced. The SDE to be discretised is thus
+	\begin{equation*} \dif X_t = -G_h(X_t)\dif t +\sqrt{2}\dif W_t. \end{equation*}
+Applying the Euler-Maruyama method gives the following Markov chain
+	\[X_{k+1} =X_k-hG_h(X_k)+\sqrt{2h}Z_{k+1},\qquad  X_0=x_0.\]
+To preserve the invariant measure, some restrictions must be placed on \((G_h)_{h>0}\), namely that they are `close' to \(\grad U\) ({\bf A1}) while {\bf A2} ensures ergodicity is preserved and improves stability \cite{Brosse18tULA}. 
 
+\begin{enumerate}[label={\bf A{\arabic*}}]
+	\item  For all \(h>0, G_h\) is continuous. There exist \(\alpha\geq 0, C_{\alpha}<+\infty\) such that for all \(h >0 \) and \(x \in \R^d\),
+		\[\|G_h(x)-\grad U(x)\| \leq hC_{\alpha}(1+\|x\|^{\alpha}).\]\label{A1}
+	\item For all \(h>0\),
+		\[ \liminf_{\|x\|\to \infty} \bigg\lbrack \bigg\langle \frac{x}{\|x\|}, G_h(x)\bigg\rangle - \frac{h}{2\|x\|}\|G_h(x)\|^2\bigg\rbrack >0\]\label{A2}
+\end{enumerate}
+Here we consider two specific taming functions,
+ \begin{align*}
+ T_h(x) = \frac{\grad U(x)}{1+h\|\grad U(x)\|}, &&  T^{\text{\sc \tiny RT}}_h = \frac{\grad U(x)}{1\vee h\|\grad U(x)\|}.
+ \end{align*}
+Brosse et al. introduced and studied \(T_h\) whilst Roberts \& Tweedie suggested \(T^{\text{\sc \tiny RT}}_h\), later analysed by Bou-Rabee \& Vanden-Eijnden \cite{BV10MALTA,Brosse18tULA,RT96}. Both taming functions retain the direction of the gradient, only reducing the magnitude of its effect. The latter is the usual \texttt{ULA} until the gradient gets large enough \((\|\grad U(x)\|> 1/h)\), at which point it begins normalising. In contrast, the first will always tame, regardless of size of the gradient. However for the scaling to have noticeable effect, the gradient must be \(\mathcal{O}(h^{-1})\).
+When \(T_h\) is the taming function, the algorithm will be referred to as \texttt{tULA}, the tamed unadjusted Langevin algorithm. When the second is applied, it will be called \texttt{MALTA}, the Metropolis adjusted Langevin truncated algorithm after \cite{RT96}. Any tamed algorithm using \(T_h\) will be prefixed with a lowercase \texttt{t}. For a proof that \(T_h\) satisfies \ref{A1} and \ref{A2}, see \cite[Lemma~2]{Brosse18tULA}.
+\\
+When the problem is ill-conditioned, taming the gradient does not help +++Kostas' example, ill-cond Gauss does this motivate coordinatewise?+++. 
 \subsubsection{tULA/c}
-\[X_{n+1} = X_n -h T_{h}(X_n) +\sqrt{2h} Z_{n+1},\qquad X_0= x_0 \]
-where \(T_{h}(x) = \frac{\grad U(x)}{1+h\|\grad U(x)\|}\) or \(T_{h}(x) =\left(\frac{\partial_i U(x)}{1+h|\partial_i U(x)|}\right)_{i=\lbrace 1, \dots, d\rbrace} \)
-
-ALSO need to define the gamma subscript, i.e. the tamed variables. is gamma best subscript? Although fn depends on gamma it doesn't indicate that taming has occurred.
-\subsubsection{tMALA/c}
-Use the same taming \(T\) as in \texttt{tULA}. Is this sensible? Could compare with \texttt{MALTA}.
-\subsubsection{MALTA?}\cite{RT96}
-Tame with 
-\[T = \frac{ \grad U(x)}{1\vee h |\grad U(x)|}\]
-for some constant \(D>0\)
+So far, the gradient has only been tamed globally. This has a negative side effect in that it heavily restricts movement in all dimensions, regardless of whether the gradient is superlinear in that direction. A solution to this is to use coordinatewise taming with the following drift.
+  \[T^c_{h}(x) =\left(\frac{\partial_i U(x)}{1+h|\partial_i U(x)|}\right)_{i=\lbrace 1, \dots, d\rbrace} \]
+This allows each dimension to be scaled individually. Any algorithm with coordinate-wise taming will be suffixed with a lowercase \texttt{c}.
 
 \subsection{Discretise Differently}
+An alternative approach is to use a different discretisation of the SDE \eqref{eq:ODLang}, which we consider in this section. The first is an extension of the Euler method \cite{Sabanis18tHOLA}, while the latter uses a non-Markovian scheme developed for use in molecular dynamics \cite{LM12}.
 \subsubsection{tHOLA}
-\cite{tHOLA}
-Use an It\^o-Taylor expansion 
+
+Use an It\^o-Taylor expansion
 \[X_{n+1} - X_n + \mu_{h}(X_n)h +\sigma_{h}(X_n)\sqrt{h}Z_{n+1}\]
-where 
+where
 \[\mu_{h}(x) = -\grad U_{h}(x) +\frac{h}{2}\left( \left( \grad^2U\grad U\right)_{h}(x) - \vec{\Delta}(\grad U)_{h}(x)\right) ,\]
 and \(\sigma_{h}(x) = \text{diag}\left(\left( \sigma_{h}^{(k)}(x)\right)_{k\in \lbrace 1,\dots,d\rbrace}\right)\) with,
 \[\sigma_{h}^{(k)}(x) = \sqrt{2+\frac{2h^2}{3}\sum_{j=1}^d |\grad^2 U_{h}^{(k,j)}(x)|^2 - 2h \grad^2 U_{h}^{(k,k)}(x)}\]
-
+ALSO need to define the h subscript, i.e. the tamed variables.  Although fn depends on gamma it doesn't indicate that taming has occurred.
 \subsubsection{LM}
-\cite{LM}
+\cite{LM12}
 Non-Markovian scheme,
 \[X_{n+1} = X_n +h \grad U(X_n) + \sqrt{\frac{h}{2}} \left(Z_n + Z_{n+1}\right) \]
 
 
 \subsection{Other Methods}
 \subsubsection{RWM}
-Popular variant of the Metropolis-Hastings algorithm (CITE) with a normal proposal. 
+Popular variant of the Metropolis-Hastings algorithm (CITE) with a normal proposal.
 \[U_{n+1} = X_n + \sqrt{2h} Z_{n+1}\]
 
 Calculate acceptance probability
 \[\alpha(X_n,U_{n+1}) = 1\wedge \frac{\pi(U_{n+1})q(U_{n+1},X_n)}{\pi(X_n)q(X_n,U_{n+1})}\]
-Here \(q(x,y)\) is the transition probability, \(\P(X_{n+1}=y | X_{n}=x)\). If \texttt{rand}\(\leq\alpha\), 
+Here \(q(x,y)\) is the transition probability, \(\P(X_{n+1}=y | X_{n}=x)\). If \texttt{rand}\(\leq\alpha\),
 \[X_{n+1} = U_{n+1}.\]
 That is,
-\[X_{n+1} = \mathbb{I}(u\leq \alpha)U_{n+1} +\mathbb{I}(u > \alpha)X_n \] 
-
+\[X_{n+1} = \mathbb{I}(u\leq \alpha)U_{n+1} +\mathbb{I}(u > \alpha)X_n \]

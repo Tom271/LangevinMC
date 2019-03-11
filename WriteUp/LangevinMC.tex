@@ -10,11 +10,10 @@
 \usepackage{hyperref}
 \usepackage{enumitem}
 
-
-\setlength{\headheight}{14.5pt} 
+\setlength{\headheight}{14.5pt}
 
 % Theorem-like environments
-	\let\oldref\ref 
+	\let\oldref\ref
 	\renewcommand{\ref}[1]{(\oldref{#1})}
 	\newtheorem{theorem}{Theorem}[section]
 	\newtheorem{cor}[theorem]{Corollary}
@@ -24,18 +23,18 @@
 	\newtheorem*{note}{Note}
 	\newtheorem{defn}[theorem]{Definition}
 	\newtheorem{ex}[theorem]{Example}
-	
+
 	\newenvironment{solution}{\renewcommand\qedsymbol{$\square$}\begin{proof}[Solution]}{\end{proof}}
-	
-	
+
+
 % Set header and footer
 %	\pagestyle{fancy}
 %	\fancyhf{}
 
 % I like footnotes to be superscript letters rather than numbers
-	\renewcommand{\thefootnote}{\alph{footnote}}    
+	\renewcommand{\thefootnote}{\alph{footnote}}
 	\setlist[enumerate,1]{label={\roman*)}}
-	
+
 %Swap bullets for long dash in itemize
 	\renewcommand\labelitemi{---}
 	\renewcommand\qedsymbol{\(\blacksquare\)}
@@ -45,7 +44,7 @@
 	\usepackage{amsmath}
 	\newcommand{\dif}{\mathop{}\!\mathrm{d}}
 	\newcommand{\Dif}{\mathop{}\!\mathrm{D}}
-	
+
 	\makeatletter
 	\newcommand{\spx}[1]{%
 		\if\relax\detokenize{#1}\relax
@@ -56,19 +55,19 @@
 		{^{#1}}%
 	}
 	\makeatother
-	
+
 	\newcommand\pd[3][]{\frac{\partial\spx{#1}#2}{\partial#3\spx{#1}}}
 	\newcommand\tpd[3][]{\tfrac{\partial\spx{#1}#2}{\partial#3\spx{#1}}}
 	\newcommand\dpd[3][]{\dfrac{\partial\spx{#1}#2}{\partial#3\spx{#1}}}
-	
+
 	\newcommand{\md}[6]{\frac{\partial\spx{#2}#1}{\partial#3\spx{#4}\partial#5\spx{#6}}}
 	\newcommand{\tmd}[6]{\tfrac{\partial\spx{#2}#1}{\partial#3\spx{#4}\partial#5\spx{#6}}}
 	\newcommand{\dmd}[6]{\dfrac{\partial\spx{#2}#1}{\partial#3\spx{#4}\partial#5\spx{#6}}}
-	
+
 	\newcommand{\od}[3][]{\frac{\dif\spx{#1}#2}{\dif#3\spx{#1}}}
 	\newcommand{\tod}[3][]{\tfrac{\dif\spx{#1}#2}{\dif#3\spx{#1}}}
 	\newcommand{\dod}[3][]{\dfrac{\dif\spx{#1}#2}{\dif#3\spx{#1}}}
-	
+
 	\newcommand{\genericdel}[4]{%
 		\ifcase#3\relax
 		\ifx#1.\else#1\fi#4\ifx#2.\else#2\fi\or
@@ -110,9 +109,9 @@
 
 % Define new commands for typesetting here
 \newcommand{\R}{\mathbb{R}}
-\renewcommand{\L}{\mathcal{L}}  
+\renewcommand{\L}{\mathcal{L}}
 \renewcommand{\P}{\mathbb{P}}
-\renewcommand{\epsilon}{\varepsilon}
+%\renewcommand{\epsilon}{\varepsilon}
 \newcommand{\e}{\mathrm{e}}
 \newcommand{\grad}{\nabla}
 \newcommand{\E}{\mathbb{E}}
@@ -125,13 +124,13 @@
 	\section{Introduction}
 	\input{Motivation}
 	\section{Langevin Monte Carlo Algorithms}
-	\input{algotheory}	
-	
+	\input{algotheory}
+
 	\section{Beyond Moments}
 	\input{BeyondMoments}
-	
+
 
 	\bibliography{langevinMC.bib}
 	\bibliographystyle{plain}
-		
+
 \end{document}
