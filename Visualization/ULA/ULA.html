@@ -7,13 +7,23 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=50, initial-scale=0.5">
 
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css" integrity="sha384-D+9gmBxUQogRLqvARvNLmA9hS2x//eK1FhVb9PiU86gmcrBrJAQT8okdJ4LMp2uv" crossorigin="anonymous">
+
+      <!-- The loading of KaTeX is deferred to speed up page rendering -->
+      <script src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.js" integrity="sha384-483A6DwYfKeDa0Q52fJmxFXkcPCFfnXMoXblOkJ4JcA8zATN6Tm78UNL72AKk+0O" crossorigin="anonymous"></script>
+
+      <!-- To automatically render math in text elements, include the auto-render extension: -->
+      <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/contrib/auto-render.min.js" integrity="sha384-yACMu8JWxKzSp/C1YV86pzGiQ/l1YUfE8oPuahJQxzehAjEt2GiQuy/BIvl9KyeF" crossorigin="anonymous"
+      onload="renderMathInElement(document.body);"></script>
+
+
+
   <title>Sampling visualization</title>
 
 </head>
 
 
   <body>
-
     <style type="text/css">
 
         div.controls {
@@ -54,7 +64,7 @@
 			<div class="visualization"></div>
 			<div class="controls">
 				<div class="control" style="text-align: left;">
-					Distribution  &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp [move around using arrows] <br />
+					Distribution  &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp<a id="dist_description"></a>
 					<div class='dataset_control'></div>
 				</div>
 				<div class="control" style="text-align: left;">
@@ -110,11 +120,25 @@
 
           <label>
             <input type="range" min="0" max="2" value="0" step="1" class="speed_control">
-						Animation: <span class="speed_display" style='font-weight: bold;' ></span>
+						Speed: <span class="speed_display" style='font-weight: bold;' ></span>
 
 					</label> <br />
 
 				</div>
+
+
+        <script>
+            katex.render("\\text{pdf}(x) = \\exp \\left( - \\frac {U(x)} T \\right)", document.getElementById('dist_description'), {
+                throwOnError: false
+            });
+        </script>
+
+        <!-- <script>
+        console.log(katex)
+                  katex.render("c = \\pm\\sqrt{a^2 + b^2}", document.getElementsByClassName("dist_description"), {
+            throwOnError: false
+          });
+        </script> -->
 
 				<div class='control hmc_only_control'>
 					<div class=" ">

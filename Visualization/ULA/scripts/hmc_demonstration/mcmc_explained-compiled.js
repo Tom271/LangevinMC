@@ -40,7 +40,7 @@ var MCDatasetSelector = function () {
 
         var _loop = function _loop(i) {
             var canvas = document.createElement('canvas');
-            canvas.width = n_ticks;
+            canvas.width = 35;
             canvas.height = n_ticks;
             _this.wrapper_div.appendChild(canvas);
             // hover for canvas
@@ -115,7 +115,7 @@ var MCDatasetSelector = function () {
             distributions.push(new MexicanHatDistribution());
             distributions.push(new GaussianMixtureDistribution(0.4, 0.4));
             // if you're not satisfied with previous datasets
-            // distributions.push(new DoubleHoleDistribution());
+            distributions.push(new DoubleHoleDistribution());
 
             var datasets = [];
 
@@ -236,8 +236,6 @@ var MCVisualization = function () {
         this.show_rejected_control.onchange = update;
 
         this.dataset = new MCDatasetSelector(this.dataset_control, redraw, { selected_dataset: selected_dataset });
-        var ticks = this.dataset.axis_ticks;
-
 
         this.plot = new Plot3D(this.main_div, {});
 
@@ -454,8 +452,14 @@ var MCVisualization = function () {
 
                                 _mc_sampler$generate_ = mc_sampler.generate_mh(spread), _mc_sampler$generate_2 = _slicedToArray(_mc_sampler$generate_, 3), result = _mc_sampler$generate_2[0], candidate = _mc_sampler$generate_2[1], rejected = _mc_sampler$generate_2[2];
 
-                                context.addCandidate(candidate, rejected);
-                                context.setCurrentPosition(result);
+                                var mx = Math.max(-Math.min.apply(null, candidate),  Math.max.apply(null, candidate));
+                                if (mx > 1e6) {
+                                    rejected = true;
+                                }
+                                else {
+                                  context.addCandidate(candidate, rejected);
+                                  context.setCurrentPosition(result);
+                                }
 
                                 if (old_candidate[0] == 0 && old_candidate[0] == 0 && old_candidate[0] == [0]) old_candidate = context.plot.normalize_point(candidate);
 
@@ -537,212 +541,3 @@ var MCVisualization = function () {
 }();
 
 var mcmc_visualization = new MCVisualization(document.getElementById('mh_visualization_wrapper'), { methods: ['mh'], selected_dataset: 0 });
-// var hmc_visualization = new MCVisualization(document.getElementById('hmc_visualization_wrapper'), { methods: ['hmc'], enable_tempering: false, selected_dataset: 2 });
-// var hmc_tempering_visualization = new MCVisualization(document.getElementById('hmc_tempering_visualization_wrapper'), { methods: ['hmc'], enable_tempering: true, selected_dataset: 3, initial_temperature: 2 });
-
-var TemperatureVisualization = function () {
-    function TemperatureVisualization(wrapper_div) {
-        var _this3 = this;
-
-        _classCallCheck(this, TemperatureVisualization);
-
-        this.wrapper_div = wrapper_div;
-        this.main_div = this.get_by_class('visualization');
-        this.temperature_control = this.get_by_class('temperature_control');
-        this.temperature_display = this.get_by_class('temperature_display');
-        this.show_true_control = this.get_by_class('show_true_control');
-
-        var redraw = function redraw() {
-            _this3.redraw();
-        };
-        this.temperature_control.oninput = redraw;
-        this.dataset_control = this.get_by_class('dataset_control');
-        this.dataset = new MCDatasetSelector(this.dataset_control, redraw, { selected_dataset: 1 });
-        this.show_true_control.onchange = redraw;
-
-        this.plot_energy = new Plot3D(this.get_by_class('visualization_left'), { width: 398, controlsDomElement: this.main_div }); // , display_zmax: 0.01
-        this.plot_pdf = new Plot3D(this.get_by_class('visualization_right'), { width: 398, controlsDomElement: this.main_div });
-
-        var _arr = [this.plot_pdf, this.plot_energy];
-        for (var _i = 0; _i < _arr.length; _i++) {
-            var plot = _arr[_i];
-            plot.camera.position.z = 1.8;
-            plot.camera.position.y = 0.9;
-            plot.orbit.minDistance = 0;
-            plot.orbit.maxDistance = 2.0;
-            // needed to fight slow scrolling
-            plot.orbit.enableDamping = false;
-        }
-
-        // rotate when scrolling window
-        var scrolled = 0.;
-        window.onscroll = function () {
-            var new_scrolled = window.pageYOffset || document.documentElement.scrollTop;
-            var _arr2 = [_this3.plot_pdf, _this3.plot_energy];
-            for (var _i2 = 0; _i2 < _arr2.length; _i2++) {
-                var plot = _arr2[_i2];
-                plot.orbit.rotate_left((new_scrolled - scrolled) * 0.001);
-                plot.orbit.update();
-            }
-            scrolled = new_scrolled;
-        };
-
-        var distribution = this.dataset.get_current_dataset()[1];
-
-        var min_color = new THREE.Vector3(0.0, 0.2, 0.4);
-        var max_color = new THREE.Vector3(0.7, 0.2, 0.0);
-        this.surface_pdf = this.plot_pdf.addSurfaceMesh(function (x, y) {
-            return distribution.energy([x, y]);
-        }, min_color, max_color);
-        this.surface_energy = this.plot_energy.addSurfaceMesh(function (x, y) {
-            return distribution.energy([x, y]);
-        });
-        this.true_distribution_points = this.plot_energy.addDynamicPoints();
-        this.true_distribution_points.points.material.size = 0.015;
-        this.plot_energy.addCoordinateGrid();
-        this.plot_pdf.addCoordinateGrid();
-        this.redraw();
-    }
-
-    _createClass(TemperatureVisualization, [{
-        key: 'get_by_class',
-        value: function get_by_class(className) {
-
-            return this.wrapper_div.getElementsByClassName(className)[0];
-        }
-    }, {
-        key: 'setTruePoints',
-        value: function setTruePoints(T) {
-            this.true_distribution_points.flush();
-
-            var _dataset$get_current_5 = this.dataset.get_current_dataset(),
-                _dataset$get_current_6 = _slicedToArray(_dataset$get_current_5, 2),
-                z_grid = _dataset$get_current_6[0],
-                distribution = _dataset$get_current_6[1];
-
-            var points = [];
-            distribution.init_sampler();
-            for (var i = 0; i < 1500; i++) {
-                var _distribution$sample3 = distribution.sample(T),
-                    _distribution$sample4 = _slicedToArray(_distribution$sample3, 2),
-                    x = _distribution$sample4[0],
-                    y = _distribution$sample4[1];
-
-                var point = [x, y, distribution.energy([x, y])];
-                points.push(this.plot_energy.normalize_point(point));
-            }
-            this.true_distribution_points.set_points(points, true_point_color);
-        }
-    }, {
-        key: 'redraw',
-        value: function redraw() {
-            var allowedT = [0.01, 0.03, 0.1, 0.3, 1.];
-            var T = allowedT[this.temperature_control.value];
-            this.temperature_display.innerHTML = T.toString();
-
-            var _dataset$get_current_7 = this.dataset.get_current_dataset(),
-                _dataset$get_current_8 = _slicedToArray(_dataset$get_current_7, 2),
-                z_grid = _dataset$get_current_8[0],
-                distribution = _dataset$get_current_8[1];
-
-            this.setTruePoints(T);
-
-            this.true_distribution_points.points.material.visible = this.show_true_control.checked;
-
-            var min_energy = 1e10;
-            for (var x = 0; x < 1; x += 0.001) {
-                min_energy = Math.min(min_energy, distribution.energy([x, x]));
-            }
-
-            var new_pdf_geometry = this.plot_pdf.generateSurfaceGeometry(function (x, y) {
-                return 0.95 * Math.exp(-(distribution.energy([x, y]) - min_energy) / T);
-            }, 200);
-            var _iteratorNormalCompletion3 = true;
-            var _didIteratorError3 = false;
-            var _iteratorError3 = undefined;
-
-            try {
-                for (var _iterator3 = this.surface_pdf.children[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-                    var mesh = _step3.value;
-
-                    mesh.geometry.dispose();
-                    mesh.geometry = new_pdf_geometry;
-                }
-            } catch (err) {
-                _didIteratorError3 = true;
-                _iteratorError3 = err;
-            } finally {
-                try {
-                    if (!_iteratorNormalCompletion3 && _iterator3.return) {
-                        _iterator3.return();
-                    }
-                } finally {
-                    if (_didIteratorError3) {
-                        throw _iteratorError3;
-                    }
-                }
-            }
-
-            var new_energy_geometry = this.plot_pdf.generateSurfaceGeometry(function (x, y) {
-                return distribution.energy([x, y]);
-            }, 50);
-            var _iteratorNormalCompletion4 = true;
-            var _didIteratorError4 = false;
-            var _iteratorError4 = undefined;
-
-            try {
-                for (var _iterator4 = this.surface_energy.children[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-                    var _mesh = _step4.value;
-
-                    _mesh.geometry.dispose();
-                    _mesh.geometry = new_energy_geometry;
-                }
-            } catch (err) {
-                _didIteratorError4 = true;
-                _iteratorError4 = err;
-            } finally {
-                try {
-                    if (!_iteratorNormalCompletion4 && _iterator4.return) {
-                        _iterator4.return();
-                    }
-                } finally {
-                    if (_didIteratorError4) {
-                        throw _iteratorError4;
-                    }
-                }
-            }
-
-            this.plot_pdf.redraw();
-            this.plot_energy.redraw();
-            this.dataset.redraw();
-        }
-    }]);
-
-    return TemperatureVisualization;
-}();
-
-var temperature_visualization = new TemperatureVisualization(document.getElementById('temperature_visualization_wrapper'));
-
-
-// testing derivatives
-//function test_derivatives() {
-//    let rand = new RandomGenerator(42);
-//    let eps = 1e-3;
-//    let datasets = MCDatasetSelector.collect_toy_datasets([1]);
-//    for (let i = 0; i < datasets.length; i++) {
-//        console.log('dataset', i);
-//        let [z_grid, distribution] = datasets[i];
-//        for (let j = 0; j < 10; j++) {
-//            let x = rand.random();
-//            let y = rand.random();
-//            let der_x = (distribution.energy([x + eps, y]) - distribution.energy([x - eps, y])) / 2 / eps;
-//            let der_y = (distribution.energy([x, y + eps]) - distribution.energy([x, y - eps])) / 2 / eps;
-//            let [derx1, dery1] = distribution.gradient([x, y]);
-//            console.assert(Math.abs(der_x - derx1) < 0.1 * Math.abs(der_x) + 1e-4, der_x, derx1);
-//            console.assert(Math.abs(der_y - dery1) < 0.1 * Math.abs(der_y) + 1e-4, der_y, dery1);
-//        }
-//    }
-//}
-//test_derivatives();
-
-//# sourceMappingURL=mcmc_explained-compiled.js.map

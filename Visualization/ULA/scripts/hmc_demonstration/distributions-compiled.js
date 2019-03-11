@@ -41,7 +41,7 @@ var GaussianDistribution = function () {
                 _shift2 = _slicedToArray(_shift, 2),
                 x1 = _shift2[0],
                 x2 = _shift2[1];
-            // (x1 + x2)^2 / (4 * sum_std^2) + (x1 - x2)^2 / (4 * diff_std^2) 
+            // (x1 + x2)^2 / (4 * sum_std^2) + (x1 - x2)^2 / (4 * diff_std^2)
 
 
             return Math.pow(x1 + x2, 2) / (4. * this.sum_var) + Math.pow(x1 - x2, 2) / (4. * this.diff_var);

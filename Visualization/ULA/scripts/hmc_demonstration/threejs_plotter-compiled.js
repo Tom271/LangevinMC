@@ -186,7 +186,7 @@ var Plot3D = function () {
 		    _ref$zmax = _ref.zmax,
 		    zmax = _ref$zmax === undefined ? 1.6 : _ref$zmax,
 		    _ref$display_zmax = _ref.display_zmax,
-		    display_zmax = _ref$display_zmax === undefined ? .3 : _ref$display_zmax,
+		    display_zmax = _ref$display_zmax === undefined ? .25 : _ref$display_zmax,
 		    _ref$controlsDomEleme = _ref.controlsDomElement,
 		    controlsDomElement = _ref$controlsDomEleme === undefined ? null : _ref$controlsDomEleme;
 
@@ -273,7 +273,7 @@ var Plot3D = function () {
 	}, {
 		key: 'addCoordinateGrid',
 		value: function addCoordinateGrid() {
-			var n_points = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 60;
+			var n_points = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 30;
 
 			var plane = new THREE.GridHelper(0.5, n_points, 0x0000ff, 0x808080);
 			plane.position.x = 0.5;

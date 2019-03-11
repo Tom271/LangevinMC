@@ -81,7 +81,7 @@ var MCSampler = function () {
                   g = [g[0]/(this.T + spread*normg), g[1]/(this.T + spread*normg)];
 
 
-                  var position_new = [position_old[0] - spread * g[0] / this.T + sqrtspread * this.random.random_normal(0, 1), position_old[1]  - spread * g[1] / this.T + sqrtspread * this.random.random_normal(0, 1)];
+                  var position_new = [position_old[0] - spread * g[0] + sqrtspread * this.random.random_normal(0, 1), position_old[1]  - spread * g[1] + sqrtspread * this.random.random_normal(0, 1)];
 
                   var result = void 0;
                   result = clone(position_new);
@@ -103,7 +103,7 @@ var MCSampler = function () {
                   var g = this.grad(position_old);
                   g = [g[0]/(this.T + spread*Math.abs(g[0])), g[1]/(this.T + spread*Math.abs(g[1]))];
 
-                  var position_new = [position_old[0] - spread * g[0] / this.T + sqrtspread * this.random.random_normal(0, 1), position_old[1]  - spread * g[1] / this.T + sqrtspread * this.random.random_normal(0, 1)];
+                  var position_new = [position_old[0] - spread * g[0] + sqrtspread * this.random.random_normal(0, 1), position_old[1]  - spread * g[1] + sqrtspread * this.random.random_normal(0, 1)];
 
                   var result = void 0;
                   result = clone(position_new);
@@ -151,7 +151,7 @@ var MCSampler = function () {
                   var normg = Math.sqrt(Math.pow(g[0], 2) + Math.pow(g[1], 2));
                   g = [g[0]/(this.T + spread*normg), g[1]/(this.T + spread*normg)];
                   var new_gaussian = [this.random.random_normal(0, 1), this.random.random_normal(0, 1)];
-                  var position_new = [position_old[0] - spread * g[0] / this.T + sqrtspread * (new_gaussian[0] + this.old_gaussian[0]), position_old[1]  - spread * g[1] / this.T + sqrtspread * (new_gaussian[1] + this.old_gaussian[1])];
+                  var position_new = [position_old[0] - spread * g[0] + sqrtspread * (new_gaussian[0] + this.old_gaussian[0]), position_old[1]  - spread * g[1] + sqrtspread * (new_gaussian[1] + this.old_gaussian[1])];
                   this.old_gaussian = clone(new_gaussian);
 
                   var result = void 0;
@@ -170,9 +170,9 @@ var MCSampler = function () {
                   var position_old = this.positions[this.positions.length - 1];
                   var position_new = [position_old[0]  + sqrtspread * this.random.random_normal(0, 1), position_old[1] + sqrtspread * this.random.random_normal(0, 1)];
 
-                  var energy_old = this.energy(position_old);
-                  var energy_new = this.energy(position_new);
-                  var reject = this.random.random() > Math.exp((energy_old - energy_new) / this.T);
+                  var energy_old = this.energy(position_old) / this.T;
+                  var energy_new = this.energy(position_new) / this.T;
+                  var reject = this.random.random() > Math.exp(energy_old - energy_new);
 
                   if (reject) {
                       result = clone(position_old);
@@ -199,13 +199,13 @@ var MCSampler = function () {
                   var gy = this.grad(position_new);
 
 
-                  var energy_old = this.energy(position_old);
-                  var energy_new = this.energy(position_new);
+                  var energy_old = this.energy(position_old) / this.T;
+                  var energy_new = this.energy(position_new) / this.T;
                   var reject = this.random.random() > Math.exp((energy_old - energy_new
                                                       + 0.25*(
                                                         Math.pow(position_new[0] - position_old[0] + spread*gx[0], 2) + Math.pow(position_new[1] - position_old[1] + spread*gx[1], 2)
                                                         - Math.pow(position_old[0] - position_new[0] + spread*gy[0], 2) - Math.pow(position_old[1] - position_new[1] + spread*gy[1], 2)
-                                                      )/spread  ) / this.T);
+                                                      )/spread ));
 
                   if (reject) {
                       result = clone(position_old);
@@ -228,20 +228,20 @@ var MCSampler = function () {
                   var gx = this.grad(position_old);
                   var normgx = Math.sqrt(Math.pow(gx[0], 2) + Math.pow(gx[1], 2));
                   gx = [gx[0]/(this.T + spread*normgx), gx[1]/(this.T + spread*normgx)];
-                  var position_new = [position_old[0] - spread*gx[0]/this.T + sqrtspread * this.random.random_normal(0, 1),
-                                      position_old[1] - spread*gx[1]/this.T + sqrtspread * this.random.random_normal(0, 1)];
+                  var position_new = [position_old[0] - spread*gx[0]+ sqrtspread * this.random.random_normal(0, 1),
+                                      position_old[1] - spread*gx[1] + sqrtspread * this.random.random_normal(0, 1)];
 
                   var gy = this.grad(position_new);
                   var normgy = Math.sqrt(Math.pow(gy[0], 2) + Math.pow(gy[1], 2));
                   gy = [gy[0]/(this.T + spread*normgy), gy[1]/(this.T + spread*normgy)];
 
-                  var energy_old = this.energy(position_old);
-                  var energy_new = this.energy(position_new);
+                  var energy_old = this.energy(position_old) / this.T;
+                  var energy_new = this.energy(position_new) / this.T;
                   var reject = this.random.random() > Math.exp((energy_old - energy_new
                                                       + 0.25*(
                                                         Math.pow(position_new[0] - position_old[0] + spread*gx[0], 2) + Math.pow(position_new[1] - position_old[1] + spread*gx[1], 2)
                                                         - Math.pow(position_old[0] - position_new[0] + spread*gy[0], 2) - Math.pow(position_old[1] - position_new[1] + spread*gy[1], 2)
-                                                      )/spread  ) / this.T);
+                                                      )/spread  ) );
 
                   if (reject) {
                       result = clone(position_old);
@@ -266,7 +266,7 @@ var MCSampler = function () {
                   g = [g[0]/Math.max(this.T, spread*normg), g[1]/Math.max(this.T, spread*normg)];
 
 
-                  var position_new = [position_old[0] - spread * g[0] / this.T + sqrtspread * this.random.random_normal(0, 1), position_old[1]  - spread * g[1] / this.T + sqrtspread * this.random.random_normal(0, 1)];
+                  var position_new = [position_old[0] - spread * g[0] + sqrtspread * this.random.random_normal(0, 1), position_old[1]  - spread * g[1] + sqrtspread * this.random.random_normal(0, 1)];
 
                   var result = void 0;
                   result = clone(position_new);
