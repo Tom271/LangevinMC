@@ -78,7 +78,7 @@ var MCSampler = function () {
                   // tamed gradient
                   var g = this.grad(position_old);
                   var normg = Math.sqrt(Math.pow(g[0], 2) + Math.pow(g[1], 2));
-                  g = [g[0]/(1.0 + spread*normg), g[1]/(1.0 + spread*normg)];
+                  g = [g[0]/(this.T + spread*normg), g[1]/(this.T + spread*normg)];
 
 
                   var position_new = [position_old[0] - spread * g[0] / this.T + sqrtspread * this.random.random_normal(0, 1), position_old[1]  - spread * g[1] / this.T + sqrtspread * this.random.random_normal(0, 1)];
@@ -101,7 +101,7 @@ var MCSampler = function () {
 
                   // tamed gradient
                   var g = this.grad(position_old);
-                  g = [g[0]/(1.0 + spread*Math.abs(g[0])), g[1]/(1.0 + spread*Math.abs(g[1]))];
+                  g = [g[0]/(this.T + spread*Math.abs(g[0])), g[1]/(this.T + spread*Math.abs(g[1]))];
 
                   var position_new = [position_old[0] - spread * g[0] / this.T + sqrtspread * this.random.random_normal(0, 1), position_old[1]  - spread * g[1] / this.T + sqrtspread * this.random.random_normal(0, 1)];
 
@@ -149,7 +149,7 @@ var MCSampler = function () {
                   var position_old = this.positions[this.positions.length - 1];
                   var g = this.grad(position_old);
                   var normg = Math.sqrt(Math.pow(g[0], 2) + Math.pow(g[1], 2));
-                  g = [g[0]/(1.0 + spread*normg), g[1]/(1.0 + spread*normg)];
+                  g = [g[0]/(this.T + spread*normg), g[1]/(this.T + spread*normg)];
                   var new_gaussian = [this.random.random_normal(0, 1), this.random.random_normal(0, 1)];
                   var position_new = [position_old[0] - spread * g[0] / this.T + sqrtspread * (new_gaussian[0] + this.old_gaussian[0]), position_old[1]  - spread * g[1] / this.T + sqrtspread * (new_gaussian[1] + this.old_gaussian[1])];
                   this.old_gaussian = clone(new_gaussian);
@@ -227,13 +227,13 @@ var MCSampler = function () {
                   var position_old = this.positions[this.positions.length - 1];
                   var gx = this.grad(position_old);
                   var normgx = Math.sqrt(Math.pow(gx[0], 2) + Math.pow(gx[1], 2));
-                  gx = [gx[0]/(1.0 + spread*normgx), gx[1]/(1.0 + spread*normgx)];
+                  gx = [gx[0]/(this.T + spread*normgx), gx[1]/(this.T + spread*normgx)];
                   var position_new = [position_old[0] - spread*gx[0]/this.T + sqrtspread * this.random.random_normal(0, 1),
                                       position_old[1] - spread*gx[1]/this.T + sqrtspread * this.random.random_normal(0, 1)];
 
                   var gy = this.grad(position_new);
                   var normgy = Math.sqrt(Math.pow(gy[0], 2) + Math.pow(gy[1], 2));
-                  gy = [gy[0]/(1.0 + spread*normgy), gy[1]/(1.0 + spread*normgy)];
+                  gy = [gy[0]/(this.T + spread*normgy), gy[1]/(this.T + spread*normgy)];
 
                   var energy_old = this.energy(position_old);
                   var energy_new = this.energy(position_new);
@@ -254,6 +254,28 @@ var MCSampler = function () {
                   return [this.to_3d_point(result), this.to_3d_point(position_new), reject];
           }
 
+          if (this.algo == "Tom tULA") {
+                  var spread = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0.1;
+                  var sqrtspread = Math.sqrt(2*spread);
+
+                  var position_old = this.positions[this.positions.length - 1];
+
+                  // tamed gradient
+                  var g = this.grad(position_old);
+                  var normg = Math.sqrt(Math.pow(g[0], 2) + Math.pow(g[1], 2));
+                  g = [g[0]/Math.max(this.T, spread*normg), g[1]/Math.max(this.T, spread*normg)];
+
+
+                  var position_new = [position_old[0] - spread * g[0] / this.T + sqrtspread * this.random.random_normal(0, 1), position_old[1]  - spread * g[1] / this.T + sqrtspread * this.random.random_normal(0, 1)];
+
+                  var result = void 0;
+                  result = clone(position_new);
+
+                  this.positions.push(result);
+
+                  // return final position, candidate, and reject solution
+                  return [this.to_3d_point(result), this.to_3d_point(position_new), false];
+          }
 
 
         }

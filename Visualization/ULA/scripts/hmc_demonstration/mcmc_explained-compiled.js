@@ -176,7 +176,7 @@ var MCVisualization = function () {
             _ref2$selected_datase = _ref2.selected_dataset,
             selected_dataset = _ref2$selected_datase === undefined ? 0 : _ref2$selected_datase,
             _ref2$initial_tempera = _ref2.initial_temperature,
-            initial_temperature = _ref2$initial_tempera === undefined ? 6 : _ref2$initial_tempera;
+            initial_temperature = _ref2$initial_tempera === undefined ? 7 : _ref2$initial_tempera;
 
         _classCallCheck(this, MCVisualization);
 
@@ -345,7 +345,7 @@ var MCVisualization = function () {
                 speed_changed = _ref3$speed_changed === undefined ? false : _ref3$speed_changed;
 
             // collecting parameters
-            var allowedT = [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0];
+            var allowedT = [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0];
             var T = allowedT[this.temperature_control.value];
             this.temperature_display.innerHTML = T.toString();
 
