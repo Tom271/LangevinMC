@@ -40,9 +40,9 @@ Although this shows that the Langevin equation has an invariant measure, the que
 	\label{fig:quadLD}
 \end{figure}
 
-The problem of sampling from the high dimensional distribution has been reduced to being able to accurately simulate Langevin dynamics. However, this is not as simple as it sounds. To simulate the continuous process  \eqref{eq:ODLang}, it must first be discretised. However, doing so may not preserve the convergence to the invariant measure. The discretised process may not have the same stationary measure or the masure may not even exist. This means that the method used to discretise must be chosen carefully to ensure good convergence properties. The most natural way to discretise an SDE is to use the stochastic analogue of the Euler method used on ordinary differential equations, known as the Euler-Maruyama (EM) method. Doing so leads to the Unadjusted Langevin Algorithm (\texttt{ULA}).
+The problem of sampling from the high dimensional distribution has been reduced to being able to accurately simulate Langevin dynamics. However, this is not as simple as it sounds. To simulate the continuous process  \eqref{eq:ODLang}, it must first be discretised. However, doing so may not preserve the convergence to the invariant measure. The discretised process may not have the same stationary measure or it may not even exist. This means that the method used to discretise must be chosen carefully to ensure good convergence properties. The most natural way to discretise an SDE is to use the stochastic analogue of the (forward) Euler method used on ordinary differential equations, known as the Euler-Maruyama (EM) method. Doing so leads to the Unadjusted Langevin Algorithm (\texttt{ULA}).
 
-\subsubsection{The Unadjusted Langevin Algorithm}
+\subsection{The Unadjusted Langevin Algorithm}
 Applying the Euler-Maruyama method to Equation \eqref{eq:ODLang} gives the following iterative scheme.
 
 \[X_{n+1} = X_n -h \nabla U(X_n) +\sqrt{2h} Z_{n+1},\qquad X_0= x_0 \]
@@ -57,7 +57,7 @@ So the chain converges immediately, but to the wrong distribution. Let \(\pi^{\t
 \[\liminf_{\|x\|\to \infty} \frac{\|\grad U(x)\|}{\|x\|} = +\infty. \]
 To mitigate these issues there are two main approaches: taming the gradient and Metropolisation. A further third method involves using a different discretisation scheme.  Our main focus will be the former, although all three approaches will be discussed.
 
-\section{MALA}
+\subsection{MALA}
 Before describing the Metropolis-adjusted Langevin algorithm \texttt{MALA}, it is pertinent at this point to recall the random walk Metropolis-Hastings algorithm \texttt{RWM }\cite{Hastings70, Metropolis53}. This popular variant of the Metropolis-Hastings algorithm \emph{proposes} values and then accepts/rejects them according to some probability \(\alpha\).  So given \(X_n\), propose a candidate \(Y_{n+1}\) as
 \[Y_{n+1} = X_n + \sqrt{2h} Z_{n+1}.\]
 Once again, \(h\) is the stepsize and \(Z\) is a normal random variable. Then, accept or reject this proposal using Metropolis rejection, that is with some probability
@@ -69,41 +69,45 @@ Here \(q(x,y)\) is the transition probability, \(\P(Y_{n+1}=y | X_{n}=x)\sim N(X
 
 \begin{theorem}[Theroem 4.2, \cite{RT96}]
 	If \(\pi\) is bounded, and
-		\[\liminf_{|x|\to \infty} \frac{\|\grad U(x)\|}{\|x\|} > \frac{4}{h}\]
+		\[\liminf_{\|x\|\to \infty} \frac{\|\grad U(x)\|}{\|x\|} > \frac{4}{h}\]
 	then the \texttt{MALA} chain is not exponentially ergodic. +++define exp ergodic+++
 \end{theorem}
 So it can be seen that \texttt{MALA} is not without its issues, and does not solve all the problems of \texttt{ULA}. The concept of taming was introduced to try and reduce the magnitude of these problems.
 
 
-\section{Taming the Gradient}
-We have seen that both \texttt{ULA} and \texttt{MALA} run into issues when the gradient of the potential is superlinear. Taming the drift coefficient is a method to reduce the superlinearity whilst maintaining the invariant distribution of the SDE \cite{Brosse18,RT96,Sabanis13}. Recall that the Langevin dynamics are governed by
-	\begin{equation*} \dif X_t = -\grad U(X_t)\dif t +\sqrt{2}\dif W_t. \end{equation*}
-We have seen that problems arise when the drift coefficient is superlinear, that is
+\subsection{Taming the Gradient}
+We have seen that both \texttt{ULA} and \texttt{MALA} run into issues when the gradient of the potential is superlinear. Given an SDE such as \eqref{eq:ODLang}, taming adjusts the drift coefficient in such a way that preserves the invariant measure and improves speed of convergence \cite{Brosse18tULA,RT96,Sabanis13}. To do this, a family of drift functions \((G_h)_{h>0}, \ G_h:\R^d \to \R^d\) are introduced. The SDE to be discretised is thus
+	\begin{equation*} \dif X_t = -G_h(X_t)\dif t +\sqrt{2}\dif W_t. \end{equation*}
+Applying the Euler-Maruyama method gives the following Markov chain
+	\[X_{k+1} =X_k-hG_h(X_k)+\sqrt{2h}Z_{k+1},\qquad  X_0=x_0.\]
+To preserve the invariant measure, some restrictions must be placed on \((G_h)_{h>0}\), namely that they are `close' to \(\grad U\) ({\bf A1}) while {\bf A2} ensures ergodicity is preserved and improves stability \cite{Brosse18tULA}. 
 
-	\[\liminf_{|x|\to \infty} \frac{\|\grad U(x)\|}{\|x\|} = \infty.\]
-For this reason a family of drift functions \((G_h)_{h>0}, \ G_h:\R^d \to \R^d\) and the Markov chain
-\[X_{k+1} =X_k-hG_h(X_k)+\sqrt{2h}Z_{k+1},\qquad  X_0=x_0\]
- Here we consider three choices of \(G_h\), each of which leads to a convergent scheme.
-
+\begin{enumerate}[label={\bf A{\arabic*}}]
+	\item  For all \(h>0, G_h\) is continuous. There exist \(\alpha\geq 0, C_{\alpha}<+\infty\) such that for all \(h >0 \) and \(x \in \R^d\),
+		\[\|G_h(x)-\grad U(x)\| \leq hC_{\alpha}(1+\|x\|^{\alpha}).\]\label{A1}
+	\item For all \(h>0\),
+		\[ \liminf_{\|x\|\to \infty} \bigg\lbrack \bigg\langle \frac{x}{\|x\|}, G_h(x)\bigg\rangle - \frac{h}{2\|x\|}\|G_h(x)\|^2\bigg\rbrack >0\]\label{A2}
+\end{enumerate}
+Here we consider two specific taming functions,
  \begin{align*}
- T_h(x) = \frac{\grad U(x)}{1+h\|\grad(x)\|}, &&  T^{\text{\sc \tiny RT}}_h = \frac{D\grad U(x)}{2(D\vee \|\grad U(x)\|)}, \quad D>0
+ T_h(x) = \frac{\grad U(x)}{1+h\|\grad U(x)\|}, &&  T^{\text{\sc \tiny RT}}_h = \frac{\grad U(x)}{1\vee h\|\grad U(x)\|}.
  \end{align*}
-We name \(T_h\) the taming function from \cite{Brosse18} and \(T^{\text{\sc \tiny RT}}_h\) the RT-taming after \cite{RT96} where it was introduced.
-
+Brosse et al. introduced and studied \(T_h\) whilst Roberts \& Tweedie suggested \(T^{\text{\sc \tiny RT}}_h\), later analysed by Bou-Rabee \& Vanden-Eijnden \cite{BV10MALTA,Brosse18tULA,RT96}. Both taming functions retain the direction of the gradient, only reducing the magnitude of its effect. The latter is the usual \texttt{ULA} until the gradient gets large enough \((\|\grad U(x)\|> 1/h)\), at which point it begins normalising. In contrast, the first will always tame, regardless of size of the gradient. However for the scaling to have noticeable effect, the gradient must be \(\mathcal{O}(h^{-1})\).
+When \(T_h\) is the taming function, the algorithm will be referred to as \texttt{tULA}, the tamed unadjusted Langevin algorithm. When the second is applied, it will be called \texttt{MALTA}, the Metropolis adjusted Langevin truncated algorithm after \cite{RT96}. Any tamed algorithm using \(T_h\) will be prefixed with a lowercase \texttt{t}.
 \subsubsection{tULA/c}
 \[X_{n+1} = X_n -h T_{h}(X_n) +\sqrt{2h} Z_{n+1},\qquad X_0= x_0 \]
 where \(T_{h}(x) = \frac{\grad U(x)}{1+\|\grad U(x)\|}\) or \(T_{h}(x) =\left(\frac{\grad U(x)}{1+|\partial_i U(x)|}\right)_{i=\lbrace 1, \dots, d\rbrace} \)
 
-ALSO need to define the gamma subscript, i.e. the tamed variables.  Although fn depends on gamma it doesn't indicate that taming has occurred.
+
 
 +++Show ill condition/stiff bad behaviour, how coordinatewise fixes+++
 \subsection{tMALA/c}
 Use the same taming \(T\) as in \texttt{tULA}. Is this sensible? Could compare with \texttt{MALTA}.
-\subsection{MALTA?}\cite{RT96}
-
-Tame with
-\[T = \frac{ \grad U(x)}{1\vee h |\grad U(x)|}\]
-for some constant \(D>0\)
+%\subsection{MALTA?}\cite{RT96}
+%
+%Tame with
+%\[T = \frac{ \grad U(x)}{1\vee h |\grad U(x)|}\]
+%for some constant \(D>0\)
 
 \subsection{Discretise Differently}
 \subsubsection{tHOLA}
@@ -114,7 +118,7 @@ where
 \[\mu_{h}(x) = -\grad U_{h}(x) +\frac{h}{2}\left( \left( \grad^2U\grad U\right)_{h}(x) - \vec{\Delta}(\grad U)_{h}(x)\right) ,\]
 and \(\sigma_{h}(x) = \text{diag}\left(\left( \sigma_{h}^{(k)}(x)\right)_{k\in \lbrace 1,\dots,d\rbrace}\right)\) with,
 \[\sigma_{h}^{(k)}(x) = \sqrt{2+\frac{2h^2}{3}\sum_{j=1}^d |\grad^2 U_{h}^{(k,j)}(x)|^2 - 2h \grad^2 U_{h}^{(k,k)}(x)}\]
-
+ALSO need to define the h subscript, i.e. the tamed variables.  Although fn depends on gamma it doesn't indicate that taming has occurred.
 \subsubsection{LM}
 \cite{LM}
 Non-Markovian scheme,

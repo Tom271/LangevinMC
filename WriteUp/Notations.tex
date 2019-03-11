@@ -165,5 +165,13 @@ The first ten are Langevin Monte Carlo (LMC) algorithms. Try and drop subscript 
 	Random Walk Metropolis Algorithm & \texttt{RWM} & \(\pi^{\gamma}_{\text{\tiny RWM}}\) \\ 
 \end{tabular} 
 \end{center}
-\(\mathcal{B}, \mathfrak{B}\)
+
+
+Assumptions on drift coefficient (taming)
+\begin{enumerate}[label={\bf A{\arabic*}}]
+	\item  For all \(h>0, G_h\) is continuous. There exist \(\alpha\geq 0, C_{\alpha}<+\infty\) such that for all \(h >0 \) and \(x \in \R^d\),
+	\[\|G_h(x)-\nabla U(x)\| \leq hC_{\alpha}(1+\|x\|^{\alpha}).\]
+	\item For all \(h>0\),
+	\[ \liminf_{\|x\|\to \infty} \bigg\lbrack \bigg\langle \frac{x}{\|x\|}, G_h(x)\bigg\rangle - \frac{h}{2\|x\|}\|G_h(x)\|^2\bigg\rbrack >0\]
+\end{enumerate}
 \end{document}
