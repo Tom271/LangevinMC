@@ -76,7 +76,7 @@ Taming has been suggested for ULA by Brosse, Durmus, Moulines and Sabanis, as we
 
 \subsubsection{tULA/c}
 \[X_{n+1} = X_n -h T_{h}(X_n) +\sqrt{2h} Z_{n+1},\qquad X_0= x_0 \]
-where \(T_{h}(x) = \frac{\grad U(x)}{1+\|\grad U(x)\|}\) or \(T_{h}(x) =\left(\frac{\grad U(x)}{1+|\partial_i U(x)|}\right)_{i=\lbrace 1, \dots, d\rbrace} \)
+where \(T_{h}(x) = \frac{\grad U(x)}{1+h\|\grad U(x)\|}\) or \(T_{h}(x) =\left(\frac{\partial_i U(x)}{1+h|\partial_i U(x)|}\right)_{i=\lbrace 1, \dots, d\rbrace} \)
 
 ALSO need to define the gamma subscript, i.e. the tamed variables. is gamma best subscript? Although fn depends on gamma it doesn't indicate that taming has occurred.
 \subsubsection{tMALA/c}
