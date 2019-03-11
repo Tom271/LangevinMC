@@ -74,7 +74,6 @@ Here \(q(x,y)\) is the transition probability, \(\P(Y_{n+1}=y | X_{n}=x)\sim N(X
 \end{theorem}
 So it can be seen that \texttt{MALA} is not without its issues, and does not solve all the problems of \texttt{ULA}. The concept of taming was introduced to try and reduce the magnitude of these problems.
 
-
 \subsection{Taming the Gradient}
 We have seen that both \texttt{ULA} and \texttt{MALA} run into issues when the gradient of the potential is superlinear. Given an SDE such as \eqref{eq:ODLang}, taming adjusts the drift coefficient in such a way that preserves the invariant measure and improves speed of convergence \cite{Brosse18tULA,RT96,Sabanis13}. To do this, a family of drift functions \((G_h)_{h>0}, \ G_h:\R^d \to \R^d\) are introduced. The SDE to be discretised is thus
 	\begin{equation*} \dif X_t = -G_h(X_t)\dif t +\sqrt{2}\dif W_t. \end{equation*}
