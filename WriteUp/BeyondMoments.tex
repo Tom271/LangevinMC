@@ -34,7 +34,6 @@ $$
 
 \textbf{POSSIBLY TAKE OUT KL DIVERGENCE??}
 
-
 \begin{defn}[Kullback--Leibler Divergence]
 Let $P$ and $Q$ be two probability measures on $(\Omega, \mathcal{F})$.  If $P \ll Q$, the Kullback--Leibler divergence of $P$ with respect to $Q$ is defined as
 $$
@@ -59,15 +58,19 @@ We will restrict our attention mainly to $L^1$-Wasserstein and $L^2$-Wasserstein
 \begin{defn}[Sliced Wasserstein distance]
 For two probability measures, $P$ and $Q$, the $L^p$-Wasserstein distance is given by
 $$
-SW_p(P,Q) = \left(\int_{\mathbb S^{d-1} W_p^p() } \right)^{\frac 1 p}
+SW_p(P,Q) = \left(\int_{\mathbb S^{d-1} }  W_p^p\left(\mathcal{RI}_P(\cdot, \theta), \mathcal{RI}_Q(\cdot, \theta) \right) d \theta \right)^{\frac 1 p}
 $$
 \end{defn}
 
-The main reason why we can use the Sliced Wasserstein distance as an approximation to the Wasserstein distance is the following inequality, proved in asdfasdfasd 
+where $\mathbb S^{d-1}$ is the $(d-1)$-dimensional sphere and $\mathcal RI$ denotes the Inverse Radon transform. In the above references, it is also proved that $SW_p$ is indeed a metric. The main reason why we can use the Sliced Wasserstein distance as an approximation to the Wasserstein distance is that these two metrics are equivalent\cite{Santa}.
 
 
 \subsection{Theoretical Non-asymptotic Error Bounds}
-Theoretical bounds on the total variation distance between the distribution of the $n^\text{th}$ iterate of the unadjusted Langevin Algorithm were first provided in the case of a `warm start' in \cite{dalalyan2017theoretical}.  Then \cite{durmus2016high}, \cite{durmus2017nonasymptotic} improve and consider Wasserstein distance.  These papers showed that $O(d/\epsilon)$ iterations are needed for precision level $\epsilon$.
+
+
+Theoretical bounds on the total variation distance between the distribution of the $n^{\text{th}}$ iterate of the unadjusted Langevin Algorithm were first provided in the case of a `warm start' in \cite{dalalyan2017theoretical}. 
+
+ Then \cite{durmus2016high}, \cite{durmus2017nonasymptotic} improve and consider Wasserstein distance.  These papers showed that $O(d/\epsilon)$ iterations are needed for precision level $\epsilon$.
 
 \texttt{ULA} \cite{dalalyan2019user}
 \texttt{tULA} \cite{Brosse18tULA}
@@ -76,9 +79,44 @@ Theoretical bounds on the total variation distance between the distribution of t
 
 
 
-\section{Implementation}
-\subsection{Constructing Histograms}
-\subsection{Comparing continuous and discrete distributions}
-\subsubsection{Sliced Wasserstein}
+\section{Comparison of methods}
+
+\subsection{Implementation}
+- repo \\
+- description \\
+- docs
+
+\subsection{Results}
+
+- plots plots plots plots plots
+
+\subsection{Sampling approaches}
+
+\subsection{Parameters}
+
+\subsection{Estimating error}
+
+\begin{itemize}
+    \item first/second moment
+    \item trace 
+    \item histogram
+    \item KL div
+    \item TV
+    \item sliced W
+    \item sliced W no histo
+    \item KDE KL, TV, SW
+\end{itemize}
+
+\subsubsection{The Curse of dimensionality}
 
 
+\subsubsection{Comparing continuous and discrete distributions}
+
+\subsubsection{Histogram vs. KDE}
+
+\subsubsection{Sliced Wasserstein approximation}
+The Sliced Wasserstein distance, being defined via a multi-dimensional integral, cannot be computed exactly. Therefore, we resort to a simple Monte Carlo scheme where $L$ samples $\{\theta_i\}$ are drawn uniformly from the $(d-1)$-dimensional sphere $\mathbb S^{d-1}$.
+
+$$ 
+SW_p(P, Q) \approx \left( \frac 1 L \sum_{i=1}^L W_p^p\left(\mathcal{RI}_P(\cdot, \theta), \mathcal{RI}_Q(\cdot, \theta) \right) \right)^{\frac 1 p}
+$$
