@@ -1,37 +1,37 @@
-\documentclass[a4paper]{article}
+% \documentclass[a4paper]{article}
 
-\usepackage[english]{babel}
-\usepackage[utf8]{inputenc}
-\usepackage{amsmath}
-\usepackage{graphicx}
-\usepackage[colorinlistoftodos]{todonotes}
-\usepackage{titling}
-\usepackage[margin=40mm]{geometry}
-\usepackage{tikz}
-\usepackage{lipsum}
-\usepackage{amsfonts}
-\usepackage{amsmath,amssymb}
-\usepackage{breqn}
+% \usepackage[english]{babel}
+% \usepackage[utf8]{inputenc}
+% \usepackage{amsmath}
+% \usepackage{graphicx}
+% \usepackage[colorinlistoftodos]{todonotes}
+% \usepackage{titling}
+% \usepackage[margin=40mm]{geometry}
+% \usepackage{tikz}
+% \usepackage{lipsum}
+% \usepackage{amsfonts}
+% \usepackage{amsmath,amssymb}
+% \usepackage{breqn}
 
-\newtheorem{theorem}{Theorem}
-
-
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{corollary}{Corollary}[theorem]
+% \newtheorem{theorem}{Theorem}
 
 
+% \newtheorem{lemma}[theorem]{Lemma}
+% \newtheorem{corollary}{Corollary}[theorem]
 
-\begin{document}
-\setlength{\droptitle}{-0.5in}
+
+
+% \begin{document}
+% \setlength{\droptitle}{-0.5in}
 
 
 \normalsize
 \textbf{Stochastic Gradient Langevin Dynamics}\\
-In this section, we will closely follow***\Huge{add reference}
-\scriptsize
+In this section, we will closely follow\cite{pitfalls}
 
 
-\section{Introduction}
+
+\subsection{Introduction}
 
 Normally, samples in machine learning are of huge sample sizes, for which most MCMC algorithms are not designed to process. 
 As a result of the computational cost, several new approaches were proposed recently, Stochastic Gradient Langevin Dynamics (SGLD) is a popular one. 
@@ -40,7 +40,7 @@ LMC – a discretization of a continuous-time process, it requires to compute th
 SGLD – use unbiased estimator of the gradient of log-posterior based on subsampling, suitable for samples of huge size. 
 
 
-\section{Governing Equation}
+\subsection{Governing Equation}
 
 Langevin Stochastic Differential Equation (SDE):$$d\theta_t = -\nabla U(\theta_t)d +\sqrt{2}d B_t$$ where $(B_t)_{t \geq 0}$ is a d-dimensional Brownian motion. 
 
@@ -55,7 +55,7 @@ Stochastic Gradient Descent (SGD) is characterised by the same recursion as SGLD
 
 $$\theta_{k+1} = \theta_{k}-\gamma \Bigg (\nabla U_0(\theta_k)+\frac{N}{p}\sum_{i\in S_{k+1}}\nabla U_i(\theta_k)\Bigg)$$
 
-\section{Analysis in Wasserstein distance}
+\subsection{Analysis in Wasserstein distance}
 \subsection{Definitions and Notations in Markov chain theory}
 $\mathcal{P}_2(\mathbb{R}^d)$ the set of probablity measures with finite second momet.\\
 $\mathcal{B}(\mathbb{R}^d)$ the Borel $\sigma$ - algebra of $\mathbb{R}^d$.\\
@@ -66,7 +66,7 @@ where, $\Pi(\lambda, \nu)$ is the set of probablity measures $\xi$ on $\mathcal{
 For any probablity measure $\lambda$ on $\mathcal{B}(\mathbb{R}^d)$, we define $\lambda R$ for all $A \in \mathcal{B}(\mathbb{R}^d)$ by $\lambda R(A) = \int_{\mathbb{R}^d}\lambda(d\theta)R(\theta, A)$.\\
 For all $k\in \mathbb{N}*$, we define the Markov kernel $R^k$ recursively by $R^1 = R$ and for all $\theta \in \mathbb{R}^d$ and $A \in \mathcal{B}(\mathbb{R}^d)$, $R^{k+1}(\theta, A) = \int_{\mathbb{R}^d}  R^k(\theta, d\vartheta)R(\vartheta, A).$\\
 A probablity measure $\bar{\pi}$ is invariant for R if $\bar{\pi}R = \bar{\pi}$.\\
-Our algorithms LMC, SGLD, SGD and SGLDFP algorithms are homogeneous Markov chains with Markov kernels denoted $R_{LMC}, R_{SGLD}, R_{SGD} and R_{FP}$.
+Our algorithms LMC, SGLD, SGD and SGLDFP algorithms are homogeneous Markov chains with Markov kernels denoted $R_{LMC}, R_{SGLD}, R_{SGD}$ and $R_{FP}$.
 
 \subsection{Results}
 For lemma 1, Theorem 2 and Corollary 3, we assume H1, H2 and H3.
@@ -76,7 +76,7 @@ $$W_2^2(R_{SGLD}^k(\theta, \cdot), \pi_{SGLD})\leq(1-m\gamma)^k\int_{\mathbb{R}^
 same inequality holds for LMC, SGD and SGLDFP.
 \end{lemma}
 \begin{theorem}
-For all $\gamma\in(0,\frac{1}{L}], \lambda, \nu\in \mathcal{P}_2(\mathbb{R}^d) and n\in\mathbb{N}$, we have the following upoer- bounds in Wasserstein distance between
+For all $\gamma\in(0,\frac{1}{L}], \lambda, \nu\in \mathcal{P}_2(\mathbb{R}^d) and n\in\mathbb{N}$, we have the following upper- bounds in Wasserstein distance between
 \begin{enumerate}
 	\item 
 	LMC and SGLDFP,
@@ -97,7 +97,7 @@ W_2^2(\lambda R_{LMC}^n, \mu P_{n\gamma})\leq2(1-\frac{mL\gamma}{m+L})^nW_2^2(\l
 \end{enumerate}
 \end{theorem}
 Proof omitted.
-\begin{corollary}
+\begin{cor}
 Set $\gamma - \frac{\eta}{N} with \eta \in (0, \frac{1}{(2L)}]$ and assume that $lim \inf_{N \to \infty}mN^{-1}>0$. Then
 \begin{enumerate}
 \item
@@ -105,7 +105,6 @@ for all $n \in N$, we get $W_2(R_{LMC}^n(\theta*, \cdot), R_{FP}^{n}(\theta*, \c
 \item 
 for all $n\in \mathbb{N}, we get W_2(R_{SGLD}^{n}(\theta*, \cdot), R^n_{SGD}(\theta*, \cdot)) = \sqrt{d}\mathcal{O}(N^{-\frac{1}{2}})$, and $W_2(\pi_{SGLD}, \pi_{SGD}) = \sqrt{d}\mathcal{O}(N^{-\frac{1}{2}})$.
 \end{enumerate}
-\end{corollary}
+\end{cor}
 
 
-\end{document}

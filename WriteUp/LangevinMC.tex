@@ -9,8 +9,8 @@
 \usepackage{subcaption}
 \usepackage{hyperref}
 \usepackage{enumitem}
- \usepackage{float}
-
+\usepackage{float}
+\usepackage{breqn}
 \setlength{\headheight}{14.5pt}
 
 % Theorem-like environments
@@ -122,6 +122,7 @@
 \begin{document}
 	\maketitle
 	\tableofcontents
+	\newpage
 	\section{Introduction}
 	\input{Motivation}
 	
@@ -131,7 +132,8 @@
 	\section{Beyond Moments}
 	\input{BeyondMoments}
 
-
+    \section{SGLD}
+    \input{report}
 	\bibliography{langevinMC.bib}
 	\bibliographystyle{plain}
 
