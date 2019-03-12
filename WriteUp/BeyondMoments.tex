@@ -33,22 +33,38 @@ $$
 
 
 \textbf{POSSIBLY TAKE OUT KL DIVERGENCE??}
+
+
 \begin{defn}[Kullback--Leibler Divergence]
 Let $P$ and $Q$ be two probability measures on $(\Omega, \mathcal{F})$.  If $P \ll Q$, the Kullback--Leibler divergence of $P$ with respect to $Q$ is defined as
 $$
 KL(P|Q) = \int_\Omega \frac{d P}{d Q} log \left(  \frac{d P}{d Q} \right) d Q.
 $$
 \end{defn}
+
+\textbf{LITTLE MORE INTUITION ON WASSE??}
+
 Finally we consider the Wasserstein distance.  If $P$ and $Q$ are probability measures on $(\R^d,\mathcal{B}(\R^d)$, we say that $\gamma$ is a transport plan between two probability measures $P$ and $Q$ if it is a probability measure on $(\R^d \times \R^d, \mathcal{B}(\R^d \times \R^d))$ such that for any Borel set $A \subset \R^d$, $\gamma(A \times \R^d)=P(A)$ and $\gamma(\R^d \times A) = Q(A)$.  We denote the set of all such transport plans by $\Pi(P,Q)$.
+
 \begin{defn}[Wasserstein distance]
 For two probability measures, $P$ and $Q$, the $L^p$-Wasserstein distance is given by
 $$
 W_p(P,Q) = \left( \inf_{\gamma \in \Pi(P,Q)} \int_{\R^d \times \R^d} \norm{x-y}^p d \gamma(x,y) \right)^{1/p}.
 $$
 \end{defn}
-We will restrict our attention here to the $L^2$-Wasserstein distance.
 
-\textbf{REMEMBER TO INCLUDE} For 1D $W_p^p$ is equivalent to $\int_0^1 \abs{F^{-1}(t)-G^{-1}(t)}^p dt$ where $F$ and $G$ are the CDFs of $P$ and $Q$ respectively \cite{ramdas2017wasserstein}.
+We will restrict our attention mainly to $L^1$-Wasserstein and $L^2$-Wasserstein distances. Due to practical impossibility of computing higher-dimensional Wasserstein distances, we also introduce a compuatationally more feasible variant, the Sliced Wasserstein distance. First proposed in \cite{rabin2011wasserstein} and further elaborated on, for example, in \cite{gswd}, the Sliced Wasserstein distance exploits the fact that the Wasserstein distance between 1-dimensional probability measures $P, Q$ can be computed with an explicit formula $\abs{F^{-1}(t)-G^{-1}(t)}^p dt$ where $F$ and $G$ are the CDFs of $P$ and $Q$ respectively \cite{ramdas2017wasserstein}.
+
+
+\begin{defn}[Sliced Wasserstein distance]
+For two probability measures, $P$ and $Q$, the $L^p$-Wasserstein distance is given by
+$$
+SW_p(P,Q) = \left( \inf_{\gamma \in \Pi(P,Q)} \int_{\R^d \times \R^d} \norm{x-y}^p d \gamma(x,y) \right)^{1/p}.
+$$
+\end{defn}
+
+The main reason why we can use the Sliced Wasserstein distance as an approximation to the Wasserstein distance is the following inequality, proved in asdfasdfasd 
+
 
 \subsection{Theoretical Non-asymptotic Error Bounds}
 Theoretical bounds on the total variation distance between the distribution of the $n^\text{th}$ iterate of the unadjusted Langevin Algorithm were first provided in the case of a `warm start' in \cite{dalalyan2017theoretical}.  Then \cite{durmus2016high}, \cite{durmus2017nonasymptotic} improve and consider Wasserstein distance.  These papers showed that $O(d/\epsilon)$ iterations are needed for precision level $\epsilon$.
@@ -57,8 +73,12 @@ Theoretical bounds on the total variation distance between the distribution of t
 \texttt{tULA} \cite{Brosse18tULA}
 \texttt{HOLA} \cite{Sabanis18tHOLA}
 \texttt{MALA} \cite{bou2013nonasymptotic}
-\subsection{Implementation}
-\subsubsection{Constructing Histograms}
-\subsubsection{Comparing continuous and discrete distributions}
+
+
+
+\section{Implementation}
+\subsection{Constructing Histograms}
+\subsection{Comparing continuous and discrete distributions}
 \subsubsection{Sliced Wasserstein}
-First proposed in \cite{rabin2011wasserstein}
+
+
