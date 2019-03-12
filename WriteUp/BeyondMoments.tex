@@ -42,7 +42,7 @@ KL(P|Q) = \int_\Omega \frac{d P}{d Q} log \left(  \frac{d P}{d Q} \right) d Q.
 $$
 \end{defn}
 
-\textbf{LITTLE MORE INTUITION ON WASSE??}
+\textbf{LITTLE MORE INTUITION ON WASSERSTEIN \& TRANSPORT??}
 
 Finally we consider the Wasserstein distance.  If $P$ and $Q$ are probability measures on $(\R^d,\mathcal{B}(\R^d)$, we say that $\gamma$ is a transport plan between two probability measures $P$ and $Q$ if it is a probability measure on $(\R^d \times \R^d, \mathcal{B}(\R^d \times \R^d))$ such that for any Borel set $A \subset \R^d$, $\gamma(A \times \R^d)=P(A)$ and $\gamma(\R^d \times A) = Q(A)$.  We denote the set of all such transport plans by $\Pi(P,Q)$.
 
@@ -59,7 +59,7 @@ We will restrict our attention mainly to $L^1$-Wasserstein and $L^2$-Wasserstein
 \begin{defn}[Sliced Wasserstein distance]
 For two probability measures, $P$ and $Q$, the $L^p$-Wasserstein distance is given by
 $$
-SW_p(P,Q) = \left( \inf_{\gamma \in \Pi(P,Q)} \int_{\R^d \times \R^d} \norm{x-y}^p d \gamma(x,y) \right)^{1/p}.
+SW_p(P,Q) = \left(\int_{\mathbb S^{d-1} W_p^p() } \right)^{\frac 1 p}
 $$
 \end{defn}
 
