@@ -1,0 +1,111 @@
+\documentclass[a4paper]{article}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{titling}
+\usepackage[margin=40mm]{geometry}
+\usepackage{tikz}
+\usepackage{lipsum}
+\usepackage{amsfonts}
+\usepackage{amsmath,amssymb}
+\usepackage{breqn}
+
+\newtheorem{theorem}{Theorem}
+
+
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}{Corollary}[theorem]
+
+
+
+\begin{document}
+\setlength{\droptitle}{-0.5in}
+
+
+\normalsize
+\textbf{Stochastic Gradient Langevin Dynamics}\\
+In this section, we will closely follow***\Huge{add reference}
+\scriptsize
+
+
+\section{Introduction}
+
+Normally, samples in machine learning are of huge sample sizes, for which most MCMC algorithms are not designed to process. 
+As a result of the computational cost, several new approaches were proposed recently, Stochastic Gradient Langevin Dynamics (SGLD) is a popular one. 
+SGLD is based on the Langevin Monte Carlo (LMC)
+LMC – a discretization of a continuous-time process, it requires to compute the gradient of the log-posterior at the current fit of the parameter and avoid the accept/reject step.
+SGLD – use unbiased estimator of the gradient of log-posterior based on subsampling, suitable for samples of huge size. 
+
+
+\section{Governing Equation}
+
+Langevin Stochastic Differential Equation (SDE):$$d\theta_t = -\nabla U(\theta_t)d +\sqrt{2}d B_t$$ where $(B_t)_{t \geq 0}$ is a d-dimensional Brownian motion. 
+
+Euler discretization of the Langevin SDE:
+$$\theta_{k+1} = \theta_k - \gamma \nabla U(\theta_k)+\sqrt{2\gamma} Z_{k+1}$$, where $\gamma > 0$ is a constant step size and $(Z_k)_{k\geq1}$ is a sequence of i.i.d standard d - dimensional Guassian vectors. 
+
+To reduce the costs of the algorithms, we will switch to SGLD, for which we will replace $\nabla U$ with an unbiased estimate $\nabla U_0+(\frac{N}{p}) \sum_{i\in S}\nabla U_i$, where S is a minibatch of {1,...., N} with replacement of size p. Our iterations were then updated as
+$$\theta_{k+1} = \theta_{k}-\gamma \Bigg (\nabla U_0(\theta_k)+\frac{N}{p}\sum_{i\in S_{k+1}}\nabla U_i(\theta_k)\Bigg )+\sqrt{2\gamma}Z_{k+1}$$
+
+Stochastic Gradient Descent (SGD) is characterised by the same recursion as SGLD without the Gaussian noise, (the last term):
+
+
+$$\theta_{k+1} = \theta_{k}-\gamma \Bigg (\nabla U_0(\theta_k)+\frac{N}{p}\sum_{i\in S_{k+1}}\nabla U_i(\theta_k)\Bigg)$$
+
+\section{Analysis in Wasserstein distance}
+\subsection{Definitions and Notations in Markov chain theory}
+$\mathcal{P}_2(\mathbb{R}^d)$ the set of probablity measures with finite second momet.\\
+$\mathcal{B}(\mathbb{R}^d)$ the Borel $\sigma$ - algebra of $\mathbb{R}^d$.\\
+For $\lambda, \nu \in \mathcal{P}_2(\mathbb{R}^d)$, we define the Wasserstein distance by 
+
+$$W_2(\lambda, \nu) =\inf_{\xi \in \Pi(\lambda, \nu)}(\int_{\mathbb{\mathbb{R}^d \times \mathbb{R}^d}}||\theta-\vartheta)||^2 \xi(d\theta, d\vartheta))^{\frac{1}{2}}$$
+where, $\Pi(\lambda, \nu)$ is the set of probablity measures $\xi$ on $\mathcal{B}(\mathbb{R}^d)\otimes\mathcal{B}(\mathbb{R}^d)$ satisfying for all $A \in \mathcal{B}(\mathbb{R}^d), \xi(A \times \mathbb{R}^d)= \lambda(A)$ and $\xi (\mathbb{R}^d \times A) = \nu(A)$.\\
+For any probablity measure $\lambda$ on $\mathcal{B}(\mathbb{R}^d)$, we define $\lambda R$ for all $A \in \mathcal{B}(\mathbb{R}^d)$ by $\lambda R(A) = \int_{\mathbb{R}^d}\lambda(d\theta)R(\theta, A)$.\\
+For all $k\in \mathbb{N}*$, we define the Markov kernel $R^k$ recursively by $R^1 = R$ and for all $\theta \in \mathbb{R}^d$ and $A \in \mathcal{B}(\mathbb{R}^d)$, $R^{k+1}(\theta, A) = \int_{\mathbb{R}^d}  R^k(\theta, d\vartheta)R(\vartheta, A).$\\
+A probablity measure $\bar{\pi}$ is invariant for R if $\bar{\pi}R = \bar{\pi}$.\\
+Our algorithms LMC, SGLD, SGD and SGLDFP algorithms are homogeneous Markov chains with Markov kernels denoted $R_{LMC}, R_{SGLD}, R_{SGD} and R_{FP}$.
+
+\subsection{Results}
+For lemma 1, Theorem 2 and Corollary 3, we assume H1, H2 and H3.
+\begin{lemma}
+For any step size $\gamma \in (0, \frac{2}{L})$, $R_{SGLD}$(respectively $R_{LMC}, R_{SGD}, R_{FP}$) has a unique invariant measure $\pi_{SGLD}\in \mathcal{P}_2(\mathbb{R}^d)$(respectively $\pi_{LMC}, \pi_{SGD}, \pi_{FP}$). In addition, for all $\gamma \in (0, \frac{1}{L}], \theta\in \mathbb{R}^d and k\in\mathbb{N}$,
+$$W_2^2(R_{SGLD}^k(\theta, \cdot), \pi_{SGLD})\leq(1-m\gamma)^k\int_{\mathbb{R}^d}||\theta-\vartheta||^2\pi_{SGLD}(d\vartheta)$$
+same inequality holds for LMC, SGD and SGLDFP.
+\end{lemma}
+\begin{theorem}
+For all $\gamma\in(0,\frac{1}{L}], \lambda, \nu\in \mathcal{P}_2(\mathbb{R}^d) and n\in\mathbb{N}$, we have the following upoer- bounds in Wasserstein distance between
+\begin{enumerate}
+	\item 
+	LMC and SGLDFP,
+
+\begin{dmath}	
+W_2^2(\lambda R_{LMC}^n, \nu R_{FP}^n)\leq(1-m\gamma)^nW_2^2(\lambda, \nu) + \frac{2L^2\gamma d}{pm^2}+\frac{L^2\gamma^2}{p}n(1-m\gamma)^{n-1}\int_{\mathbb{R}^d}||\vartheta-\theta*||^2 \mu(d\vartheta)
+\end{dmath},
+	\item 
+	the Langevin diffusion and LMC,
+\begin{dmath}
+W_2^2(\lambda R_{LMC}^n, \mu P_{n\gamma})\leq2(1-\frac{mL\gamma}{m+L})^nW_2^2(\lambda, \mu)+d\gamma\frac{m+L}{2m}(3+\frac{L}{m})(\frac{13}{6}+\frac{L}{m})\\+ne^{-(\frac{m}{2})\gamma(n-1)}L^3\gamma^3(1+\frac{m+L}{2m})\int_{\mathbb{R}^d}||\vartheta - \theta*||^2 \mu(d\vartheta)
+\end{dmath},
+	\item 
+	SGLD and SGD
+	\begin{dmath}
+	W_2^2(\lambda R_{SGLD}^n, \mu R_{SGD}^n)\leq (1-m\gamma)^n W_2^2(\lambda, \mu)+\frac{(2d)}{m}.
+	\end{dmath}
+\end{enumerate}
+\end{theorem}
+Proof omitted.
+\begin{corollary}
+Set $\gamma - \frac{\eta}{N} with \eta \in (0, \frac{1}{(2L)}]$ and assume that $lim \inf_{N \to \infty}mN^{-1}>0$. Then
+\begin{enumerate}
+\item
+for all $n \in N$, we get $W_2(R_{LMC}^n(\theta*, \cdot), R_{FP}^{n}(\theta*, \cdot)) = \sqrt{d\eta}\mathcal{O}(N^{-\frac{1}{2}})$ and $W_2(\pi_{LMC}, \pi_{FP}) = \sqrt{d\eta}\mathcal{O}(N^{-\frac{1}{2}})$.
+\item 
+for all $n\in \mathbb{N}, we get W_2(R_{SGLD}^{n}(\theta*, \cdot), R^n_{SGD}(\theta*, \cdot)) = \sqrt{d}\mathcal{O}(N^{-\frac{1}{2}})$, and $W_2(\pi_{SGLD}, \pi_{SGD}) = \sqrt{d}\mathcal{O}(N^{-\frac{1}{2}})$.
+\end{enumerate}
+\end{corollary}
+
+
+\end{document}
