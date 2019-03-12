@@ -102,10 +102,14 @@ This allows each dimension to be scaled individually. Any algorithm with coordin
 
 \subsection{Discretise Differently}
 An alternative approach is to use a different discretisation of the SDE \eqref{eq:ODLang}, which we consider in this section. The first is an extension of the Euler method \cite{Sabanis18tHOLA}, while the latter uses a non-Markovian scheme developed for use in molecular dynamics \cite{LM12}.
-\subsubsection{tHOLA}
-
+\subsubsection{Higher Order Langevin Algorithm}
+As in the ordinary case, the Euler-Maruyama method is not the only way of discretising an SDE. One can also take a higher order expansion, analagous to the Runge-Kutta method, known as the order 1.5 Wagner-Platen expansion\footnote{Or the stochastic Runge-Kutta method \cite{Schaffter10numericalintegration}}. For a one dimensional Langevin diffusion \eqref{eq:ODLang}, this is 
+\[X_{n+1} = X_n -hU'(X_n)+\sqrt{2h}Z_n -\sqrt{2} U''(X_n) \tilde{Z}_n +\frac{ h^2 }{2}\bigg\lbrack U'(X_n)U''(X_n)-U'''(X_n)\bigg\rbrack.  \]
+Here, \(\tilde{Z}_n\) is defined as
+\[  \tilde{Z}_n = \int_{t_n}^{t_{n+1}} \int_{t_n}^s \dif W_r \dif s. \]
+This is a \(d\)-dimensional Gaussian random variable with mean \(0_d\) and covariance \(\frac{1}{3}h^3 I_d\). 
 Use an It\^o-Taylor expansion
-\[X_{n+1} - X_n + \mu_{h}(X_n)h +\sigma_{h}(X_n)\sqrt{h}Z_{n+1}\]
+\[X_{n+1} = X_n + \mu_{h}(X_n)h +\sigma_{h}(X_n)\sqrt{h}Z_{n+1}\]
 where
 \[\mu_{h}(x) = -\grad U_{h}(x) +\frac{h}{2}\left( \left( \grad^2U\grad U\right)_{h}(x) - \vec{\Delta}(\grad U)_{h}(x)\right) ,\]
 and \(\sigma_{h}(x) = \text{diag}\left(\left( \sigma_{h}^{(k)}(x)\right)_{k\in \lbrace 1,\dots,d\rbrace}\right)\) with,
@@ -128,3 +132,17 @@ Here \(q(x,y)\) is the transition probability, \(\P(X_{n+1}=y | X_{n}=x)\). If \
 \[X_{n+1} = U_{n+1}.\]
 That is,
 \[X_{n+1} = \mathbb{I}(u\leq \alpha)U_{n+1} +\mathbb{I}(u > \alpha)X_n \]
+
+\subsection{Visualization}
+A demonstration of the above methods has been implemented using the visualization library of \cite{rogozhnikov2016hmc}\footnote{With kind permission of Alex Rogozhnikov, \url{https://arogozhnikov.github.io/about/}.}. The visualization dynamically follows the trace of a chosen method applied to a chosen two-dimensional distribution. Distributions of various qualitative properties are available. This can be found at the following \textsc{url}: \\
+
+   \centering\url{http://goatleaps.xyz/assets/ULA/ULA.html}
+
+\begin{figure}[H]
+\centering
+  \begin{minipage}[b]{0.8\textwidth}
+  \centering
+    \includegraphics[width=0.8\textwidth]{Figures/ulavis.PNG}
+    \caption{Screenshot from the visualization;  tULAc applied to a Gaussian mixture distribution.}
+  \end{minipage}
+\end{figure}
