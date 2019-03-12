@@ -7,6 +7,7 @@ from scipy.stats import multivariate_normal
 from scipy.stats import entropy # KL div
 from scipy.stats import wasserstein_distance
 from scipy.stats import norm as norm_dist
+from KDEpy import FFTKDE
 
 import pickle
 import itertools as it
@@ -407,6 +408,9 @@ class Evaluator:
                         samples = samples[self.burn_in:]
                         measurement = np.histogram(samples, bins=bins, range=(-5, 5), density=True)
 
+                    elif measure in ["FFTKDE_KL", "FFTKDE_TV", "FFTKDE_SW"]:
+                        measurement = samples[self.burn_in:]
+
                     elif measure in ["KL_divergence", "total_variation", "sliced_wasserstein"]:
                         # cut off the burn-in period
                         samples = samples[self.burn_in:]
@@ -448,6 +452,35 @@ class Evaluator:
                     plt.bar(center, hist, align='center', width=width, alpha=0.6)
                 self.sampler.potential.plot_density()
                 plt.legend(['true density'] + algorithms)
+
+        elif measure in ["FFTKDE_KL", "FFTKDE_TV", "FFTKDE_SW"]:
+            data = []
+            for algo in algorithms:
+                scores = []
+                for s in range(self.N_sim):
+                    weights = np.arange(len(measurements[algo][s])) + 1
+                    # Don't know what this does ^
+                    estimator = FFTKDE(kernel = 'gaussian')
+                    x, y = estimator.fit(measurements[algo][s], weights=weights).evaluate(30) # 30 is arbitrary
+                    true_y = self.sampler.potential.get_density(x)
+                    ys = y.flatten()
+
+                    if measure == "FFTKDE_KL":
+                        ys, true_ys = y.flatten(), true_y.flatten()
+                        scores.append( entropy(ys/sum(ys), true_ys/sum(true_ys) ))
+                    if measure == "FFTKDE_TV":
+                        ys, true_ys = y.flatten(), true_y.flatten()
+                        scores.append( sum(abs( ys/sum(ys) - true_ys/sum(true_ys) ))/2 )
+                    if measure == "FFTKDE_SW":
+                        # This doesn't work
+                        print(len(y),len(true_y),len(x))
+                        scores.append( sliced_wasserstein_distance( y/np.sum(y), true_y/np.sum(true_y), x))
+                data.append(scores)
+
+            if not experiment_mode:
+                plt.boxplot(data, labels=algorithms)
+            else:
+                self.experiment_data["results"] = data
 
         elif measure in ["KL_divergence", "total_variation", "sliced_wasserstein"]:
             data = []
@@ -556,9 +589,9 @@ class Evaluator:
 ####################################
 # How to use evaluator
 ####################################
-d=2
-e = Evaluator(potential="gaussian", dimension=d, x0=np.array([0]+[0]*(d-1)), burn_in=0, N=1000, N_sim=1, step=0.01, N_chains=10000, measuring_points=[10,100,1000],timer=None)
-chains = e.analysis(algorithms=['ULA'], measure='Nth iteration', repeat=1, bins=100)
+d=4
+e = Evaluator(potential="gaussian", dimension=d, x0=np.array([0]+[0]*(d-1)), burn_in=0, N=1000, N_sim=5, step=0.01, N_chains=1, measuring_points=[10,100,1000],timer=None)
+chains = e.analysis(algorithms=['ULA'], measure='FFTKDE_TV', repeat=1, bins=100)
 print(chains)
 # plt.plot(chains[0,:,1])
 # plt.plot(chains[1,:,1])
