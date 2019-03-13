@@ -386,6 +386,7 @@ class Evaluator:
 
             for s in range(self.N_sim):
                 samples = self.sampler.get_samples(algorithm=algo, burn_in=self.burn_in, n_chains=self.N_chains, n_samples=self.N, measuring_points=self.measuring_points, timer=self.timer)
+                samples = np.unique(samples, axis=0)# remove duplicates (for rejection-based algorithms)
 
                 if measure == "first_moment":
                     measurement = np.sum(samples, axis=0)/len(samples)
@@ -533,6 +534,8 @@ class Evaluator:
 
         print('\n####### Experiment finished #########\n' + '#'*39)
         print('Saved at: {:s}\n\n'.format(file_path))
+
+
 
 
 
