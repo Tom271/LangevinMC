@@ -7,6 +7,7 @@ from scipy.stats import multivariate_normal
 from scipy.stats import entropy # KL div
 from scipy.stats import wasserstein_distance
 from scipy.stats import norm as norm_dist
+from scipy.optimize import rosen, rosen_der
 from KDEpy import FFTKDE
 
 import pickle
@@ -86,7 +87,8 @@ class Potential:
         self._function, self._gradient, self._gradient2, self._vector_lap_grad = {
             "gaussian":         (self.gaussian,         self.gaussian_grad,         self.gaussian_grad2,    self.gaussian_vector_lap_grad),
             "double_well":      (self.double_well,      self.double_well_grad,      self.double_well_grad2, self.double_well_vector_lap_grad),
-            "Ginzburg_Landau":  (self.Ginzburg_Landau,  self.Ginzburg_Landau_grad,  None, None)
+            "Ginzburg_Landau":  (self.Ginzburg_Landau,  self.Ginzburg_Landau_grad,  None, None),
+            "Rosenbrock":       (rosen,                 rosen_der,                  None, None)
         }[potential]
 
         self.function = (lambda x: self._function(x)/temperature) if self._function else None
@@ -105,7 +107,6 @@ class Potential:
         if self.dim == 1:
             arr = np.array([np.exp(-self.function(i)) for i in np.arange(rng[0], rng[1], 0.01) ])
             plt.plot(np.arange(rng[0], rng[1], 0.01), arr / (np.sum(arr) * 0.01))
-            plt.show()
 
     def get_histogram(self, edges):
         '''
@@ -545,6 +546,7 @@ class Evaluator:
 
         print('\n####### Experiment finished #########\n' + '#'*39)
         print('Saved at: {:s}\n\n'.format(file_path))
+
 
 
 
