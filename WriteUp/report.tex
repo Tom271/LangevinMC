@@ -41,22 +41,20 @@ SGLD – use unbiased estimator of the gradient of log-posterior based on subsam
 
 
 \subsection{Governing Equation}
-
+Recall the following equations:
 Langevin Stochastic Differential Equation (SDE):$$d\theta_t = -\nabla U(\theta_t)d +\sqrt{2}d B_t$$ where $(B_t)_{t \geq 0}$ is a d-dimensional Brownian motion. 
-
 Euler discretization of the Langevin SDE:
-$$\theta_{k+1} = \theta_k - \gamma \nabla U(\theta_k)+\sqrt{2\gamma} Z_{k+1}$$, where $\gamma > 0$ is a constant step size and $(Z_k)_{k\geq1}$ is a sequence of i.i.d standard d - dimensional Guassian vectors. 
-
+$$\theta_{k+1} = \theta_k - h \nabla U(\theta_k)+\sqrt{2h} Z_{k+1}$$, where $h > 0$ is a constant step size and $(Z_k)_{k\geq1}$ is a sequence of i.i.d standard d - dimensional Guassian vectors. 
 To reduce the costs of the algorithms, we will switch to SGLD, for which we will replace $\nabla U$ with an unbiased estimate $\nabla U_0+(\frac{N}{p}) \sum_{i\in S}\nabla U_i$, where S is a minibatch of {1,...., N} with replacement of size p. Our iterations were then updated as
-$$\theta_{k+1} = \theta_{k}-\gamma \Bigg (\nabla U_0(\theta_k)+\frac{N}{p}\sum_{i\in S_{k+1}}\nabla U_i(\theta_k)\Bigg )+\sqrt{2\gamma}Z_{k+1}$$
-
+$$\theta_{k+1} = \theta_{k}-h \Bigg (\nabla U_0(\theta_k)+\frac{N}{p}\sum_{i\in S_{k+1}}\nabla U_i(\theta_k)\Bigg )+\sqrt{2h}Z_{k+1}$$
 Stochastic Gradient Descent (SGD) is characterised by the same recursion as SGLD without the Gaussian noise, (the last term):
 
 
-$$\theta_{k+1} = \theta_{k}-\gamma \Bigg (\nabla U_0(\theta_k)+\frac{N}{p}\sum_{i\in S_{k+1}}\nabla U_i(\theta_k)\Bigg)$$
+$$\theta_{k+1} = \theta_{k}-h \Bigg (\nabla U_0(\theta_k)+\frac{N}{p}\sum_{i\in S_{k+1}}\nabla U_i(\theta_k)\Bigg)$$
 
 \subsection{Analysis in Wasserstein distance}
 \subsection{Definitions and Notations in Markov chain theory}
+Recall the following definitions:
 $\mathcal{P}_2(\mathbb{R}^d)$ the set of probablity measures with finite second momet.\\
 $\mathcal{B}(\mathbb{R}^d)$ the Borel $\sigma$ - algebra of $\mathbb{R}^d$.\\
 For $\lambda, \nu \in \mathcal{P}_2(\mathbb{R}^d)$, we define the Wasserstein distance by 
@@ -71,34 +69,34 @@ Our algorithms LMC, SGLD, SGD and SGLDFP algorithms are homogeneous Markov chain
 \subsection{Results}
 For lemma 1, Theorem 2 and Corollary 3, we assume H1, H2 and H3.
 \begin{lemma}
-For any step size $\gamma \in (0, \frac{2}{L})$, $R_{SGLD}$(respectively $R_{LMC}, R_{SGD}, R_{FP}$) has a unique invariant measure $\pi_{SGLD}\in \mathcal{P}_2(\mathbb{R}^d)$(respectively $\pi_{LMC}, \pi_{SGD}, \pi_{FP}$). In addition, for all $\gamma \in (0, \frac{1}{L}], \theta\in \mathbb{R}^d and k\in\mathbb{N}$,
-$$W_2^2(R_{SGLD}^k(\theta, \cdot), \pi_{SGLD})\leq(1-m\gamma)^k\int_{\mathbb{R}^d}||\theta-\vartheta||^2\pi_{SGLD}(d\vartheta)$$
+For any step size $h \in (0, \frac{2}{L})$, $R_{SGLD}$(respectively $R_{LMC}, R_{SGD}, R_{FP}$) has a unique invariant measure $\pi_{SGLD}\in \mathcal{P}_2(\mathbb{R}^d)$(respectively $\pi_{LMC}, \pi_{SGD}, \pi_{FP}$). In addition, for all $h \in (0, \frac{1}{L}], \theta\in \mathbb{R}^d and k\in\mathbb{N}$,
+$$W_2^2(R_{SGLD}^k(\theta, \cdot), \pi_{SGLD})\leq(1-mh)^k\int_{\mathbb{R}^d}||\theta-\vartheta||^2\pi_{SGLD}(d\vartheta)$$
 same inequality holds for LMC, SGD and SGLDFP.
 \end{lemma}
 \begin{theorem}
-For all $\gamma\in(0,\frac{1}{L}], \lambda, \nu\in \mathcal{P}_2(\mathbb{R}^d) and n\in\mathbb{N}$, we have the following upper- bounds in Wasserstein distance between
+For all $h\in(0,\frac{1}{L}], \lambda, \nu\in \mathcal{P}_2(\mathbb{R}^d) and n\in\mathbb{N}$, we have the following upper- bounds in Wasserstein distance between
 \begin{enumerate}
 	\item 
 	LMC and SGLDFP,
 
 \begin{dmath}	
-W_2^2(\lambda R_{LMC}^n, \nu R_{FP}^n)\leq(1-m\gamma)^nW_2^2(\lambda, \nu) + \frac{2L^2\gamma d}{pm^2}+\frac{L^2\gamma^2}{p}n(1-m\gamma)^{n-1}\int_{\mathbb{R}^d}||\vartheta-\theta*||^2 \mu(d\vartheta)
+W_2^2(\lambda R_{LMC}^n, \nu R_{FP}^n)\leq(1-mh)^nW_2^2(\lambda, \nu) + \frac{2L^2h d}{pm^2}+\frac{L^2h^2}{p}n(1-mh)^{n-1}\int_{\mathbb{R}^d}||\vartheta-\theta*||^2 \mu(d\vartheta)
 \end{dmath},
 	\item 
 	the Langevin diffusion and LMC,
 \begin{dmath}
-W_2^2(\lambda R_{LMC}^n, \mu P_{n\gamma})\leq2(1-\frac{mL\gamma}{m+L})^nW_2^2(\lambda, \mu)+d\gamma\frac{m+L}{2m}(3+\frac{L}{m})(\frac{13}{6}+\frac{L}{m})\\+ne^{-(\frac{m}{2})\gamma(n-1)}L^3\gamma^3(1+\frac{m+L}{2m})\int_{\mathbb{R}^d}||\vartheta - \theta*||^2 \mu(d\vartheta)
+W_2^2(\lambda R_{LMC}^n, \mu P_{nh})\leq2(1-\frac{mLh}{m+L})^nW_2^2(\lambda, \mu)+dh\frac{m+L}{2m}(3+\frac{L}{m})(\frac{13}{6}+\frac{L}{m})\\+ne^{-(\frac{m}{2})h(n-1)}L^3h^3(1+\frac{m+L}{2m})\int_{\mathbb{R}^d}||\vartheta - \theta*||^2 \mu(d\vartheta)
 \end{dmath},
 	\item 
 	SGLD and SGD
 	\begin{dmath}
-	W_2^2(\lambda R_{SGLD}^n, \mu R_{SGD}^n)\leq (1-m\gamma)^n W_2^2(\lambda, \mu)+\frac{(2d)}{m}.
+	W_2^2(\lambda R_{SGLD}^n, \mu R_{SGD}^n)\leq (1-mh)^n W_2^2(\lambda, \mu)+\frac{(2d)}{m}.
 	\end{dmath}
 \end{enumerate}
 \end{theorem}
 Proof omitted.
 \begin{cor}
-Set $\gamma - \frac{\eta}{N} with \eta \in (0, \frac{1}{(2L)}]$ and assume that $lim \inf_{N \to \infty}mN^{-1}>0$. Then
+Set $h - \frac{\eta}{N} with \eta \in (0, \frac{1}{(2L)}]$ and assume that $lim \inf_{N \to \infty}mN^{-1}>0$. Then
 \begin{enumerate}
 \item
 for all $n \in N$, we get $W_2(R_{LMC}^n(\theta*, \cdot), R_{FP}^{n}(\theta*, \cdot)) = \sqrt{d\eta}\mathcal{O}(N^{-\frac{1}{2}})$ and $W_2(\pi_{LMC}, \pi_{FP}) = \sqrt{d\eta}\mathcal{O}(N^{-\frac{1}{2}})$.
@@ -106,18 +104,3 @@ for all $n \in N$, we get $W_2(R_{LMC}^n(\theta*, \cdot), R_{FP}^{n}(\theta*, \c
 for all $n\in \mathbb{N}, we get W_2(R_{SGLD}^{n}(\theta*, \cdot), R^n_{SGD}(\theta*, \cdot)) = \sqrt{d}\mathcal{O}(N^{-\frac{1}{2}})$, and $W_2(\pi_{SGLD}, \pi_{SGD}) = \sqrt{d}\mathcal{O}(N^{-\frac{1}{2}})$.
 \end{enumerate}
 \end{cor}
-\begin{theorem}
-Consider the case of the Bayesian linear regression in dimension 1.
-\begin{enumerate}
-    \item 
-    For all $\gamma \in (0, \ \sum^{-1} \{ 1+\frac{N}{p\sum_{i=1}^{N}x_i^2}\}^{-1} ]$ and $n\in \mathbb{N*}$,
-    \begin{dmath}
-    (\frac{1-\mu}{1-\mu^n})^{\frac{1}{2}} W_2(R_{SGLD}^n(\theta*,\cdot),R_{FP}^n(\theta*,\cdot))\geq{2\gamma + \frac{\gamma^2 N}{p}\sum_{i=1}^{N}(\frac{(x_i\theta* - y_i)x_i}{\sigma_y^2}+\frac{\theta*}{N\sigma_{\theta}^2})^2}^{\frac{1}{2}}-\sqrt{2\gamma}
-    where \nu \in (0, 1-\gamma\sum)
-    \end{dmath}
-    \item
-    Set$\gamma = \frac{\eta}{N}$ with $\eta \in (0,  \liminf_{N \to \infty}N \sum^{-1}\{1+\frac{N}{(p\sum_{i=1}{N}x_i^2)}\}^{-1}]$ and assume that $\liminf_{N\to\infty}N^{-1}\sum_{i=1}^{N}x_i^2 \geq 0$. We have $W_2(\pi_{SGLD}, \pi) = \omega(1)$
-\end{enumerate}
-\end{theorem}
-
-
