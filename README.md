@@ -29,6 +29,21 @@
 # Documentation
 Dependencies: `numpy, scipy, KDEpy, matplotlib, pickle` (To install missing dependencies `pip install KDEpy`, etc)
 
+## Obtaining samples
+
+To obtain samples only without performing any analysis, one can use the following template:
+
+``` Python
+  s = Sampler(potential="double_well", dimension=2, x0=np.array([0,0]), step=0.1)
+  samples = s.get_samples(algorithm="ULA", burn_in=0, n_chains=1, n_samples=1e2, measuring_points=None, timer=None)
+```
+
+*Note*: For rejection based algorithms, this will contain duplicate values at the event of rejection. To calculate the acceptance rate, it suffices to:
+
+``` Python
+  acceptance_rate = len(set(map(tuple, samples)))/len(samples)
+```
+
 ## Analysis
 
 To perform analysis, first, create an Evaluator object.
@@ -98,6 +113,7 @@ timer : None
 N_chains : 2
 results : [[0.2543805177875392, 0.2345092390242109]]
  ```
+
 
 ## Measures of error (parameter `measure`)
 Closer description of the measures can be found in the report.
