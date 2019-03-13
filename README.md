@@ -18,12 +18,12 @@
  made by all of these sampling methods.
 
  - ULA (Unadjusted Langevin Algorithm)
- - tULA/c ([Coordinatewise] Tamed Unadjusted Langevin Algorithm)
- - MALA (Metropolis-Adjusted Langevin Algorithm)
+ - tULA/c ([Coordinatewise] [Tamed Unadjusted Langevin Algorithm](https://arxiv.org/abs/1710.05559))
+ - MALA ([Metropolis-Adjusted Langevin Algorithm](https://pdfs.semanticscholar.org/e86f/414f860a1a70e16d9718c887f4eb59a51f62.pdf))
  - tMALA (Tamed Metropolis-Adjusted Langevin Algorithm)
- - tHOLA (Tamed Higher-Order Langevin Algorithm)
- - RWM (Random Walk Metropolis)
- - LM (Leimkuhler-Matthews method)
+ - tHOLA ([Tamed Higher-Order Langevin Algorithm](https://arxiv.org/abs/1808.00728))
+ - RWM (Random Walk Metropolis-Hastings Algorithm)
+ - LM ([Leimkuhler-Matthews method](https://academic.oup.com/amrx/article/2013/1/34/166771))
  - tLM (Tamed Leimkuhler-Matthews method)
 
 # Documentation
