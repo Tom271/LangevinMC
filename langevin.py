@@ -71,7 +71,7 @@ def sliced_wasserstein_no_histogram(p, q, iters=20):
 
 class Potential:
     """ Represents a potential function. """
-    def __init__(self, potential="gaussian", dimension=1, gaussian_sigma=None):
+    def __init__(self, potential="gaussian", dimension=1, gaussian_sigma=None, temperature=1):
         ''' Parameters:
                 potential:      Name of the potential                     (string)
                 dimension:      Dimension of the potential                (int)
@@ -83,11 +83,16 @@ class Potential:
         #   - implement the potential function, gradient, possibly second gradient... in this class
         #                  (these are used by some of the algorithms)
         #   - link the implemented functions in the dictionary below
-        self.function, self.gradient, self.gradient2, self.vector_lap_grad = {
+        self._function, self._gradient, self._gradient2, self._vector_lap_grad = {
             "gaussian":         (self.gaussian,         self.gaussian_grad,         self.gaussian_grad2,    self.gaussian_vector_lap_grad),
             "double_well":      (self.double_well,      self.double_well_grad,      self.double_well_grad2, self.double_well_vector_lap_grad),
             "Ginzburg_Landau":  (self.Ginzburg_Landau,  self.Ginzburg_Landau_grad,  None, None)
         }[potential]
+
+        self.function = (lambda x: self._function(x)/temperature) if self._function else None
+        self.gradient = (lambda x: self._gradient(x)/temperature) if self._gradient else None
+        self.gradient2 = (lambda x: self._gradient2(x)/temperature) if self._gradient2 else None
+        self.vector_lap_grad = (lambda x: self._vector_lap_grad(x)/temperature) if self._vector_lap_grad else None
 
         # Quantities to store in the Potential class, to avoid needless re-computation.
         if type(gaussian_sigma) != type(None): # Inverse covariance matrix for Gaussian
@@ -183,14 +188,14 @@ class Potential:
 
 class Sampler:
     """ Samples a distribution defined by a given potential, using specific algorithms. """
-    def __init__(self, potential="gaussian", dimension=1, x0=np.array([0.0]), step=0.01):
+    def __init__(self, potential="gaussian", dimension=1, x0=np.array([0.0]), step=0.01, gaussian_sigma=None, temperature=1):
         ''' Parameters:
                 potential:      Name of the potential                     (string)
                 dimension:      Dimension of the potential                (int)
                 x0:             Starting point                            (array of given dimension)
                 step:           Step size                                 (float)
         '''
-        self.dim, self.potential = dimension, Potential(potential, dimension)
+        self.dim, self.potential = dimension, Potential(potential, dimension, gaussian_sigma=gaussian_sigma, temperature=temperature)
 
         # When adding an algorithm, one needs to:
         #   - implement the algorithm in this class
@@ -352,7 +357,8 @@ class Sampler:
 
 class Evaluator:
     ''' Analyses a set of sampling algoritms based on given parameters. '''
-    def __init__(self, potential="gauFssian", dimension=1, x0=np.array([0.0]), step=0.01, N=10, burn_in=10**2, N_sim=3, N_chains=1, measuring_points=None, timer=None):
+    def __init__(self, potential="gauFssian", dimension=1, x0=np.array([0.0]), step=0.01, N=10, burn_in=10**2, N_sim=3, N_chains=1, measuring_points=None, \
+                timer=None, gaussian_sigma=None, temperature=1):
         self.potential = potential
         self.dim = dimension
         self.x0 = x0
@@ -362,7 +368,7 @@ class Evaluator:
         self.N_sim = N_sim
         self.N_chains = N_chains
         self.timer = timer
-        self.sampler = Sampler(potential=potential, dimension=dimension, x0=x0, step=step)
+        self.sampler = Sampler(potential=potential, dimension=dimension, x0=x0, step=step, gaussian_sigma=gaussian_sigma, temperature=temperature)
         self.measuring_points = measuring_points
 
     def analysis(self, algorithms=["tULA", "RWM"], measure="histogram", bins=10, repeat=1, experiment_mode=False):
@@ -386,14 +392,14 @@ class Evaluator:
 
             for s in range(self.N_sim):
                 samples = self.sampler.get_samples(algorithm=algo, burn_in=self.burn_in, n_chains=self.N_chains, n_samples=self.N, measuring_points=self.measuring_points, timer=self.timer)
-                
+
                 if measure == "first_moment":
                     measurement = np.sum(samples, axis=0)/len(samples)
 
                 elif measure == "second_moment":
                     measurement = np.sum(samples**2, axis=0)/len(samples)
 
-                elif measure == "trace":
+                elif measure in ["trace", "scatter"]:
                     measurement = samples
 
                 elif measure == "histogram":
@@ -430,6 +436,12 @@ class Evaluator:
             if not experiment_mode:
                 for algo in algorithms:
                     plt.plot([p[0] for p in measurements[algo][0] if norm(p)<1e6], [p[1] for p in measurements[algo][0] if norm(p)<1e6], '-', linewidth=1, alpha=0.8)
+                plt.legend(algorithms)
+
+        elif measure == "scatter":
+            if not experiment_mode:
+                for algo in algorithms:
+                    plt.scatter([p[0] for p in measurements[algo][0] if norm(p)<1e6], [p[1] for p in measurements[algo][0] if norm(p)<1e6], s=1)
                 plt.legend(algorithms)
 
         elif measure == "histogram":
@@ -541,11 +553,12 @@ class Evaluator:
 ####################################
 # Using evaluator
 ####################################
-d = 3 # dimension
-e = Evaluator(potential="double_well", dimension=d, x0=np.array([0]+[0]*(d-1)), burn_in=2, N=1000, N_sim=2, step=0.05, N_chains=2, measuring_points=None, timer=None)
+d = 2 # dimension
+e = Evaluator(potential="double_well", dimension=d, x0=np.array([0]+[0]*(d-1)), burn_in=2, N=5000, N_sim=2, step=0.01, N_chains=2, \
+              measuring_points=None, timer=None, temperature=0.1)
 
 # Example of an analysis - produces a plot, doesn't store anything
-e.analysis(algorithms=["ULA", "tULA", "RWM"], measure='total_variation', bins=40)
+e.analysis(algorithms=["ULA", "tULA", "RWM"], measure='scatter', bins=40)
 
 # Example of an experiment - only a single algorithm - does not produce a plot, stores the given path.
 exp_name = 'Experiments/my_little_experiment'
