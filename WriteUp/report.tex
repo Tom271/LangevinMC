@@ -106,5 +106,18 @@ for all $n \in N$, we get $W_2(R_{LMC}^n(\theta*, \cdot), R_{FP}^{n}(\theta*, \c
 for all $n\in \mathbb{N}, we get W_2(R_{SGLD}^{n}(\theta*, \cdot), R^n_{SGD}(\theta*, \cdot)) = \sqrt{d}\mathcal{O}(N^{-\frac{1}{2}})$, and $W_2(\pi_{SGLD}, \pi_{SGD}) = \sqrt{d}\mathcal{O}(N^{-\frac{1}{2}})$.
 \end{enumerate}
 \end{cor}
+\begin{theorem}
+Consider the case of the Bayesian linear regression in dimension 1.
+\begin{enumerate}
+    \item 
+    For all $\gamma \in (0, \ \sum^{-1} \{ 1+\frac{N}{p\sum_{i=1}^{N}x_i^2}\}^{-1} ]$ and $n\in \mathbb{N*}$,
+    \begin{dmath}
+    (\frac{1-\mu}{1-\mu^n})^{\frac{1}{2}} W_2(R_{SGLD}^n(\theta*,\cdot),R_{FP}^n(\theta*,\cdot))\geq{2\gamma + \frac{\gamma^2 N}{p}\sum_{i=1}^{N}(\frac{(x_i\theta* - y_i)x_i}{\sigma_y^2}+\frac{\theta*}{N\sigma_{\theta}^2})^2}^{\frac{1}{2}}-\sqrt{2\gamma}
+    where \nu \in (0, 1-\gamma\sum)
+    \end{dmath}
+    \item
+    Set$\gamma = \frac{\eta}{N}$ with $\eta \in (0,  \liminf_{N \to \infty}N \sum^{-1}\{1+\frac{N}{(p\sum_{i=1}{N}x_i^2)}\}^{-1}]$ and assume that $\liminf_{N\to\infty}N^{-1}\sum_{i=1}^{N}x_i^2 \geq 0$. We have $W_2(\pi_{SGLD}, \pi) = \omega(1)$
+\end{enumerate}
+\end{theorem}
 
 
