@@ -122,6 +122,12 @@ Closer description of the measures can be found in the report.
      - *Note*: Assumes d = 2. Produces a trace plot.
 
 
+
+- Trace (`scatter`)
+    - *Note*: Assumes d = 2. Produces a scatter plot.
+
+
+
 - Histogram (`histogram`)
     - *Note*: Assumes d = 1. Produces a histogram plot.
 
