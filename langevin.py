@@ -3,6 +3,7 @@ from numpy.linalg import norm
 from numpy.random import normal, uniform
 import matplotlib.pyplot as plt
 from matplotlib import cm
+from mpl_toolkits.mplot3d import Axes3D
 from scipy.stats import multivariate_normal
 from scipy.stats import entropy # KL div
 from scipy.stats import wasserstein_distance
@@ -212,7 +213,8 @@ class Sampler:
             "tHOLA":   self.tHOLA,
             "LM":      self.LM,
             "tLM":     self.tLM,
-            "tLMc":    self.tLMc
+            "tLMc":    self.tLMc,
+            "HPH":     self.HPH
         }
         self.x0 = x0
         self.step = step
@@ -326,6 +328,25 @@ class Sampler:
     def tLMc(self):
         ''' Coordinate-wise Tamed Leimkuhler-Matthews algorithm. '''
         return self.tLM(lambda g, step: np.divide(g, 1. + step * np.absolute(g)))
+
+    def HPH(self, taming=(lambda g, step: g/(1. + step*norm(g))), tula_time=2000):
+        ''' Holden-Puza-Hodgson algorithm. '''
+
+        x = np.array(self.x0)
+        sqrtstep = np.sqrt(2*self.step)
+        cnt = 0
+        while 1:
+            yield x
+
+            cnt += 1
+            if cnt < tula_time:
+                x = x - self.step * taming(self.potential.gradient(x), self.step) + sqrtstep * normal(size=self.dim)
+            else:
+                y = x + np.sqrt(2*self.step) * normal(size=self.dim)
+                logratio = self.potential.function(x) - self.potential.function(y)
+                if np.log(uniform(size = 1)) <= logratio:
+                    x = y
+
 
     def get_samples(self, algorithm="ULA", burn_in=0, n_chains=1, n_samples=1e2, measuring_points=None, timer=None):
         ''' Returns n_samples from a given algorithm. '''
@@ -441,9 +462,17 @@ class Evaluator:
 
         elif measure == "scatter":
             if not experiment_mode:
-                for algo in algorithms:
-                    plt.scatter([p[0] for p in measurements[algo][0] if norm(p)<1e6], [p[1] for p in measurements[algo][0] if norm(p)<1e6], s=1)
-                plt.legend(algorithms)
+                if self.dim == 2:
+                    for algo in algorithms:
+                        plt.scatter([p[0] for p in measurements[algo][0] if norm(p)<1e6], [p[1] for p in measurements[algo][0] if norm(p)<1e6], s=1)
+                    plt.legend(algorithms)
+
+                elif self.dim == 3:
+                    fig = plt.figure()
+                    ax = fig.add_subplot(111, projection='3d')
+                    for algo in algorithms:
+                        ax.scatter(xs=[p[0] for p in measurements[algo][0] if norm(p)<1e6], ys=[p[1] for p in measurements[algo][0] if norm(p)<1e6], zs=[p[2] for p in measurements[algo][0] if norm(p)<1e6], s=1)
+                    ax.legend(algorithms)
 
         elif measure == "histogram":
             if not experiment_mode:
@@ -546,7 +575,6 @@ class Evaluator:
 
         print('\n####### Experiment finished #########\n' + '#'*39)
         print('Saved at: {:s}\n\n'.format(file_path))
-
 
 
 
