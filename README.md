@@ -51,7 +51,7 @@ To perform analysis, first, create an Evaluator object.
 ```python
 d = 1 # dimension
 e = Evaluator(potential="double_well", dimension=d, x0=np.array([0]+[0]*(d-1)), burn_in=2, N=1000, N_sim=2, step=0.05, \
-              N_chains=2, measuring_points=None, timer=None)
+              N_chains=2, measuring_points=None, timer=None, gaussian_sigma=None, temperature=0.1)
 ```
 
 The available parameters are:
@@ -65,6 +65,8 @@ The available parameters are:
   - `N_chains`: integer, the number of chains to be run in each simulation.
   - `measuring_points`: for thinning the chain. When omitted, all of the samples from a chain will be preserved. Otherwise describes the indices of the samples to preserve from each chain (*after burn_in*). For example, setting this to [9, 10], with `burn_in=5` and `N_chains=10` will result in running 10 chains, taking from each the 15th and 16th (Python is zero-indexed) sample.
   - `timer`: float; rather than a fixed number of samples in each chain, one may choose to allocate to each chain a *fixed computing time*. This parameter sets the computing time in seconds.
+  - `gaussian_sigma`: numpy array; if the potential is Gaussian, sets its variance to diag(gaussian_sigma).
+  - `temperature`: scales the potential by a factor of `1/temperature` (by default 1)
 
 Next, you may perform analysis in a single line.
 
