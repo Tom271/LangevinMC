@@ -181,12 +181,9 @@ In the last Chapter, we focus on the fixed
 step-size SGLD algorithm and assess its ability to reliably sample from π
 For that purpose and to quantify precisely the relation between LMC, SGLD, SGDFP and SGD, we make for simplicity the
 following assumptions on U. \cite{pitfalls}
-\begin{enumerate}
-    \item H1.\\
-    For all $i \in \{0,...,N\}, \ U_i$ is four times contunuously differentiable and for all $j \in \{2, 3, 4\},$$sup_{\theta \in \mathbb{R}^d}||D^j U_i(\theta)||\leq \Tilde{L}.$ In particular for all $i\in \{0, ..., N\}$, $U_i$ $\Tilde{L}$-gradient Lipschitz, i.e. for all $\theta_1, \theta_2\in \mathbb{R}^d$, $||\nabla U_i(\theta_1) - \nabla U_i (\theta_2)|| \leq \Tilde{L}||\theta_1 - \theta_2||.$
-    \item H2
-    U is m-strongly convex, i.e. for all $\theta_1, \theta_2 \in \mathbb{R}^d$,$\left< \nabla U(\theta_1) - \nabla U(\theta_2), \theta_1 - \theta_2\right>\geq m ||\theta_1 - \theta_2||^2.$
-    \item H3
-    For all $i\in\{0,...,N\}$, $U_i$ is convex.
+\begin{enumerate}[label={\bf H\arabic*}]
+    \item    For all $i \in \{0,...,N\}, \ U_i$ is four times contunuously differentiable and for all $j \in \{2, 3, 4\},$$sup_{\theta \in \mathbb{R}^d}||D^j U_i(\theta)||\leq \Tilde{L}.$ In particular for all $i\in \{0, ..., N\}$, $U_i$ $\Tilde{L}$-gradient Lipschitz, i.e. for all $\theta_1, \theta_2\in \mathbb{R}^d$, $||\nabla U_i(\theta_1) - \nabla U_i (\theta_2)|| \leq \Tilde{L}||\theta_1 - \theta_2||.$
+    \item U is m-strongly convex, i.e. for all $\theta_1, \theta_2 \in \mathbb{R}^d$,$\left< \nabla U(\theta_1) - \nabla U(\theta_2), \theta_1 - \theta_2\right>\geq m ||\theta_1 - \theta_2||^2.$
+    \item For all $i\in\{0,...,N\}$, $U_i$ is convex.
 \end{enumerate}
 \end{document}
