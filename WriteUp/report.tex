@@ -42,7 +42,6 @@ SGLD – use unbiased estimator of the gradient of log-posterior based on subsam
 
 \subsection{Governing Equation}
 Recall the following equations:
-Langevin Stochastic Differential Equation (SDE):$$d\theta_t = -\nabla U(\theta_t)d +\sqrt{2}d B_t$$ where $(B_t)_{t \geq 0}$ is a d-dimensional Brownian motion. 
 Euler discretization of the Langevin SDE:
 $$\theta_{k+1} = \theta_k - h \nabla U(\theta_k)+\sqrt{2h} Z_{k+1}$$, where $h > 0$ is a constant step size and $(Z_k)_{k\geq1}$ is a sequence of i.i.d standard d - dimensional Guassian vectors. 
 To reduce the costs of the algorithms, we will switch to SGLD, for which we will replace $\nabla U$ with an unbiased estimate $\nabla U_0+(\frac{N}{p}) \sum_{i\in S}\nabla U_i$, where S is a minibatch of {1,...., N} with replacement of size p. Our iterations were then updated as
