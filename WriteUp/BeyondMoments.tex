@@ -167,6 +167,10 @@ We have implemented a suite of tools for analysis of error for all of the aforem
 
 \subsection{Sampling approaches}
 
+Our program allows to specify
+
+In general, there are two main approaches to sampling
+
 \subsection{Parameters}
 
 
@@ -253,11 +257,14 @@ $$
 \subsubsection{Total variation}
 The total variation, being the first of implemented histogram measures, is calculated as
 
-\[\text{total variation} = \norm{H_X - \frac 1 Z \sum_{c \in \#_X} \pi(c) \delta_c}_{\text{TV}} = \frac 1 2\sum_{c \in \#_X} |h(c) - \pi(c)| .\]
+\[\text{total variation} = \norm{H_X - \frac 1 Z \sum_{c \in \#_X} \pi(c) \delta_c}_{\text{TV}} = \frac 1 2\sum_{c \in \#_X} \left|\frac{h(c)}{N} - \frac{\pi(c)}{Z}\right| .\]
 
+\subsubsection{KL Divergence}
+The next histogram-based measure is KL divergence.
+
+\[\text{KL divergence} = \text{KL} \left(H_X \bigg| \frac 1 Z \sum_{c \in \#_X} \pi(c) \delta_c\right) =  \sum_{c \in \#_X} \frac{h(c)}{N} \log\left(\frac {h(c) Z} {\pi(c) N} \right).\]
 
 \subsubsection{Sliced Wasserstein}
-
 
 The Sliced Wasserstein distance, being defined via a multi-dimensional integral, cannot be computed exactly. Therefore, we resort to a simple Monte Carlo scheme where $L$ samples $\{\theta_i\}$ are drawn uniformly from the $(d-1)$-dimensional sphere $\mathbb S^{d-1}$.
 
@@ -267,16 +274,21 @@ $$
 
 The first, histogram based, implemented metric for Sliced Wasserstein distance further approximates the above Monte Carlo scheme for $SW_1\left(H_X, \right)$ as
 
-\[\text{sliced wasserstein}_{histogram} = \begin{cases}
+\[\text{SW}_{histogram} = \begin{cases}
 W_1 \left( H_X,\  \frac 1 Z \sum_{c \in \#_X} \pi(c) \delta_c \right) & \text{if dimension } = 1 \\
 \sum_{i = 1}^L W_1 \left( \sum_{c \in \#_X} h(c) \delta_{\left<c, \theta_i \right>},\  \frac 1 Z \sum_{c \in \#_X} \pi(c) \delta_{\left<c, \theta_i \right>}  \right) & \text{ otherwise }
 \end{cases},\]
 
-where $\left< \cdot \right>$ is the dot product, $\theta_i = \frac{\theta'_i}{\norm{\theta'_i}}$ with $
-\theta'_i \sim \mathcal N(0, I_D)$ and $W_1$ is computed explicitly.
+where $\left< \cdot \right>$ is the dot product, $\theta_i = \frac{\theta'_i}{\norm{\theta'_i}}$ is a point on $(d-1)$-dimensional sphere with $
+\theta'_i \sim \mathcal N(0, I_D)$ and $W_1$ is computed explicitly. \\\\
 
 The second, \textbf{heuristic-based}, approximation of the Sliced Wasserstein distance is calculated as follows:
 
+\[\text{SW}_{no\ histogram} = \begin{cases}
+W_1 \left( \frac 1 N \sum_{x \in X} \delta_x,\  \frac 1 {Z'} \sum_{x \in X} \pi(x) \delta_x \right) & \text{if dimension } = 1 \\
+\sum_{i = 1}^L W_1 \left(  \frac 1 N \sum_{x \in X} \delta_{\left<x, \theta_i \right>},\ \frac 1 {Z'} \sum_{x \in X} \pi(x) \delta_{\left<x, \theta_i \right>}  \right) & \text{ otherwise }
+\end{cases}.\]
+where $Z' = \sum_{x \in X} \pi(x) $ is a normalizing constant. Intuitivelly, this measure of error describes whether the spatial distribution of samples is proportional to the true distribution, \textit{at the same points}.
 
 
 \subsection{KDE-based metrics}
