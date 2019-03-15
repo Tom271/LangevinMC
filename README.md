@@ -174,3 +174,9 @@ Closer description of the measures can be found in the report.
 
 - KDE (1-)Sliced Wasserstein distance (`FFTKDE_SW`):
     - *Note*: Same as Sliced Wasserstein, uses *KDE instead of histograms*.
+
+
+ The authors were supported by The Maxwell Institute Graduate School in Analysis and its
+Applications, a Centre for Doctoral Training funded by the UK Engineering and Physical
+Sciences Research Council (grant EP/L016508/01), the Scottish Funding Council, Heriot-Watt
+University and the University of Edinburgh.
