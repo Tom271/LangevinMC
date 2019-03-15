@@ -59,6 +59,9 @@ To mitigate these issues there are two main approaches: taming the gradient and 
 
 \subsection{MALA}
 Before describing the Metropolis-adjusted Langevin algorithm \texttt{MALA}, it is pertinent at this point to recall the random walk Metropolis-Hastings algorithm \texttt{RWM }\cite{Hastings70, Metropolis53}. This popular variant of the Metropolis-Hastings algorithm \emph{proposes} values and then accepts/rejects them according to some probability \(\alpha\).  So given \(X_n\), propose a candidate \(Y_{n+1}\) as
+
+\textbf{GRADIENT GREADIENT GRADIENT}
+
 \[Y_{n+1} = X_n + \sqrt{2h} Z_{n+1}.\]
 Once again, \(h\) is the stepsize and \(Z\) is a normal random variable. Then, accept or reject this proposal using Metropolis rejection, that is with some probability
 \[\alpha(X_n,Y_{n+1}) = 1\wedge \frac{\pi(Y_{n+1})q(Y_{n+1},X_n)}{\pi(X_n)q(X_n,Y_{n+1})}.\footnote{Here \(t\wedge s = \min\lbrace t,s\rbrace.\) }\]
