@@ -17,7 +17,7 @@
 \usepackage{graphicx}
 \graphicspath{{Figures/}}
 \usepackage{subcaption}
-
+\beamertemplatenavigationsymbolsempty
 % There are many different themes available for Beamer. A comprehensive
 % list with examples is given here:
 % http://deic.uab.es/~iblanes/beamer_gallery/index_by_theme.html
@@ -222,7 +222,10 @@ $\pi(\theta|y)$ -- posterior\\ $f(y|\theta)$ -- likelihood of data\\ $p(\theta)$
 \column{0.4\textwidth}
     $$\dif X_t = -\grad U(X_t) \dif t +\sqrt{2}\dif W_t $$
 \column{0.6\textwidth}
-figure of well/particle
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{Figures/LD.png}
+\end{figure}
 \end{columns}
 \end{onlyenv}
 \begin{onlyenv}<4>
@@ -231,7 +234,10 @@ figure of well/particle
     $$\dif X_t = -\grad U(X_t) \dif t +\sqrt{2}\dif W_t $$
         $$\pi(x)=\mathcal{Z}^{-1} \e^{-U(x)} $$
 \column{0.6\textwidth}
-figure of well/particle
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{Figures/LD.png}
+\end{figure}
 \end{columns}
 \end{onlyenv}
 \end{frame}
@@ -261,19 +267,26 @@ figure of well/particle
       \centerline{\textbf{divergence problems}}
 \end{frame}
 
-\begin{frame}{\texttt{tULA} (\textbf{Tamed} Unadjusted Langevin Algorithm)}
+\begin{frame}{\texttt{tULA} (\textbf{Tamed} Unadjusted Langevin Algorithm)    \footnote{Brosse, Durmus, Moulines, Sabanis, 2018}}
 Idea: \textbf{Tame} the drift!
 \[ X_{n+1} = X_n -hT(X_n) +\sqrt{2h}Z_{n+1} \]
 Different choices of \(T\) are available, we consider 
-\[T=\frac{\grad U }{1+h|\grad U|}\]
+\[T(X_n)=\frac{\grad U(X_n) }{1+h\|\grad U(X_n)\|}\]
     
    \[\]
    \[\]
    \centerline{\textbf{may still be stiff}}
-      
+  
 \end{frame}
 
-\begin{frame}{\texttt{tULAc} (\textbf{Coordinate-wise Tamed} Unadjusted Langevin Algorithm)}
+\begin{frame}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{Figures/transparentTULA.png}
+\end{figure}
+\end{frame}
+
+\begin{frame}{\texttt{tULAc}     \footnote{Brosse, Durmus, Moulines, Sabanis, 2018}}
     Idea: Use more robust, coordinate-wise, taming!
         \[ X_{n+1} = X_n -hT(X_n) +\sqrt{2h}Z_{n+1} \] \[\]
         \[T=\left(\frac{\partial_i U}{1+h|\partial_i U|}\right)_{i=\lbrace 1, \dots, d\rbrace}\]
@@ -290,8 +303,8 @@ Different choices of \(T\) are available, we consider
 \end{frame}
 
 
-\begin{frame}{\texttt{(t)MALA(c)} (\textbf{Metropolis-Adjusted} Langevin Algorithm)}
-    Idea: Use \textbf{Metropolis Hastings}!
+\begin{frame}{\texttt{(t)MALA(c)} (\textbf{Metropolis-Adjusted} Langevin Algorithm)    \footnote{Roberts \& Tweedie, 1996}}
+    Idea: Use \textbf{Metropolis Hastings}! Gets rid of $\mathcal O (h)$ error.
     
         Make a proposal:
         \[ Y_{n+1} = X_n - h\grad U(X_n)  + \sqrt{2h}Z_{n+1}\] \[\]
@@ -305,7 +318,7 @@ Different choices of \(T\) are available, we consider
 \end{frame}
 
 
-\begin{frame}{\texttt{RWM} (Random Walk Metropolis)}
+\begin{frame}{\texttt{RWM} \footnote{Metropolis et al. 1953}}
     \textbf{Back to basics}.
     
         Make a proposal:
@@ -324,7 +337,7 @@ Different choices of \(T\) are available, we consider
 \begin{frame}
 \begin{figure}
     \centering
-    \includegraphics[width=0.8\linewidth]{WriteUp/Presentation/Figures/tulac_malac_rwm_coldwell.png}
+    \includegraphics[width=0.8\linewidth]{Figures/transparentDoubleWell.png}
 \end{figure}
 \end{frame}
 
@@ -340,7 +353,7 @@ Different choices of \(T\) are available, we consider
 \begin{frame}{Which algorithm to use?}
     \begin{itemize}
         \item Highly dependent on application.
-        \item Trade-off beteeen quality and feasible speed.
+        \item Trade-off between quality and feasible speed.
         \item Other approaches:
         \begin{itemize}
             \item Higher order schemes (\texttt{HOLA})
@@ -365,7 +378,7 @@ Different choices of \(T\) are available, we consider
             It uses unbiased estimator of the gradient of log-posterior based on subsampling, suitable for samples of huge size. 
   \end{itemize} 
 \end{frame}
-\begin{frame}{SGLD}
+\begin{frame}{\texttt{SGLD}}
 \begin{itemize}
     \item $\nabla U \to \nabla U_0+(\frac{N}{p}) \sum_{i\in S}\nabla U_i$,  where S is a minibatch of \{1,...., N\} with replacement of size p.\\
     N is the size of the sample, p is the size of the subsample. 
