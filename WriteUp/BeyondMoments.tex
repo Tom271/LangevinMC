@@ -44,7 +44,7 @@ $$
 The Kullback--Leibler divergence from $Q$ to $P$ measures the information lost in using $Q$ to approximate $P$  \cite{anderson2004model} and is also known as the relative entropy.  It is worth noting that, unlike the other two measures considered here, the Kullback--Leibler divergence is not a metric, and in particular is not symmetric.
 \textbf{LITTLE MORE INTUITION ON WASSERSTEIN \& TRANSPORT??}
 
-Finally we consider the Wasserstein distance.  If $P$ and $Q$ are probability measures on $(\Omega, \mathcal{F})$, we say that $\gamma$ is a transport plan between two probability measures $P$ and $Q$ if it is a probability measure on $(\Omega \times \Omega, \mathcal{F} \times \mathcal{F})$ such that for any Borel set $A \subset \mathcal{F}$, $\gamma(A \times \Omega)=P(A)$ and $\gamma(\Omega \times A) = Q(A)$.  We denote the set of all such transport plans by $\Pi(P,Q)$.  In simple terms, the set of transport plans $\Pi(P,Q)$ represents the possible ways of transporting mass distributed according to $P$ to a distribution according to $Q$, where mass is neither created nor destroyed by the action of the plan.  The `effort' to transport mass is then represented by a cost function $d:\Omega \to \Omega$, so that $d(x,y)$ is the cost of moving unit mass from $x$ to $y$.
+Finally we consider the Wasserstein distance.  If $P$ and $Q$ are probability measures on $(\Omega, \mathcal{F})$, we say that $\gamma$ is a transport plan between two probability measures $P$ and $Q$ if it is a probability measure on $(\Omega \times \Omega, \mathcal{F} \times \mathcal{F})$ such that for any Borel set $A \subset \mathcal{F}$, $\gamma(A \times \Omega)=P(A)$ and $\gamma(\Omega \times A) = Q(A)$.  We denote the set of all such transport plans by $\Pi(P,Q)$.  In simple terms, the set of transport plans, $\Pi(P,Q)$, represents the possible ways of transporting mass distributed according to $P$ to a distribution according to $Q$, without creating or destroying mass in the process.  The `effort' to transport mass is then represented by a cost function $d:\Omega \to \Omega$, so that $d(x,y)$ is the cost of moving unit mass from $x$ to $y$.
 
 \begin{defn}[Wasserstein distance]
 For two probability measures, $P$ and $Q$, the $p$-Wasserstein distance is given by
@@ -53,7 +53,7 @@ W_p(P,Q) = \left( \inf_{\gamma \in \Pi(P,Q)} \int_{\Omega \times \Omega} d(x,y)^
 $$
 \end{defn}
 
-The Wasserstein distance represents the amount of `effort' required to move mass distributed according to the measure $P$ to $Q$.  We restrict our attention to $L^1$-Wasserstein and $L^2$-Wasserstein distances, which is to say that we choose our cost function $d$ to be the Euclidean distance, and $p=1,2$.
+The Wasserstein distance represents the amount of `effort' required to move mass distributed according to $P$ to $Q$.  We restrict our attention to $L^1$-Wasserstein and $L^2$-Wasserstein distances, which is to say that we choose our cost function $d$ to be the Euclidean distance, and $p=1,2$.
 
 Due to impracticality of computing higher-dimensional Wasserstein distances, we use a computationally more feasible variant, the Sliced Wasserstein distance. First proposed in \cite{rabin2011wasserstein} and further elaborated on, for example, in \cite{gswd}, the Sliced Wasserstein distance exploits the fact that the Wasserstein distance between 1-dimensional probability measures $P, Q$ can be computed with an explicit formula $\abs{F^{-1}(t)-G^{-1}(t)}^p dt$ where $F$ and $G$ are the CDFs of $P$ and $Q$ respectively \cite{ramdas2017wasserstein}.
 
@@ -73,7 +73,7 @@ where $\mathbb S^{d-1}$ is the $(d-1)$-dimensional sphere and $\mathcal RI$ deno
 
 Theoretical bounds on the total variation distance between, and Kullback--Leibler divergence from, the distribution of the $n^{\text{th}}$ iterate of the unadjusted Langevin Algorithm were first provided in \cite{dalalyan2017theoretical}.  In the case of a `warm start', i.e. that the distribution of the initial value is close to $\Pi$, it was shown that \texttt{ULA} had an upper bound of $\mathcal{O}(d/\epsilon)$ iterations to achieve precision level $\epsilon$.  This result was improved by \cite{durmus2016high}, \cite{durmus2017nonasymptotic} which extended the analysis to the Wasserstein distance and dispensed with the assumption of a warm start, showing that the upper bound on iterations could be reduced to $\mathcal O (d/\epsilon)$, provided the Hessian of the potential is Lipschitz continuous.
 
-Most recently, \cite{dalalyan2019user} has
+Most recently, \cite{dalalyan2019user} has 
 
 \texttt{ULA} \cite{dalalyan2019user}
 \texttt{tULA} \cite{Brosse18tULA}
@@ -227,7 +227,7 @@ Due to the curse of dimensionality, it may be the case that for many points $c$ 
 \begin{defn}[KDE]
 A kernel density estimator for a i.i.d. set of samples $X = \{x_i\}_{i=1}^N$ is
 \[\hat{\pi}_{X} (x) = \frac 1 {Ns} \sum_{i=1}^N K\left( \frac{x - x_i}{s} \right)\]
-where $s > 0$ is a smoothing parameter and $K$ is a kernel function (for example, Gaussian).
+where $s > 0$ is a smoothing parameter known as the bandwidth and $K$ is a kernel function.  For our purposes, a Gaussian kernel was assumed for a minimum working model which provided unbounded support.  As time did not permit an in-depth review of the literature on Kernel Density Estimation, 
 \end{defn}
 
 \noindent Based on this estimation, we define the following discrete probability measure:
