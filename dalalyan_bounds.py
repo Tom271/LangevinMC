@@ -2,26 +2,19 @@ import numpy as np
 
 # Increasing diagonal Gaussian specific
 p = 2 # dimension
-m = 1/p
+m = 1
 M = 1
 
-def corollary1(eps):
-    ''' Given epsilon, returns number of steps K and step size h, to run ULA s.t. TV <= epsilon '''
+def theorem1(N, h):
+    ''' Given number of steps N and step size h, returns upper bound on W2 distance '''
     global p, m, M
-    T = 0.5 * (4 * np.log(1/eps) + p * np.log(M / m))/m
-    alpha = (1 + M * p * T * eps**(-2))/2
-    h = eps**2 * (2*alpha - 1) / (M**2 * T * p * alpha)
-    K = np.ceil(T/h)
-    return K, h
+    starting_error = np.sqrt(p/m) # Assuming U=0 at minimum (valid for gaussian)
+    if h <= 2/(m+M):
+        return (1 - m * h)**N * starting_error + 1.65 * (M/m) * (h * p)**0.5
+    else:
+        return (M * h - 1)**N * starting_error + (1.65 * M * h) / (2 - M * h) * (h * p)**0.5
 
-def theorem2(K, h):
-    ''' Given number of steps K and step size h, produces upper bound on TV. '''
-    global p, m, M
-    alpha = min(1/(h*M), K)
-    assert alpha >= 1
-    assert K >= alpha
-    T = K*h
-    return 0.5 * np.exp(0.25 * p * np.log(M/m) - 0.5 * T * m) + ( (p * M**2 * T * h * alpha) / (4 * (2*alpha - 1)) )**0.5
 
-for eps in (0.02, 0.05, 0.1, 0.2, 0.5):
-    print(corollary1(eps))
+h = 0.01
+for N in [100, 10**3, 10**4, 10**5]:
+    print(theorem1(N, h))
