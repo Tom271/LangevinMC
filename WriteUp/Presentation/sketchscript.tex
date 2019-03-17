@@ -11,6 +11,7 @@
 \usepackage{enumitem}
 \usepackage{float}
 \usepackage{breqn}
+\usepackage{soul}
 \setlength{\headheight}{14.5pt}
 
 %Swap bullets for long dash in itemize
@@ -106,11 +107,11 @@ The aim of MCMC is to be able to accurately sample from an unknown probability d
  \[\pi(x) = \mathcal{Z}^{-1} \e^{-U(x)}\]
  This distribution goes by many names as it crops up in many areas:
  \begin{itemize}
-     \item Statisticians know it as a `log-linear model' \textbf{REALLY? -- MH}
+     \item \st{Statisticians know it as a `log-linear model'} \textbf{REALLY? -- MH}
      \item Mathematicians often call it a `Gibbs measure'
      \item Physicists know it as the `Boltzmann distribution' or `canonical ensemble'
  \end{itemize}
- In fact, the Hammersley-Clifford theorem states that any measure that satisfies a Markov property can be expressed as a Gibbs measure. So although we only look at distributions of this form, it is not actually as much of a restriction as it initially appears. Borrowing the terminology from MD, we call \(U\) the potential function (\(\mathcal{Z}\) is a normalising constant). We know potential, not normaliser. Let's look pursue this molecular dynamics link to gain some intuition. How does this distribution arise?
+ \st{In fact, the Hammersley-Clifford theorem states that any measure that satisfies a Markov property can be expressed as a Gibbs measure}. So although we only look at distributions of this form, it is not actually as much of a restriction as it initially appears. Borrowing the terminology from MD, we call \(U\) the potential function (\(\mathcal{Z}\) is a normalising constant). We know potential, not normaliser. Let's look pursue this molecular dynamics link to gain some intuition. How does this distribution arise?
  
  In MD, \(U\) describes the potential energy of a particle, for this reason we call \(U\) a potential well. (Picture of potential well). If we let a particle move in this well, this is what we see (animation?). The particle moves in the well, up and down each side. 
  

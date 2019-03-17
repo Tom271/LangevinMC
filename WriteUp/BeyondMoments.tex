@@ -9,6 +9,7 @@ $$
 \norm{P - Q}_{TV} = \sup_{A \in \mathcal{F}} \abs{P(A) - Q(A)}.
 $$
 \end{defn}
+In other words, total variation measures the greatest possible difference between the probability of an event according to $P$ and $Q$.
 \begin{prop}
 If the set $\Omega$ is countable then this is equivalent to half the $L^1$ norm.
 $$
@@ -37,26 +38,28 @@ $$
 \begin{defn}[Kullback--Leibler Divergence]
 Let $P$ and $Q$ be two probability measures on $(\Omega, \mathcal{F})$.  If $P \ll Q$, the Kullback--Leibler divergence of $P$ with respect to $Q$ is defined as
 $$
-KL(P|Q) = \int_\Omega \frac{d P}{d Q} log \left(  \frac{d P}{d Q} \right) d Q.
+D_{\text{KL}}(P\,||\,Q) = \int_\Omega \frac{d P}{d Q} log \left(  \frac{d P}{d Q} \right) d Q.
 $$
 \end{defn}
-
+The Kullback--Leibler divergence from $Q$ to $P$ measures the information lost in using $Q$ to approximate $P$  \cite{anderson2004model} and is also known as the relative entropy.  It is worth noting that, unlike the other two measures considered here, the Kullback--Leibler divergence is not a metric, and in particular is not symmetric.
 \textbf{LITTLE MORE INTUITION ON WASSERSTEIN \& TRANSPORT??}
 
-Finally we consider the Wasserstein distance.  If $P$ and $Q$ are probability measures on $(\R^d,\mathcal{B}(\R^d)$, we say that $\gamma$ is a transport plan between two probability measures $P$ and $Q$ if it is a probability measure on $(\R^d \times \R^d, \mathcal{B}(\R^d \times \R^d))$ such that for any Borel set $A \subset \R^d$, $\gamma(A \times \R^d)=P(A)$ and $\gamma(\R^d \times A) = Q(A)$.  We denote the set of all such transport plans by $\Pi(P,Q)$.
+Finally we consider the Wasserstein distance.  If $P$ and $Q$ are probability measures on $(\Omega, \mathcal{F})$, we say that $\gamma$ is a transport plan between two probability measures $P$ and $Q$ if it is a probability measure on $(\Omega \times \Omega, \mathcal{F} \times \mathcal{F})$ such that for any Borel set $A \subset \mathcal{F}$, $\gamma(A \times \Omega)=P(A)$ and $\gamma(\Omega \times A) = Q(A)$.  We denote the set of all such transport plans by $\Pi(P,Q)$.  In simple terms, the set of transport plans $\Pi(P,Q)$ represents the possible ways of transporting mass distributed according to $P$ to a distribution according to $Q$, where mass is neither created nor destroyed by the action of the plan.  The `effort' to transport mass is then represented by a cost function $d:\Omega \to \Omega$, so that $d(x,y)$ is the cost of moving unit mass from $x$ to $y$.
 
 \begin{defn}[Wasserstein distance]
-For two probability measures, $P$ and $Q$, the $L^p$-Wasserstein distance is given by
+For two probability measures, $P$ and $Q$, the $p$-Wasserstein distance is given by
 $$
-W_p(P,Q) = \left( \inf_{\gamma \in \Pi(P,Q)} \int_{\R^d \times \R^d} \norm{x-y}^p d \gamma(x,y) \right)^{1/p}.
+W_p(P,Q) = \left( \inf_{\gamma \in \Pi(P,Q)} \int_{\Omega \times \Omega} d(x,y)^p d \gamma(x,y) \right)^{1/p}.
 $$
 \end{defn}
 
-We will restrict our attention mainly to $L^1$-Wasserstein and $L^2$-Wasserstein distances. Due to practical impossibility of computing higher-dimensional Wasserstein distances, we also introduce a compuatationally more feasible variant, the Sliced Wasserstein distance. First proposed in \cite{rabin2011wasserstein} and further elaborated on, for example, in \cite{gswd}, the Sliced Wasserstein distance exploits the fact that the Wasserstein distance between 1-dimensional probability measures $P, Q$ can be computed with an explicit formula $\abs{F^{-1}(t)-G^{-1}(t)}^p dt$ where $F$ and $G$ are the CDFs of $P$ and $Q$ respectively \cite{ramdas2017wasserstein}.
+The Wasserstein distance represents the amount of `effort' required to move mass distributed according to the measure $P$ to $Q$.  We restrict our attention to $L^1$-Wasserstein and $L^2$-Wasserstein distances, which is to say that we choose our cost function $d$ to be the Euclidean distance, and $p=1,2$.
+
+Due to impracticality of computing higher-dimensional Wasserstein distances, we use a computationally more feasible variant, the Sliced Wasserstein distance. First proposed in \cite{rabin2011wasserstein} and further elaborated on, for example, in \cite{gswd}, the Sliced Wasserstein distance exploits the fact that the Wasserstein distance between 1-dimensional probability measures $P, Q$ can be computed with an explicit formula $\abs{F^{-1}(t)-G^{-1}(t)}^p dt$ where $F$ and $G$ are the CDFs of $P$ and $Q$ respectively \cite{ramdas2017wasserstein}.
 
 
 \begin{defn}[Sliced Wasserstein distance]
-For two probability measures, $P$ and $Q$, the $L^p$-Wasserstein distance is given by
+For two probability measures, $P$ and $Q$, the $L^p$ Sliced Wasserstein distance is given by
 $$
 SW_p(P,Q) = \left(\int_{\mathbb S^{d-1} }  W_p^p\left(\mathcal{RI}_P(\cdot, \theta), \mathcal{RI}_Q(\cdot, \theta) \right) d \theta \right)^{\frac 1 p}
 $$
@@ -68,9 +71,9 @@ where $\mathbb S^{d-1}$ is the $(d-1)$-dimensional sphere and $\mathcal RI$ deno
 \subsection{Theoretical Non-asymptotic Error Bounds}
 
 
-Theoretical bounds on the total variation distance between the distribution of the $n^{\text{th}}$ iterate of the unadjusted Langevin Algorithm were first provided in the case of a `warm start' in \cite{dalalyan2017theoretical}. 
+Theoretical bounds on the total variation distance between, and Kullback--Leibler divergence from, the distribution of the $n^{\text{th}}$ iterate of the unadjusted Langevin Algorithm were first provided in \cite{dalalyan2017theoretical}.  In the case of a `warm start', i.e. that the distribution of the initial value is close to $\Pi$, it was shown that \texttt{ULA} had an upper bound of $\mathcal{O}(d/\epsilon)$ iterations to achieve precision level $\epsilon$.  This result was improved by \cite{durmus2016high}, \cite{durmus2017nonasymptotic} which extended the analysis to the Wasserstein distance and dispensed with the assumption of a warm start, showing that the upper bound on iterations could be reduced to $\mathcal O (d/\epsilon)$, provided the Hessian of the potential is Lipschitz continuous.
 
- Then \cite{durmus2016high}, \cite{durmus2017nonasymptotic} improve and consider Wasserstein distance.  These papers showed that $O(d/\epsilon)$ iterations are needed for precision level $\epsilon$.
+Most recently, \cite{dalalyan2019user} has
 
 \texttt{ULA} \cite{dalalyan2019user}
 \texttt{tULA} \cite{Brosse18tULA}
@@ -167,12 +170,21 @@ We have implemented a suite of tools for analysis of error for all of the aforem
 
 \subsection{Sampling approaches}
 
-\subsection{Parameters}
+Throughout this project, we have encountered two main approaches for sampling. To obtain a set of samples, one may:
 
+\begin{itemize}
+    \item Run a single chain, discard a certain amount of the initial values (the burn-in period) an keep the rest, with possible thinning\footnote{To thin the chain, one only retains every $k$-th sample for some $k$.} to reduce autocorrelation. This is used for practical sampling.
+    \item Run multiple chains and retain their final $N$-th value only. This is useful for verification/establishment of non-asymptotic bounds.
+\end{itemize}
 
+To accommodate for both possibilities, given positive integers $b, N_{\text{chains}}, N$ and a set $I \subset \mathbb \{1, 2, \dots, N - b\}$ of indices, our program aggregates samples with indices in $\{i+b\ |\ i \in I\} $  from $ N_{\text{chains}}$ independent chains.
 
+\subsection{Testing potentials}
+For the purposes of testing, four qualitatively different potentials have been made available within our program. These are: Gaussian, Double Well, Rosenbrock function and Ginzburg-Landau model. We note that these, save for Gaussian, are non-convex.
 
+Any of the above potentials may also be scaled by \textit{temperature} $T$. That is, having chosen a potential function $U$ and a temperature $T$, the true distribution to be sampled from will be
 
+\[\pi(x) = e^{-\frac{U(x)}{T}}.\]
 
 \subsection{Estimating error}
 
@@ -191,31 +203,36 @@ $$
 where $bins$ is a parameter describing the fineness of the mesh. The histogram of the collection of samples $X$ will be understood to be the following function $h: \#_X \rightarrow \mathbb R$:
 
 $$
-    h(c) = \frac 1 N |\{x \in X\ |\ \arg \min_{c' \in \#_X} \norm{c' - x} = c \}|
+    h(c) = |\{x \in X\ |\ \arg \min_{c' \in \#_X} \norm{c' - x} = c \}|
 $$
 
-i. e. normalized count of points $x$ such that the closes point of mesh to $x$ is $c$. This defines the discrete probability measure 
+i.e. count of points $x$ such that the closes point of mesh to $x$ is $c$. This defines the discrete probability measure 
 
-$$H_X := \sum_{c \in \#_X} h(c) \delta_c,$$
+$$H_X := \sum_{c \in \#_X} \frac {h(c)} N   \delta_c,$$
 
 which we will understand to be the sampled approximation of the true distribution from which we are sampling. Finally, denote also by $Z$ the sum of the true distribution pdf values over the values of the mesh.
 
 \[Z := \sum_{c \in \#_X} \pi(c)\]
 
-\begin{itemize}
-    \item sliced W
-    \item sliced W no histo
-    \item KDE KL, TV, SW
-\end{itemize}
-
-
-
-\subsubsection{Comparing continuous and discrete distributions: histograms vs. KDE}
 
 
 \subsubsection{The Curse of dimensionality}
 
-In short, since $|\#_X| = \text{bins}^D$ is exponential in dimension, it is impossible to construct histograms in high dimensions.
+In short, since the size of the mesh $|\#_X| = \text{bins}^D$ is exponential in dimension, it is impossible to construct histograms in high dimensions. Even within smaller dimensions, a fundamental trade-off arises; either one can construct a desirably fine mesh with many bins being empty (that is, $h(c) = 0$), or construct a coarse mesh with sufficiently many samples. The quality of the error estimation suffers in both cases. \\\\
+For this reason, the implemented  histogram/KDE-based  error metrics are only feasible for smaller dimensions\footnote{Around $1 \leq D \leq 4$.}, whereas the other metrics should be considered only indicative with increasing dimensions, rather than precise measures of error.
+
+\subsubsection{Histograms vs. KDE}
+Due to the curse of dimensionality, it may be the case that for many points $c$ of the mesh, we have $h(c) = 0$. To smoothen (and improve) our approximation of the sampled distribution, we make use of Kernel Density Estimation. KDE can be thought of as an extension of the idea of histogram.
+
+\begin{defn}[KDE]
+A kernel density estimator for a i.i.d. set of samples $X = \{x_i\}_{i=1}^N$ is
+\[\hat{\pi}_{X} (x) = \frac 1 {Ns} \sum_{i=1}^N K\left( \frac{x - x_i}{s} \right)\]
+where $s > 0$ is a smoothing parameter and $K$ is a kernel function (for example, Gaussian).
+\end{defn}
+
+\noindent Based on this estimation, we define the following discrete probability measure:
+
+\[ \text{KDE}_X := \frac 1 {\hat Z} \sum_{c \in \#_X} \hat{\pi}_X(c) \delta_c \qquad \text{with the normalizing constant } \hat Z = \sum_{c \in \#_X} \hat{\pi}_X(c).\]
 
 \subsection{Implemented metrics}
 
@@ -253,11 +270,14 @@ $$
 \subsubsection{Total variation}
 The total variation, being the first of implemented histogram measures, is calculated as
 
-\[\text{total variation} = \norm{H_X - \frac 1 Z \sum_{c \in \#_X} \pi(c) \delta_c}_{\text{TV}} = \frac 1 2\sum_{c \in \#_X} |h(c) - \pi(c)| .\]
+\[\text{total variation} = \norm{H_X - \frac 1 Z \sum_{c \in \#_X} \pi(c) \delta_c}_{\text{TV}} = \frac 1 2\sum_{c \in \#_X} \left|\frac{h(c)}{N} - \frac{\pi(c)}{Z}\right| .\]
 
+\subsubsection{KL Divergence}
+The next histogram-based measure is KL divergence.
+
+\[\text{KL divergence} = \text{KL} \left(H_X \bigg| \frac 1 Z \sum_{c \in \#_X} \pi(c) \delta_c\right) =  \sum_{c \in \#_X} \frac{h(c)}{N} \log\left(\frac {h(c) Z} {\pi(c) N} \right).\]
 
 \subsubsection{Sliced Wasserstein}
-
 
 The Sliced Wasserstein distance, being defined via a multi-dimensional integral, cannot be computed exactly. Therefore, we resort to a simple Monte Carlo scheme where $L$ samples $\{\theta_i\}$ are drawn uniformly from the $(d-1)$-dimensional sphere $\mathbb S^{d-1}$.
 
@@ -265,18 +285,34 @@ $$
 SW_p(P, Q) \approx \left( \frac 1 L \sum_{i=1}^L W_p^p\left(\mathcal{RI}_P(\cdot, \theta_i), \mathcal{RI}_Q(\cdot, \theta_i) \right) \right)^{\frac 1 p}
 $$
 
-The first, histogram based, implemented metric for Sliced Wasserstein distance further approximates the above Monte Carlo scheme for $SW_1\left(H_X, \right)$ as
+The first, histogram based, implemented metric for Sliced Wasserstein distance further approximates the above Monte Carlo scheme for $SW_1$ as
 
-\[\text{sliced wasserstein}_{histogram} = \begin{cases}
+\[\text{SW}_{histogram} = \begin{cases}
 W_1 \left( H_X,\  \frac 1 Z \sum_{c \in \#_X} \pi(c) \delta_c \right) & \text{if dimension } = 1 \\
-\sum_{i = 1}^L W_1 \left( \sum_{c \in \#_X} h(c) \delta_{\left<c, \theta_i \right>},\  \frac 1 Z \sum_{c \in \#_X} \pi(c) \delta_{\left<c, \theta_i \right>}  \right) & \text{ otherwise }
+\sum_{i = 1}^L W_1 \left( \frac 1 N \sum_{c \in \#_X} h(c) \delta_{\left<c, \theta_i \right>},\  \frac 1 Z \sum_{c \in \#_X} \pi(c) \delta_{\left<c, \theta_i \right>}  \right) & \text{ otherwise }
 \end{cases},\]
 
-where $\left< \cdot \right>$ is the dot product, $\theta_i = \frac{\theta'_i}{\norm{\theta'_i}}$ with $
-\theta'_i \sim \mathcal N(0, I_D)$ and $W_1$ is computed explicitly.
+where $\left< \cdot \right>$ is the dot product, $\theta_i = \frac{\theta'_i}{\norm{\theta'_i}}$ is a point on $(d-1)$-dimensional sphere with $
+\theta'_i \sim \mathcal N(0, I_D)$ and $W_1$ is computed explicitly. \\\\
 
 The second, \textbf{heuristic-based}, approximation of the Sliced Wasserstein distance is calculated as follows:
 
+\[\text{SW}_{no\ histogram} = \begin{cases}
+W_1 \left( \frac 1 N \sum_{x \in X} \delta_x,\  \frac 1 {Z'} \sum_{x \in X} \pi(x) \delta_x \right) & \text{if dimension } = 1 \\
+\sum_{i = 1}^L W_1 \left(  \frac 1 N \sum_{x \in X} \delta_{\left<x, \theta_i \right>},\ \frac 1 {Z'} \frac 1 N \sum_{x \in X} \pi(x) \delta_{\left<x, \theta_i \right>}  \right) & \text{ otherwise }
+\end{cases}.\]
+where $Z' = \sum_{x \in X} \pi(x) $ is a normalizing constant. Intuitivelly, this measure of error describes whether the spatial distribution of samples is proportional to the true distribution, \textit{at the same points}.
 
 
 \subsection{KDE-based metrics}
+
+All three of the above histogram-based metrics are available in their KDE version as well. 
+
+\[\text{total variation}^{\text{KDE}} = \norm{\text{KDE}_X - \frac 1 Z \sum_{c \in \#_X} \pi(c) \delta_c}_{\text{TV}} \]
+
+\[\text{KL divergence}^{\text{KDE}} = \text{KL} \left(\text{KDE}_X \ \bigg|\  \frac 1 Z \sum_{c \in \#_X} \pi(c) \delta_c\right) \]
+
+\[\text{SW}_{histogram}^{\text{KDE}} = \begin{cases}
+W_1 \left( \text{KDE}_X,\  \frac 1 Z \sum_{c \in \#_X} \pi(c) \delta_c \right) & \text{if dimension } = 1 \\
+\sum_{i = 1}^L W_1 \left( \frac 1 {\hat Z} \sum_{c \in \#_X} \hat{\pi}_X(c) \delta_{\left<c, \theta_i \right>},\  \frac 1 Z \sum_{c \in \#_X} \pi(c) \delta_{\left<c, \theta_i \right>}  \right) & \text{ otherwise }
+\end{cases}\]

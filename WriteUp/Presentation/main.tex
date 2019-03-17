@@ -17,7 +17,7 @@
 \usepackage{graphicx}
 \graphicspath{{Figures/}}
 \usepackage{subcaption}
-
+\beamertemplatenavigationsymbolsempty
 % There are many different themes available for Beamer. A comprehensive
 % list with examples is given here:
 % http://deic.uab.es/~iblanes/beamer_gallery/index_by_theme.html
@@ -128,7 +128,7 @@
 % A subtitle is optional and this may be deleted
 % \subtitle{Optional Subtitle}
 
-\author{Bowen Han\inst{1} \and Matthew Holden\inst{1} \and Marko Puza\inst{1} \and Tom Hodgson\inst{1}\\ \textit{Supervised by:} Sotirios Sabanis\inst{2}}
+\author{Bowen Han\inst{1} \and Matthew Holden\inst{1} \and Marko Puza\inst{1} \and Tom Hodgson\inst{1} \\ \textit{Supervised by:} Sotirios Sabanis\inst{2}}
 % - Give the names in the same order as the appear in the paper.
 % - Use the \inst{?} command only if the authors have different
 %   affiliation.
@@ -172,7 +172,7 @@
 % Let's get started
 \begin{document}
 
-\setbeamercolor{background canvas}{bg=white}
+\setbeamercolor{background canvas}{bg=gray!40}
 \begin{frame}
   \titlepage
 \end{frame}
@@ -189,176 +189,371 @@
 
 \subsection{MD Motivation}
 
-\begin{frame}{The Problem}
-    
+
+
+\begin{frame}{Bayes' Rule}
+\begin{columns}[T] % align columns
+\begin{column}{.48\textwidth}
+ \[\pi(\theta|y) = \frac{f(y|\theta)p(\theta)}{f(y)}\]
+\end{column}%
+\hfill%
+\begin{column}{.48\textwidth}
+$\pi(\theta|y)$ -- posterior\\ $f(y|\theta)$ -- likelihood of data\\ $p(\theta)$ -- prior\\ $f(y) = \int f(y|\theta)p(\theta) \dif \theta$ -- normalising constant
+\end{column}%
+\end{columns}
 \end{frame}
 
-\begin{frame}{Particles in Wells -- Langevin Equation}
-     \[\dif X_t = -\grad U(X_t) \dif t +\sqrt{2}\dif W_t\]
+\begin{frame}{Markov Chain Monte Carlo}
+    By strong law of large numbers, if $X_n$ is a sequence of i.i.d. random variables distributed according to $\pi$
+    \[\frac{1}{N}\sum_{n=1}^N f(X_n) \to \mathbb{E}_\pi(f) \quad \text{a.s.}\]
+    \pause
+    Independent samples are difficult.  Instead construct Markov chain that is \textbf{ergodic} with respect to $\pi$.
 \end{frame}
 
-\begin{frame}{Discretise LE - \texttt{ULA}}
-    Introduce idea of algo
+\begin{frame}{Creating a Chain -- Langevin Equation}
+\begin{onlyenv}<1>
+    $$\pi(x)=\mathcal{Z}^{-1} \e^{-U(x)} $$
+\end{onlyenv}
+\begin{onlyenv}<2>
+    $$\dif X_t = -\grad U(X_t) \dif t +\sqrt{2}\dif W_t $$
+\end{onlyenv}
+\begin{onlyenv}<3>
+\begin{columns}
+\column{0.4\textwidth}
+    $$\dif X_t = -\grad U(X_t) \dif t +\sqrt{2}\dif W_t $$
+\column{0.6\textwidth}
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{Figures/LD.png}
+\end{figure}
+\end{columns}
+\end{onlyenv}
+\begin{onlyenv}<4>
+\begin{columns}
+\column{0.4\textwidth}
+    $$\dif X_t = -\grad U(X_t) \dif t +\sqrt{2}\dif W_t $$
+        $$\pi(x)=\mathcal{Z}^{-1} \e^{-U(x)} $$
+\column{0.6\textwidth}
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{Figures/LD.png}
+\end{figure}
+\end{columns}
+\end{onlyenv}
+\end{frame}
+
+\begin{frame}{Discretisation}
+
+    \begin{itemize}
+        \item Euler-Maruyama  \[X_{n+1} = X_n - h\grad U(X_n)  + \sqrt{2h}Z_{n+1}\]
+    \end{itemize}
+    \pause
+    Example: Take \(\pi\sim N(0,1)\), so $U=|x| ^2/2,\, h=1$ \\
+    \pause 
+    $$X_{n+1} =X_n - X_n +\sqrt{2}Z_{n+1} $$
+    \pause 
+    $$\implies X_n \sim N(0,2)\qquad \# $$
+ \pause
+ Bigger problem:
+ \[\lim_{\lVert x\rVert \to \infty}\frac{\lVert \grad U(x)\rVert }{\lVert x \rVert} = \infty  \]
+
+\end{frame}
+
+\begin{frame}{\texttt{ULA} (Unadjusted Langevin Algorithm)}
+    Discretize the Langevin Equation:
      \[X_{n+1} = X_n - h\grad U(X_n)  + \sqrt{2h}Z_{n+1}\]
+     \[\]
+     \[\]
+      \centerline{\textbf{divergence problems}}
 \end{frame}
-\begin{frame}{Metropolise?/Taming}
-\[\dif X_t = -\grad U(X_t) \dif t +\sqrt{2}\dif W_t \Longrightarrow \dif X_t = -T(X_t)\dif t +\sqrt{2}\dif W_t \]
+
+\begin{frame}{\texttt{tULA} (\textbf{Tamed} Unadjusted Langevin Algorithm)    \footnote{Brosse, Durmus, Moulines, Sabanis, 2018}}
+Idea: \textbf{Tame} the drift!
+\[ X_{n+1} = X_n -hT(X_n) +\sqrt{2h}Z_{n+1} \]
 Different choices of \(T\) are available, we consider 
-\[T=\frac{\grad U }{1+h\grad U}\]
-    Show some math/error bounds??
-\end{frame}
-
-\begin{frame}{Metropolise?/Taming}
+\[T(X_n)=\frac{\grad U(X_n) }{1+h\|\grad U(X_n)\|}\]
     
+   \[\]
+   \[\]
+   \centerline{\textbf{may still be stiff}}
+  
 \end{frame}
 
-\begin{frame}{Horse Racing? Us vs. Brosse et al.}
-    Show off our numeric skills
+\begin{frame}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{Figures/transparentTULA.png}
+\end{figure}
+\end{frame}
+
+\begin{frame}{\texttt{tULAc}     \footnote{Brosse, Durmus, Moulines, Sabanis, 2018}}
+    Idea: Use more robust, coordinate-wise, taming!
+        \[ X_{n+1} = X_n -hT(X_n) +\sqrt{2h}Z_{n+1} \] \[\]
+        \[T=\left(\frac{\partial_i U}{1+h|\partial_i U|}\right)_{i=\lbrace 1, \dots, d\rbrace}\]
+   \[\]
+   \[\]
+   \centerline{\textbf{works well, for small step sizes}}
+\end{frame}
+
+\begin{frame}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{Figures/transparentBoth.png}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{\texttt{(t)MALA(c)} (\textbf{Metropolis-Adjusted} Langevin Algorithm)    \footnote{Roberts \& Tweedie, 1996}}
+    Idea: Use \textbf{Metropolis Hastings}! Gets rid of $\mathcal O (h)$ error.
     
-    Brosse et al. - `Given the results of the numerical experiments, TULAc should be chosen over ULA
-to sample from general probability distributions. Indeed, TULAc has similar results as
-ULA when the step size is small and is more stable when using larger step sizes.'
+        Make a proposal:
+        \[ Y_{n+1} = X_n - h\grad U(X_n)  + \sqrt{2h}Z_{n+1}\] \[\]
+        \[ X_{n+1} = \begin{cases}
+            Y_{n+1} & \text{ with probability } \alpha = \min \left\lbrace 1, \frac{ \pi\left( Y_{n+1}\right) q (X_n\ |\ Y_{n+1}) } { \pi\left( X_n\right) q (Y_{n+1}\ |\ X_n) } \right\rbrace & \textbf{ ACCEPT } \\ \\ 
+            X_n & \text{ otherwise } & \textbf{ REJECT }
+        \end{cases}\]
+   \[\]
+   \[\]
+   \centerline{\textbf{problems with acceptance rate}}
 \end{frame}
 
-\begin{frame}{Conclusion}
-    What algorithm is best in what situation?
-    Next Steps:\\
-    Other possible algo: (SGLD, mMALA, HMC?)\\
-    Test use on real data, parallelise algs with complex iterations (HOLA), compare with some ML tech?
+
+\begin{frame}{\texttt{RWM} \footnote{Metropolis et al. 1953}}
+    \textbf{Back to basics}.
     
-\end{frame}
-\begin{frame}{}
-    Everything is online here if you want to play with vis. or use/improve testing
-    \url{https://github.com/Tom271/LangevinMC}
-\end{frame}
-\begin{frame}{First and Second Moments of Double Well - \(h=0.01\)}%{Optional Subtitle}
-        \begin{figure}[h]
-        \centering
-        \begin{minipage}{0.5\linewidth}
-          \centering
-          \includegraphics[width=0.99\linewidth]{10sBoxPlot1moment100dim001step.png}
-        \end{minipage}%
-        \begin{minipage}{0.5\linewidth}
-          \centering
-          \includegraphics[width=0.99\linewidth]{10sBoxPlot2moment100dim001step.png}
-        \end{minipage}%
-        \end{figure}
-\end{frame}
-
-\begin{frame}{First and Second Moments of Double Well - \(h=0.1\)}%{Optional Subtitle}
-        \begin{figure}[h]
-        \centering
-        \begin{minipage}{0.5\linewidth}
-          \centering
-          \includegraphics[width=0.99\linewidth]{10sBoxPlot1moment100dim01step.png}
-        \end{minipage}%
-        \begin{minipage}{0.5\linewidth}
-          \centering
-          \includegraphics[width=0.99\linewidth]{10sBoxPlot2moment100dim01step.png}
-        \end{minipage}%
-        \end{figure}
+        Make a proposal:
+        \[ Y_{n+1} = X_n + \sqrt{2h}Z_{n+1}\] \[\]
+        \[ X_{n+1} = \begin{cases}
+            Y_{n+1} & \text{ with probability } \alpha = \min \left\lbrace 1, \frac{ \pi\left( Y_{n+1}\right) } { \pi\left( X_n\right) } \right\rbrace & \textbf{ ACCEPT } \\ \\ 
+            X_n & \text{ otherwise } & \textbf{ REJECT }
+        \end{cases}\]
+   \[\]
+   \[\]
+   \centerline{\textbf{slow convergence}}
 \end{frame}
 
 
 
-\begin{frame}{First and Second Moments of Ill-Condition Gaussian - 1st Dimension}%{Optional Subtitle}
-        \begin{figure}[h]
-        \centering
-        \begin{minipage}{0.5\linewidth}
-          \centering
-          \includegraphics[width=0.99\linewidth]{illcond10sBoxPlot1moment100dim01step.png}
-        \end{minipage}%
-        \begin{minipage}{0.5\linewidth}
-          \centering
-          \includegraphics[width=0.99\linewidth]{illcond10sBoxPlot2moment100dim01step.png}
-        \end{minipage}%
-        \end{figure}
-\end{frame}
-
-\begin{frame}{First and Second Moments of Ill-Condition Gaussian - 2nd Dimension}%{Optional Subtitle}
-        \begin{figure}[h]
-        \centering
-        \begin{minipage}{0.5\linewidth}
-          \centering
-          \includegraphics[width=0.99\linewidth]{illcond10sBoxPlot1moment100dim01step2nddim.png}
-        \end{minipage}%
-        \begin{minipage}{0.5\linewidth}
-          \centering
-          \includegraphics[width=0.99\linewidth]{illcond10sBoxPlot2moment100dim01step2nddim.png}
-        \end{minipage}%
-        \end{figure}
-\end{frame}
-\begin{frame}{First and Second Moments of Ill-Condition Gaussian - 2nd Dimension}%{Optional Subtitle}
-        \begin{figure}[h]
-        \centering
-        \begin{minipage}{0.7\linewidth}
-          \centering
-          \includegraphics[width=0.99\linewidth]{illcond10sBoxPlot2moment100dim01step2nddimnotula.png}
-        \end{minipage}%
-        \end{figure}
+\begin{frame}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{Figures/transparentDoubleWell.png}
+\end{figure}
 \end{frame}
 
 
+% \begin{frame}{Horse Racing? Us vs. Brosse et al.}
+%     Show off our numeric skills
+    
+%     Brosse et al. - `Given the results of the numerical experiments, TULAc should be chosen over ULA
+% to sample from general probability distributions. Indeed, TULAc has similar results as
+% ULA when the step size is small and is more stable when using larger step sizes.'
+% \end{frame}
 
-\subsection{Non-asymptotic behaviour}
-\begin{frame}{Beyond Moments}
+\begin{frame}{Which algorithm to use?}
+    \begin{itemize}
+        \item Highly dependent on application.
+        \item Trade-off between quality and feasible speed.
+        \item Other approaches:
+        \begin{itemize}
+            \item Higher order schemes (\texttt{HOLA})
+            \item \texttt{HMC}, \texttt{mMALA}, \texttt{SGLD} (Stochastic Gradient Langevin Dynamics)
+        \end{itemize}
+    \end{itemize}
+
+    % What algorithm is best in what situation?
+    % Next Steps:\\
+    % Test use on real data, parallelise algs with complex iterations (HOLA), compare with some ML tech?
+    \end{frame}
+
+% \begin{frame}{Future Work}
+% There are many many methods we haven't considered: SGLD, HMC, mMALA。 \\
+% \end{frame}
+
+\begin{frame}{Why \texttt{SGLD}?}
+  \begin{itemize}
+      \item Normally, samples in machine learning are of huge sample sizes, for which most MCMC algorithms are not designed to process. 
+      \item Stochastic Gradient Langevin Dynamics (\texttt{SGLD}) is a popular one. 
+      \item \texttt{SGLD} is based on the Langevin Monte Carlo.\\
+            It uses unbiased estimator of the gradient of log-posterior based on subsampling, suitable for samples of huge size. 
+  \end{itemize} 
+\end{frame}
+\begin{frame}{\texttt{SGLD}}
 \begin{itemize}
-    \item Total Variation
-        \[\|\mu-\nu\|_{TV} - \sup_{\|f\|\leq 1} |\mu(f) - \nu(f)|\ \]
-    \item Wasserstein Distance
-       \[W_2(\mu,\nu) = \left( \inf_{\gamma \in \Gamma(\mu,\nu)} \int_{M\times M} d(x,y)^2 \mathrm{d}\gamma(x,y)\right)^{\frac{1}{2}}\]
+    \item $\nabla U \to \nabla U_0+(\frac{N}{p}) \sum_{i\in S}\nabla U_i$,  where S is a minibatch of \{1,...., N\} with replacement of size p.\\
+    N is the size of the sample, p is the size of the subsample. 
+    $U_0$ is log-prior, $U_i$ is log-likelihood.
+\item Our iterations:
+$$X_{n+1} = X_{n}-h \Bigg (\nabla U_0(X_n)+\frac{N}{p}\sum_{i\in S_{n+1}}\nabla U_i(X_n)\Bigg )+\sqrt{2h}Z_{n+1}$$
+
+$h > 0$: constant step size & $(Z_n)_{n\geq1}$: a sequence of i.i.d standard d - dimensional Gaussian vectors. 
 \end{itemize}
+\end{frame}
+\begin{frame}{\texttt{SGD}}
+    Stochastic Gradient Descent (SGD) is SGLD without the Gaussian noise, (the last term):
 
+$$X_{n+1} = X_{n}-h \Bigg (\nabla U_0(X_n)+\frac{N}{p}\sum_{i\in S_{n+1}}\nabla U_i(X_n)\Bigg)$$
+
+SGLD is similar to SGD, a well-known algorithm for optimization. 
 \end{frame}
 
-\begin{frame}{Durmus--Moulines Bounds}
-\begin{figure}[h]
-    \centering
-    \begin{subfigure}[b]{\textwidth}
-        \centering
-        \includegraphics[width=0.23\textwidth]{Pi_gamma.png}
-        \caption{Error in $\pi_\gamma$ (Choose suitable step size)}
-    \end{subfigure}
 
-\end{figure}
-\begin{figure}[h]
-    \centering
-    \begin{subfigure}[b]{0.23\textwidth}
-        \includegraphics[width=\textwidth]{ConvergenceK1e2.png}
-        \caption{K=$10^2$}
-    \end{subfigure}
-    ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
-      %(or a blank line to force the subfigure onto a new line)
-    \begin{subfigure}[b]{0.23\textwidth}
-        \includegraphics[width=\textwidth]{ConvergenceK1e3.png}
-        \caption{K=$10^3$}
-    \end{subfigure}
-    ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
-    %(or a blank line to force the subfigure onto a new line)
-    \begin{subfigure}[b]{0.23\textwidth}
-        \includegraphics[width=\textwidth]{ConvergenceK1e4.png}
-        \caption{K=$10^4$}
-    \end{subfigure}
-    ~
-    \begin{subfigure}[b]{0.23\textwidth}
-        \includegraphics[width=\textwidth]{ConvergenceK1e5.png}
-        \caption{K=$10^5$}
-    \end{subfigure}
-    
-\end{figure}
-\end{frame}
 
-\subsection{Future}
 
 \begin{frame}{Future Work}
 \begin{itemize}
-    \item Check Dalalyan's new `user-friendly' bound
-    \item Are these bounds anywhere near sharp?
-    \item Test against SGLD
-    \item Test on real data
+    \item To test these methods on  real or simulated data when we don't know the gradient analytically.
+   \item In higher dimension, taming methods may be better than the others.
+    \item In higher dimension, for sample of large size, we will use SGLD algorithms to reduce the costs.
 \end{itemize}
-    
 \end{frame}
+
+
+
+\begin{frame}{\textsc{Python} implementation }
+    We have implemented a suite of tools for analysis of the above LMC algorithms. 
+    
+    \begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{Figures/cloud.png}
+    \end{figure}
+    
+    \textbf{\centerline{\url{https://github.com/Tom271/LangevinMC}}}
+\end{frame}
+
+% \begin{frame}{First and Second Moments of Double Well - \(h=0.01\)}%{Optional Subtitle}
+%         \begin{figure}[h]
+%         \centering
+%         \begin{minipage}{0.5\linewidth}
+%           \centering
+%           \includegraphics[width=0.99\linewidth]{10sBoxPlot1moment100dim001step.png}
+%         \end{minipage}%
+%         \begin{minipage}{0.5\linewidth}
+%           \centering
+%           \includegraphics[width=0.99\linewidth]{10sBoxPlot2moment100dim001step.png}
+%         \end{minipage}%
+%         \end{figure}
+% \end{frame}
+
+% \begin{frame}{First and Second Moments of Double Well - \(h=0.1\)}%{Optional Subtitle}
+%         \begin{figure}[h]
+%         \centering
+%         \begin{minipage}{0.5\linewidth}
+%           \centering
+%           \includegraphics[width=0.99\linewidth]{10sBoxPlot1moment100dim01step.png}
+%         \end{minipage}%
+%         \begin{minipage}{0.5\linewidth}
+%           \centering
+%           \includegraphics[width=0.99\linewidth]{10sBoxPlot2moment100dim01step.png}
+%         \end{minipage}%
+%         \end{figure}
+% \end{frame}
+
+
+
+% \begin{frame}{First and Second Moments of Ill-Condition Gaussian - 1st Dimension}%{Optional Subtitle}
+%         \begin{figure}[h]
+%         \centering
+%         \begin{minipage}{0.5\linewidth}
+%           \centering
+%           \includegraphics[width=0.99\linewidth]{illcond10sBoxPlot1moment100dim01step.png}
+%         \end{minipage}%
+%         \begin{minipage}{0.5\linewidth}
+%           \centering
+%           \includegraphics[width=0.99\linewidth]{illcond10sBoxPlot2moment100dim01step.png}
+%         \end{minipage}%
+%         \end{figure}
+% \end{frame}
+
+% \begin{frame}{First and Second Moments of Ill-Condition Gaussian - 2nd Dimension}%{Optional Subtitle}
+%         \begin{figure}[h]
+%         \centering
+%         \begin{minipage}{0.5\linewidth}
+%           \centering
+%           \includegraphics[width=0.99\linewidth]{illcond10sBoxPlot1moment100dim01step2nddim.png}
+%         \end{minipage}%
+%         \begin{minipage}{0.5\linewidth}
+%           \centering
+%           \includegraphics[width=0.99\linewidth]{illcond10sBoxPlot2moment100dim01step2nddim.png}
+%         \end{minipage}%
+%         \end{figure}
+% \end{frame}
+% \begin{frame}{First and Second Moments of Ill-Condition Gaussian - 2nd Dimension}%{Optional Subtitle}
+%         \begin{figure}[h]
+%         \centering
+%         \begin{minipage}{0.7\linewidth}
+%           \centering
+%           \includegraphics[width=0.99\linewidth]{illcond10sBoxPlot2moment100dim01step2nddimnotula.png}
+%         \end{minipage}%
+%         \end{figure}
+% \end{frame}
+
+
+
+% \subsection{Non-asymptotic behaviour}
+% \begin{frame}{Beyond Moments}
+% \begin{itemize}
+%     \item Total Variation
+%         \[\|\mu-\nu\|_{TV} - \sup_{\|f\|\leq 1} |\mu(f) - \nu(f)|\ \]
+%     \item Wasserstein Distance
+%       \[W_2(\mu,\nu) = \left( \inf_{\gamma \in \Gamma(\mu,\nu)} \int_{M\times M} d(x,y)^2 \mathrm{d}\gamma(x,y)\right)^{\frac{1}{2}}\]
+% \end{itemize}
+
+% \end{frame}
+
+% \begin{frame}{Durmus--Moulines Bounds}
+% \begin{figure}[h]
+%     \centering
+%     \begin{subfigure}[b]{\textwidth}
+%         \centering
+%         \includegraphics[width=0.23\textwidth]{Pi_gamma.png}
+%         \caption{Error in $\pi_\gamma$ (Choose suitable step size)}
+%     \end{subfigure}
+
+% \end{figure}
+% \begin{figure}[h]
+%     \centering
+%     \begin{subfigure}[b]{0.23\textwidth}
+%         \includegraphics[width=\textwidth]{ConvergenceK1e2.png}
+%         \caption{K=$10^2$}
+%     \end{subfigure}
+%     ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
+%       %(or a blank line to force the subfigure onto a new line)
+%     \begin{subfigure}[b]{0.23\textwidth}
+%         \includegraphics[width=\textwidth]{ConvergenceK1e3.png}
+%         \caption{K=$10^3$}
+%     \end{subfigure}
+%     ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
+%     %(or a blank line to force the subfigure onto a new line)
+%     \begin{subfigure}[b]{0.23\textwidth}
+%         \includegraphics[width=\textwidth]{ConvergenceK1e4.png}
+%         \caption{K=$10^4$}
+%     \end{subfigure}
+%     ~
+%     \begin{subfigure}[b]{0.23\textwidth}
+%         \includegraphics[width=\textwidth]{ConvergenceK1e5.png}
+%         \caption{K=$10^5$}
+%     \end{subfigure}
+    
+% \end{figure}
+% \end{frame}
+
+% \subsection{Future}
+
+% \begin{frame}{Future Work}
+% \begin{itemize}
+%     \item Check Dalalyan's new `user-friendly' bound
+%     \item Are these bounds anywhere near sharp?
+%     \item Test against SGLD
+%     \item Test on real data
+% \end{itemize}
+    
+% \end{frame}
+
+
+
+
+
 
 % You can reveal the parts of a slide one at a time
 % with the \pause command:
@@ -379,6 +574,7 @@ ULA when the step size is small and is more stable when using larger step sizes.
 %   \item<4-> {
 %     Fourth item.
 %   }
+
 %   % or you can use the \uncover command to reveal general
 %   % content (not just \items):
 %   \item<5-> {
