@@ -1,4 +1,4 @@
-\documentclass[a4paper]{article}
+\documentclass[a4paper, titlepage]{article}
 \usepackage{amsmath}
 \usepackage{amsthm}
 \usepackage{amssymb}
@@ -121,6 +121,8 @@
 
 \begin{document}
 	\maketitle
+	\section*{Abstract}
+	\section*{Author Contribution}
 	\tableofcontents
 	\newpage
 	\section{Introduction}
@@ -132,7 +134,7 @@
 	\section{Beyond Moments}
 	\input{BeyondMoments}
 
-    \section{SGLD}
+    \section{Future Work: SGLD}
     \input{report}
 	\bibliography{langevinMC.bib}
 	\bibliographystyle{plain}
