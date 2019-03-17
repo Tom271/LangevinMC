@@ -235,6 +235,7 @@ class Sampler:
             "RWM":     self.RWM,
             "tMALA":   self.tMALA,
             "tMALAc":  self.tMALAc,
+            "HOLA":    self.HOLA,
             "tHOLA":   self.tHOLA,
             "LM":      self.LM,
             "tLM":     self.tLM,
@@ -306,6 +307,20 @@ class Sampler:
     def tMALAc(self):
         ''' Coordinate-wise Tamed Metropolis Adjusted Langevin Algorithm. '''
         return self.tMALA(lambda g, step: np.divide(g, 1. + step * np.absolute(g)))
+
+    def HOLA(self):
+        ''' Higher Order Langevin Algorithm. '''
+        x = np.array(self.x0)
+        while 1:
+            yield x
+            grad_U = self.potential.gradient(x)
+            grad2_U = self.potential.gradient2(x)
+            laplacian_grad_U = self.potential.vector_lap_grad(x)
+            grad2_U_grad_U = np.matmul(grad2_U, grad_U).A1
+
+            x = x - self.step * grad_U + 0.5 * self.step**2 * (grad2_U_grad_U - laplacian_grad_U) + \
+                  np.sqrt(2*self.step) * normal(size=self.dim) - np.sqrt(2) * np.matmul(grad2_U, normal(size=self.dim)).A1 * np.sqrt(self.step**3/3)
+
 
     def tHOLA(self):
         ''' Tamed Higher Order Langevin Algorithm. '''
@@ -610,18 +625,23 @@ class Evaluator:
 ####################################
 # Using evaluator
 ####################################
-d = 2 # dimension
-e = Evaluator(potential="double_well", dimension=d, x0=np.array([0]+[0]*(d-1)), burn_in=2, N=5000, N_sim=2, step=0.01, N_chains=2, \
-              measuring_points=None, timer=None, temperature=0.1)
+d = 10 # dimension
+# random_start = np.array(normal(size=[1,d]))
+# normed_start= np.array(10* random_start/norm(random_start))
+# size(normed_start)
+# np.array([0]+[0]*(d-1))
+e = Evaluator(potential="double_well", dimension=d, x0=normed_start, burn_in=0, N=10**2, N_sim=5, step=0.01, N_chains=1, \
+              measuring_points=None, timer=None, temperature=1)
 
 # Example of an analysis - produces a plot, doesn't store anything
-e.analysis(algorithms=["ULA", "tULA", "RWM"], measure='scatter', bins=40)
+e.analysis(algorithms=["ULA", "tULA", "tULAc", "MALA", "RWM", "tMALA", "tMALAc", "HOLA", "tHOLA","LM","tLM","tLMc"],\
+                        measure='first_moment')
 
 # Example of an experiment - only a single algorithm - does not produce a plot, stores the given path.
-exp_name = 'Experiments/my_little_experiment'
-e.run_experiment(file_path=exp_name, algorithm='ULA', measure='total_variation', bins=10)
-
-# How to read an experiment in the future:
-my_little_experiment = pickle.load(open( exp_name, 'rb' ))
-for k, v in my_little_experiment.items():
-   print(k, ':', v)
+# exp_name = 'Experiments/my_little_experiment'
+# e.run_experiment(file_path=exp_name, algorithm='ULA', measure='total_variation', bins=10)
+#
+# # How to read an experiment in the future:
+# my_little_experiment = pickle.load(open( exp_name, 'rb' ))
+# for k, v in my_little_experiment.items():
+#    print(k, ':', v)
