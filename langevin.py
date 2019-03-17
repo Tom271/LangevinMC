@@ -489,8 +489,6 @@ class Evaluator:
             for algo in algorithms:
                 scores = []
                 for s in range(self.N_sim):
-                    weights = np.arange(len(measurements[algo][s])) + 1
-                    # Don't know what this does ^
                     estimator = FFTKDE(kernel = 'gaussian')
                     x, ys = estimator.fit(measurements[algo][s], weights=weights).evaluate(30) # 30 is arbitrary
                     true_ys = self.sampler.potential.get_density(x)
@@ -500,7 +498,6 @@ class Evaluator:
                     if measure == "FFTKDE_TV":
                         scores.append( sum(abs( ys/np.sum(ys) - true_ys/np.sum(true_ys) ))/2 )
                     if measure == "FFTKDE_SW":
-                        # print(ys, true_ys, x)
                         scores.append( sliced_wasserstein_distance( ys/np.sum(ys), true_ys/np.sum(true_ys), x, self.dim))
                 data.append(scores)
 
