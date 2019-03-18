@@ -58,7 +58,7 @@
 	ISSN = {00063444},
 	URL = {http://www.jstor.org/stable/2334940},
 	abstract = {A generalization of the sampling method introduced by Metropolis et al. (1953) is presented along with an exposition of the relevant theory, techniques of application and methods and difficulties of assessing the error in Monte Carlo estimates. Examples of the methods, including the generation of random orthogonal matrices and potential applications of the methods to numerical problems arising in statistics, are discussed.},
-	author = {W. K. Hastings},
+	author = {W. Keith Hastings},
 	journal = {Biometrika},
 	number = {1},
 	pages = {97--109},
@@ -265,7 +265,7 @@
 
 @article{anderson2004model,
   title={Model selection and multi-model inference},
-  author={Anderson, DR and Burnham, K},
+  author={Anderson, David R. and Burnham, Kenneth P.},
   journal={Second. NY: Springer-Verlag},
   year={2004}
 }
@@ -280,7 +280,7 @@
 
 @book{wand1994kernel,
   title={Kernel smoothing},
-  author={Wand, Matt P and Jones, M Chris},
+  author={Wand, Matt P. and Jones, M. Chris},
   year={1994},
   publisher={Chapman and Hall/CRC}
 }
@@ -323,5 +323,38 @@
     author = {{Michela Ottobre}},
     month = {October},
     year = {2018},
-    publisher = {SMSTC}
+    journal = {SMSTC}
+}
+@article{betancourt2017conceptual,
+  title={A conceptual introduction to Hamiltonian Monte Carlo},
+  author={Betancourt, Michael},
+  journal={arXiv preprint arXiv:1701.02434},
+  year={2017}
+}
+@article{Girolami2011,
+    author = {Mark Girolami and Ben Calderhead and Siu A. Chin},
+    title = {Riemann manifold Langevin and Hamiltonian Monte Carlo methods},
+    journal = {J. of the Royal Statistical Society, Series B (Methodological},
+    year = {2011}
+}
+
+
+
+
+
+@InProceedings{cheng2018,
+  title = 	 {Underdamped Langevin MCMC: A non-asymptotic analysis},
+  author = 	 {Cheng, Xiang and Chatterji, Niladri S. and Bartlett, Peter L. and Jordan, Michael I.},
+  booktitle = 	 {Proceedings of the 31st  Conference On Learning Theory},
+  pages = 	 {300--323},
+  year = 	 {2018},
+  editor = 	 {Bubeck, S\'ebastien and Perchet, Vianney and Rigollet, Philippe},
+  volume = 	 {75},
+  series = 	 {Proceedings of Machine Learning Research},
+  address = 	 {},
+  month = 	 {06--09 Jul},
+  publisher = 	 {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v75/cheng18a/cheng18a.pdf},
+  url = 	 {http://proceedings.mlr.press/v75/cheng18a.html},
+  abstract = 	 {We study the underdamped Langevin diffusion when the log of the target distribution is smooth and strongly concave. We present a MCMC algorithm based on its discretization and show that it achieves $\varepsilon$ error (in 2-Wasserstein distance) in $\mathcal{O}(\sqrt{d}/\varepsilon)$ steps. This is a significant improvement over the best known rate for overdamped Langevin MCMC, which is $\mathcal{O}(d/\varepsilon^2)$ steps under the same smoothness/concavity assumptions. The underdamped Langevin MCMC scheme can be viewed as a version of Hamiltonian Monte Carlo (HMC) which has been observed to outperform overdamped Langevin MCMC methods in a number of application areas. We provide quantitative rates that support this empirical wisdom.}
 }

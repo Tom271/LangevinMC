@@ -2,7 +2,7 @@ In this section, we will closely follow\ \cite{pitfalls}
 
 
 
-\subsection{Introduction}
+\subsubsection{Introduction}
 
 Normally, samples in machine learning are of huge sample sizes, for which most MCMC algorithms are not designed to process. 
 As a result of the computational cost, several new approaches were proposed recently, Stochastic Gradient Langevin Dynamics (SGLD) is a popular one. 
@@ -11,7 +11,7 @@ LMC – a discretization of a continuous-time process, it requires to compute th
 SGLD – use unbiased estimator of the gradient of log-posterior based on subsampling, suitable for samples of huge size. 
 
 
-\subsection{Governing Equation}
+\subsubsection{Governing Equation}
 Recall the following equations:
 Euler discretization of the Langevin SDE:
 $$\theta_{n+1} = \theta_n - h \nabla U(\theta_n)+\sqrt{2h} Z_{n+1}$$, where $h > 0$ is a constant step size and $(Z_n)_{n\geq1}$ is a sequence of i.i.d standard d - dimensional Guassian vectors. 
@@ -22,8 +22,8 @@ Stochastic Gradient Descent (SGD) is characterised by the same recursion as SGLD
 
 $$\theta_{n+1} = \theta_{n}-h \Bigg (\nabla U_0(\theta_n)+\frac{N}{p}\sum_{i\in S_{n+1}}\nabla U_i(\theta_n)\Bigg)$$
 
-\subsection{Analysis in Wasserstein distance}
-\subsection{Definitions and Notations in Markov chain theory}
+\subsubsection{Analysis in Wasserstein distance}
+\subsubsection{Definitions and Notations in Markov chain theory}
 Recall the following definitions:
 $\mathcal{P}_2(\mathbb{R}^d)$ the set of probablity measures with finite second momet.\\
 $\mathcal{B}(\mathbb{R}^d)$ the Borel $\sigma$ - algebra of $\mathbb{R}^d$.\\
@@ -36,7 +36,7 @@ For all $k\in \mathbb{N}*$, we define the Markov kernel $R^k$ recursively by $R^
 A probablity measure $\bar{\pi}$ is invariant for R if $\bar{\pi}R = \bar{\pi}$.\\
 Our algorithms LMC, SGLD, SGD and SGLDFP algorithms are homogeneous Markov chains with Markov kernels denoted $R_{LMC}, R_{SGLD}, R_{SGD}$ and $R_{FP}$.
 
-\subsection{Results}
+\subsubsection{Results}
 For lemma 1, Theorem 2 and Corollary 3, we assume H1, H2 and H3.
 \begin{lemma}
 For any step size $h \in (0, \frac{2}{L})$, $R_{SGLD}$(respectively $R_{LMC}, R_{SGD}, R_{FP}$) has a unique invariant measure $\pi_{SGLD}\in \mathcal{P}_2(\mathbb{R}^d)$(respectively $\pi_{LMC}, \pi_{SGD}, \pi_{FP}$). In addition, for all $h \in (0, \frac{1}{L}], \theta\in \mathbb{R}^d and k\in\mathbb{N}$,
