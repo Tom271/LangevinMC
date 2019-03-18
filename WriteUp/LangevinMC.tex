@@ -1,10 +1,10 @@
-\documentclass[a4paper, titlepage]{article}
+\documentclass[a4paper, titlepage, 11pt]{article}
 \usepackage{amsmath}
 \usepackage{amsthm}
 \usepackage{amssymb}
 \usepackage{amsfonts}
 \usepackage{graphicx}
-\usepackage[left=2cm,right=2cm,bottom=2.5cm,top=2.5cm]{geometry}
+\usepackage[left=3cm,right=3cm,bottom=3.5cm,top=3.5cm]{geometry}
 \usepackage{fancyhdr}
 \usepackage{subcaption}
 \usepackage{hyperref}
@@ -20,6 +20,7 @@
 	\newtheorem{cor}[theorem]{Corollary}
 	\newtheorem*{lemma}{Lemma}
 	\newtheorem{prop}[theorem]{Proposition}
+	\newtheorem{remark}[theorem]{Remark}
 	\theoremstyle{definition}
 	\newtheorem*{note}{Note}
 	\newtheorem{defn}[theorem]{Definition}
@@ -106,7 +107,7 @@
 
 \title{Langevin MC, \\
   \large or the curse of dimensionality}
-\author{B. Han, T.M. Hodgson, M. Holden \& M. Puza}
+\author{B. Han, T.M. Hodgson, M. Holden \& M. Puza\\supervised by\\Dr Sotirios Sabanis}
 
 % Define new commands for typesetting here
 \newcommand{\R}{\mathbb{R}}
@@ -125,17 +126,31 @@
 	\section*{Author Contribution}
 	\tableofcontents
 	\newpage
-	\section{Introduction}
+	\section{Introduction}\label{sec:intro}
 	\input{Motivation}
 	
-	\section{Langevin Monte Carlo Algorithms}
+	\section{Langevin Monte Carlo Algorithms}\label{sec:LMC}
 	\input{algotheory}
-
+    
+    \section{Approximation Error}\label{sec:MomentErrors}
+    \input{MomentErrors}
+    
 	\section{Beyond Moments}
 	\input{BeyondMoments}
-
-    \section{Future Work: SGLD}
+	
+	
+	\section{Implementation} \label{sec:Imp}
+	\input{WriteUp/Implementation}
+    
+    \section{Future Work}
+    \input{future}
+    \subsection{Stochastic Gradient Langevin Dynamics}
     \input{report}
+    \section{Conclusion}
+    \input{conclusion}
+    \section{Acknowledgements}
+    The authors were supported by The Maxwell Institute Graduate School in Analysis and its Applications, a Centre for Doctoral Training funded by the UK Engineering and Physical Sciences Research Council (grant EP/L016508/01), the Scottish Funding Council, Heriot-Watt University and the University of Edinburgh
+    
 	\bibliography{langevinMC.bib}
 	\bibliographystyle{plain}
 

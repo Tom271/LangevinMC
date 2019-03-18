@@ -1,4 +1,4 @@
-While first and second moments give us some idea of the performance of our sampling algorithms, we ideally would like a fuller picture.  In this section we compare the performance of algorithms using the total variation distance, $L^2$-Wasserstein distance and Kullback--Leibler divergence.  Using these measures, we can compare the performance to theoretical upper bounds for \texttt{ULA}.
+While first and second moments give us some idea of the performance of our sampling algorithms, we ideally would like a fuller picture.  In this section we compare the performance of algorithms using the total variation distance, Wasserstein distance and Kullback--Leibler divergence.  Using these measures, we can compare the performance to theoretical upper bounds for \texttt{ULA}.
 
 \subsection{Statistical Distances}
 Let $\mathcal{B}(\R^d)$ denote the Borel $\sigma$-algebra on $\R^d$. Let $P$ and $Q$ be probability measures on the space $(\R^d, \mathcal{B}(\R^d))$.  Then we define the total variation distance, Kullback--Leibler divergence and Wasserstein metric as follows:
@@ -32,17 +32,13 @@ $$
 $$
 \end{proof}
 
-
-\textbf{POSSIBLY TAKE OUT KL DIVERGENCE??}
-
 \begin{defn}[Kullback--Leibler Divergence]
 Let $P$ and $Q$ be two probability measures on $(\Omega, \mathcal{F})$.  If $P \ll Q$, the Kullback--Leibler divergence of $P$ with respect to $Q$ is defined as
 $$
-D_{\text{KL}}(P\,||\,Q) = \int_\Omega \frac{d P}{d Q} log \left(  \frac{d P}{d Q} \right) d Q.
+D_{\text{KL}}(P\,||\,Q) = \int_\Omega \od{P}{Q} \log \left(  \od{P}{Q} \right) \dif  Q.
 $$
 \end{defn}
 The Kullback--Leibler divergence from $Q$ to $P$ measures the information lost in using $Q$ to approximate $P$  \cite{anderson2004model} and is also known as the relative entropy.  It is worth noting that, unlike the other two measures considered here, the Kullback--Leibler divergence is not a metric, and in particular is not symmetric.
-\textbf{LITTLE MORE INTUITION ON WASSERSTEIN \& TRANSPORT??}
 
 Finally we consider the Wasserstein distance.  If $P$ and $Q$ are probability measures on $(\Omega, \mathcal{F})$, we say that $\gamma$ is a transport plan between two probability measures $P$ and $Q$ if it is a probability measure on $(\Omega \times \Omega, \mathcal{F} \times \mathcal{F})$ such that for any Borel set $A \subset \mathcal{F}$, $\gamma(A \times \Omega)=P(A)$ and $\gamma(\Omega \times A) = Q(A)$.  We denote the set of all such transport plans by $\Pi(P,Q)$.  In simple terms, the set of transport plans, $\Pi(P,Q)$, represents the possible ways of transporting mass distributed according to $P$ to a distribution according to $Q$, without creating or destroying mass in the process.  The `effort' to transport mass is then represented by a cost function $d:\Omega \to \Omega$, so that $d(x,y)$ is the cost of moving unit mass from $x$ to $y$.
 
@@ -54,6 +50,8 @@ $$
 \end{defn}
 
 The Wasserstein distance represents the amount of `effort' required to move mass distributed according to $P$ to $Q$.  We restrict our attention to $L^1$-Wasserstein and $L^2$-Wasserstein distances, which is to say that we choose our cost function $d$ to be the Euclidean distance, and $p=1,2$.
+
+One particular advantage of Wasserstein distance compared to total variation or Kullback--Leibler divergence is that bounds on Wasserstein distance can be used directly to bound the accuracy of the first and second moment approximations, and so for application to statistics there is some evidence to suggest it is the most appropriate of the three measures for our purposes \cite{dalalyan2019user}.
 
 Due to impracticality of computing higher-dimensional Wasserstein distances, we use a computationally more feasible variant, the Sliced Wasserstein distance. First proposed in \cite{rabin2011wasserstein} and further elaborated on, for example, in \cite{gswd}, the Sliced Wasserstein distance exploits the fact that the Wasserstein distance between 1-dimensional probability measures $P, Q$ can be computed with an explicit formula $\abs{F^{-1}(t)-G^{-1}(t)}^p dt$ where $F$ and $G$ are the CDFs of $P$ and $Q$ respectively \cite{ramdas2017wasserstein}.
 
@@ -67,252 +65,151 @@ $$
 
 where $\mathbb S^{d-1}$ is the $(d-1)$-dimensional sphere and $\mathcal RI$ denotes the Inverse Radon transform. In the above references, it is also proved that $SW_p$ is indeed a metric. The main reason why we can use the Sliced Wasserstein distance as an approximation to the Wasserstein distance is that these two metrics are equivalent\cite{Santa}.
 
+\subsubsection{Numerical Comparison}
+In this section we present a numerical comparison of the algorithms considered, extending the results of \cite{Brosse18tULA} which only considered first and second moments.  It should be noted that the results in the aforementioned paper are in dimension 100, while here our results are in dimension 2.  This is due to the bin-filling problem when approximating the density function, which is explained in section \ref{sec:Imp}.  We do not have evidence to suggest the performance of these algorithms would be similar in higher dimensions.  Due to lack of space in this report, total variation
 
+The results for total variation in the case of the Gaussian (Figure \ref{fig:TVgauss}) support the claim of \cite{Brosse18tULA} that tamed algorithms have similar performance to untamed for small step size.  As expected, they do perform slightly worse than the untamed equivalent, but this difference is relatively small.  For the ill-conditioned case (Figure \ref{fig:TV_ICgauss}), the unadjusted versions of each algorithm diverge, but the tamed versions are stable.  As predicted, coordinate-wise taming improves performance in this case, and we expect this effect to be more pronounced in high dimensions.
+\begin{figure}[ht!]
+	\centering
+		\includegraphics[height=0.43\textheight]{Figures/TV_gaussian11_step0pt02.png}
+	\caption{$10^5$ samples from standard Gaussian with step size 0.02}
+	\label{fig:TVgauss}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+		\includegraphics[height=0.43\textheight]{Figures/TV_ICgaussian10pt0001_step0pt02.png}
+	\caption{$10^5$ samples from ill-conditioned Gaussian with step size 0.02}
+	\label{fig:TV_ICgauss}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+		\includegraphics[height=0.43\textheight]{WriteUp/TV_doublewell_step0pt02.png}
+	\caption{$10^5$ samples from double well with step size 0.02}
+	\label{fig:TVdouble02}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+		\includegraphics[height=0.43\textheight]{WriteUp/TV_doublewell_step0pt1.png}
+	\caption{$10^5$ samples from double well with step size 0.1}
+	\label{fig:TVdouble1}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+		\includegraphics[height=0.43\textheight]{WriteUp/TV_doublewell_step0pt2.png}
+	\caption{$10^5$ samples from double well with step size 0.2}
+	\label{fig:TVdouble2}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+		\includegraphics[height=0.43\textheight]{WriteUp/TV_doublewell_step0pt3.png}
+	\caption{$10^5$ samples from double well with step size 0.3}
+	\label{fig:TVdouble3}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+		\includegraphics[height=0.43\textheight]{WriteUp/TV_ginzburg_step0pt01.png}
+	\caption{$10^5$ samples from 1D Ginzburg Landau with step size 0.3}
+	\label{fig:TVginz01}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+		\includegraphics[height=0.43\textheight]{WriteUp/TV_rosenbrock_step0pt001.png}
+	\caption{$10^5$ samples from Rosenbrock with set size 0.001}
+	\label{fig:TVrosen001}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+		\includegraphics[height=0.43\textheight]{WriteUp/TV_rosenbrock_step0pt01.png}
+	\caption{$10^5$ samples from Rosenbrock with set size 0.01}
+	\label{fig:TVrosen01}
+\end{figure}
+
+\newpage
 \subsection{Theoretical Non-asymptotic Error Bounds}
 
+While the asymptotic behaviour of \texttt{ULA} and \texttt{MALA} is well-understood \cite{RT96}, the results do not consider the effect of dimension on the complexity of the algorithms.  For practical purposes, an understanding of the non-asymptotic behaviour of the algorithms would be useful and, in particular, theoretical results which could determine the step size and number of iterations required to guarantee an error of no more than some acceptable value $\epsilon$.
 
-Theoretical bounds on the total variation distance between, and Kullback--Leibler divergence from, the distribution of the $n^{\text{th}}$ iterate of the unadjusted Langevin Algorithm were first provided in \cite{dalalyan2017theoretical}.  In the case of a `warm start', i.e. that the distribution of the initial value is close to $\Pi$, it was shown that \texttt{ULA} had an upper bound of $\mathcal{O}(d/\epsilon)$ iterations to achieve precision level $\epsilon$.  This result was improved by \cite{durmus2016high}, \cite{durmus2017nonasymptotic} which extended the analysis to the Wasserstein distance and dispensed with the assumption of a warm start, showing that the upper bound on iterations could be reduced to $\mathcal O (d/\epsilon)$, provided the Hessian of the potential is Lipschitz continuous.
+Theoretical bounds of this nature were first provided in \cite{dalalyan2017theoretical}, which proved bounds on the total variation distance between the distribution of the $n^{\text{th}}$ iterate of the unadjusted Langevin Algorithm, under restrictive assumptions, which will be outlined shortly.  In the case of a `warm start', where the distribution of the initial value is close to $\Pi$, it was shown that \texttt{ULA} had an upper bound of $\mathcal{O}(d/\epsilon)$ iterations to achieve precision level $\epsilon$.  This result was improved by \cite{durmus2016high, durmus2017nonasymptotic} which extended the analysis to the Wasserstein distance and dispensed with the assumption of a warm start, showing that the upper bound on iterations could be reduced to $\mathcal O (d/\epsilon)$, provided the Hessian of the potential is Lipschitz continuous.  Most recently, \cite{dalalyan2019user} has provided `user-friendly' bounds on the Wasserstein distance, further improving the constants in these bounds.
 
-Most recently, \cite{dalalyan2019user} has 
+It is important to note here that these results provide explicit constants for the non-asymptotic behaviour for \texttt{ULA}.  This is in contrast to the theory for \texttt{MALA} \cite{bou2013nonasymptotic}, and the tamed \cite{Brosse18tULA} and higher order algorithms \cite{Sabanis18tHOLA}, for which only the existence of a constant is proven.  For the Leimkuhler--Matthews method, no such guarantees are known.  As such the non-asymptotic theory for the unadjusted algorithm is practically much more useful.
 
-\texttt{ULA} \cite{dalalyan2019user}
-\texttt{tULA} \cite{Brosse18tULA}
-\texttt{HOLA} \cite{Sabanis18tHOLA}
-\texttt{MALA} \cite{bou2013nonasymptotic}
+\subsubsection{Non-asymptotic Bounds for \texttt{ULA}}
+We present without proof the results of \cite{durmus2017nonasymptotic, dalalyan2019user} which to our knowledge are the best known bounds in total variation and Wasserstein distance respectively. For both results we assume that the potential $U$ is continuously differentiable on $\R^d$, and there exist positive constants $m$ and $M$ such that $U$ is $m$-strongly convex and $M$-gradient Lipschitz, i.e. for all $x$, $y \in \R^d$,
+\begin{align} \label{m-convex}
+    &\text{($m$-strongly convex) \ } U(x) - U(y) - \grad U(y)^\top (x - y) \geq \frac{m}{2}\norm{x-y}_2^2\\
+    &\text{($M$-gradient Lipschitz) \ } \norm{\grad U(x) - \grad U(y)}_2 \leq M \norm{x-y}_2. \label{M-GradLipschitz}
+\end{align}
 
+Denote the unique minimiser of $U$ by $y=\arg \min_{x \in \R^d} U(x)$.  Let $\nu_N$ denote the distribution of the $N^{\text{th}}$ sample
 
+\begin{theorem}[Total Variation part (i)]
+    Assume $h \in (0, 2/(m+M))$ and $U$ satisfies the assumptions (\ref{m-convex}, \ref{M-GradLipschitz}) above.  Let $\kappa = \frac{2mM}{m+M}$  Then for any initial value $x_0 \in \R^d$ and $N \geq 1$,
+    $$
+    \norm{\pi_h - \nu_N}_{TV} \leq \left\{ 4 \pi \kappa (1-(1-\kappa h)^{N/2} \right\}^{-1/2} (1-\kappa \gamma)^{N/2} \left\{ \norm{x_0 - y}_2 + (2 \kappa^{-1}d)^{1/2} \right\}
+    $$
+\end{theorem}
 
-\section{Comparison of methods}
-We have implemented a suite of tools for analysis of error for all of the aforementioned Langevin Monte Carlo algorithms. This section contains a selection of results, as well as a description of error metrics available and any other design choices made. The \textsc{Python} code and a how-to-use guide can be found at the following
-\textsc{url}: \\
+\begin{theorem}[Total Variation part (ii)]
+    Assume $h \in (0, 1/(m+M))$, $U$ satisfies the assumptions (\ref{m-convex}, \ref{M-GradLipschitz}) above, and further, assume that $U$ is three times continuously differentiable, and there exists $L$ such that for all $x,y \in \R^d$,
+    $$
+    \norm{\grad^2 U(x) - \grad^2 U(y)} \leq L \norm{x-y}.
+    $$
+    Then
+    \begin{align*}
+        \norm{\pi_h - \pi}_{TV} &\leq (4 \pi)^{-1/2} \left\{ h^2 E_1(h, d) + 2dh^2 E_2(h)/(\kappa m)\right\}^{1/2}\\
+        &+ (4 \pi)^{-1/2} \lceil \log(h^{-1}/\log(2) \rceil \left\{ h^2 E_1(h,d) + h^2 E_2(h)(2 \kappa^{-1}d + d/m) \right\}^{1/2}\\
+        &+ 2^{-3/2} M \left\{ 2d h^3 L^2/(3\kappa) + dh^2\right\}^{1/2}
+    \end{align*}
+    where $E_1(h,d)$ and $E_2(h)$ are defined as
+    \begin{align*}
+        E_1(h,d) &= 2 d \kappa^{-1} \left\{2L^2 + 4 \kappa^{-1} (dL^2/3 + h M^4 /4) + h^2 M^4/6 \right\}\\
+        E_2(h) &= L^4(4\kappa^{-1}/3 + h)
+    \end{align*}
+\end{theorem}
 
-   \centerline{ \url{https://github.com/Tom271/LangevinMC}}
+The triangle inequality gives our desired bound on $\norm{\pi - \nu_N}_{TV}$.  We next present the `user-friendly' bound in Wasserstein distance.
 
-
-\subsection{Results}
-
-\begin{figure}[H]
-\centering
-  \begin{minipage}[b]{0.49\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/ula_tula_step_01.png}
-  \end{minipage} %
-  \begin{minipage}[b]{0.49\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/ula_tula_step_02.png}
-  \end{minipage}
-   \caption{\textbf{Demonstration of the stiffness problem with \texttt{ULA}}, resolved by taming. Both \texttt{ULA} and \texttt{tULA} work well for step size $h = 0.1$ on the left, however \texttt{ULA} becomes stiff for a larger step size $h = 0.2$ on the right. For ever higher step sizes, \texttt{ULA} diverges. The distribution here is Gaussian with covariance matrix $\text{diag}(1.0, 0.1)$.}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-  \begin{minipage}[b]{0.49\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/tula_tulac_rwm_stiff.png}
-  \end{minipage} %
-   \caption{\textbf{Coordinate-wise taming} can deal with stiffness in one axis (Ill-conditioned Gaussian distribution with covariance $\text{diag}(1.0, 0.01)$).}
-\end{figure}
-
-
-
-\begin{figure}[H]
-\centering
-  \begin{minipage}[b]{0.49\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/tula_tmala_step_1.png}
-  \end{minipage} %
-  \begin{minipage}[b]{0.49\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/tula_tmala_step_10.png}
-  \end{minipage}
-   \caption{\textbf{Trade-off between rejection-based algorithms and \texttt{tULA} for large step-sizes} ($h = 1$ on the left and $h = 10$ on the right, distribution is Gaussian with covariance matrix $\text{diag}(1.0, 0.1)$). With increasing step size, even \texttt{tULA} starts to suffer from stiffness problems. Rejection-based algorithms resolve the issue, however, their acceptance rate drops very low ($\approx 0.2$ on the left and $\approx 0.03$ on the right). }
-\end{figure}
-
-
-
-\begin{figure}[H]
-\centering
-  \begin{minipage}[b]{0.32\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/tula_fm.png}
-  \end{minipage} %
-  \begin{minipage}[b]{0.32\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/tulac_fm.png}
-  \end{minipage} %
-  \begin{minipage}[b]{0.32\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/tmala_fm.png}
-  \end{minipage}
-   \caption{Comparison of \texttt{tULA}, \texttt{tULAc} and \texttt{tMALA} for the first moment evolving as a function of step size.}
-\end{figure}
-
-
-\begin{figure}[H]
-\centering
-  \begin{minipage}[b]{0.32\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/tula_tv.png}
-  \end{minipage} %
-  \begin{minipage}[b]{0.32\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/tulac_tv.png}
-  \end{minipage} %
-  \begin{minipage}[b]{0.32\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/tmala_tv.png}
-  \end{minipage}
-   \caption{Comparison of \texttt{tULA}, \texttt{tULAc} and \texttt{tMALA} for the total variation error evolving as a function of step size.}
-\end{figure}
-
-
-
-
-\subsection{Sampling approaches}
-
-Throughout this project, we have encountered two main approaches for sampling. To obtain a set of samples, one may:
-
-\begin{itemize}
-    \item Run a single chain, discard a certain amount of the initial values (the burn-in period) an keep the rest, with possible thinning\footnote{To thin the chain, one only retains every $k$-th sample for some $k$.} to reduce autocorrelation. This is used for practical sampling.
-    \item Run multiple chains and retain their final $N$-th value only. This is useful for verification/establishment of non-asymptotic bounds.
+\begin{theorem}[Wasserstein distance]
+    Assume $h \in (0, 2/M)$ and $U$ satisfies the assumptions (\ref{m-convex}, \ref{M-GradLipschitz}) above. 
+    \begin{itemize}
+        \item If $h \leq \frac{2}{m+M}$, then $W_2(\nu_N, \pi) \leq (1-mh)^N W_2(\nu_0, \pi) + 1.65 \frac{M}{m}(hp)^{1/2}.$
+        \item If $h \geq \frac{2}{m+M}$, then $W_2(\nu_N, \pi) \leq (Mh-1)^N W_2(\nu_0, \pi) + \frac{1.65Mh}{2-Mh}(hp)^{1/2}.$
 \end{itemize}
+\end{theorem}
+\begin{prop}
+    If the initial value $X_0 = x_0$ is deterministic then,
+    $$
+    W_2(\nu_0, \pi)^2 = \int_{\R^p} \norm{x_0-x}_2^2 \pi(dx) \leq \norm{x_0-y}_2^2 + \frac{p}{m}.
+    $$
+\end{prop}
 
-To accommodate for both possibilities, given positive integers $b, N_{\text{chains}}, N$ and a set $I \subset \mathbb \{1, 2, \dots, N - b\}$ of indices, our program aggregates samples with indices in $\{i+b\ |\ i \in I\} $  from $ N_{\text{chains}}$ independent chains.
+\begin{remark}
+    If we choose $h$ and $N$ such that
+    $$
+    h \leq \frac{2}{m+M}, \quad e^{-mhN}W_2(\nu_0, \pi) \leq \epsilon/2, \quad 1.65\frac{M}{m}(hp)^{1/2} \leq \epsilon/2
+    $$
+    then $W_2(\nu_N,\pi) \leq \epsilon$.  Hence, for a deterministic initial value $X_0=x_0$, it is sufficient to choose
+    $$
+    h \leq \frac{m^2 \epsilon^2}{11M^2p} \wedge \frac{2}{m+M}, \quad hN \geq \frac{1}{m} \log \left( \frac{2(\norm{x_0-y}_2^2+p/m)^{1/2}}{\epsilon} \right)
+    $$
+    for a precision $\epsilon$ in $W_2(\nu_K, \pi)$.
+\end{remark}
 
-\subsection{Testing potentials}
-For the purposes of testing, four qualitatively different potentials have been made available within our program. These are: Gaussian, Double Well, Rosenbrock function and Ginzburg-Landau model. We note that these, save for Gaussian, are non-convex.
+\begin{note}
+    In practice, $\norm{x_0-y}_2$ may be difficult to calculate.  An alternative bound can easily be derived from the strong convexity of $U$ and the fact that $y$ minimises $U$:
+    \begin{align*}
+        m W_2(\nu_0, \pi)^2 &\leq m \norm{x_0-y}_2^2 + p\\
+        &\leq 2(f(x_0) - f(y) - \nabla U(y)^{\top}(x_0-y) + p\\
+        &= 2(f(x_0)-f(y))+p.
+    \end{align*}
+    If $U$ is bounded below by a constant, say $U \geq 0$, this provides an easily computable upper bound on $W_2(\nu_0, \pi)$.
+\end{note}
 
-Any of the above potentials may also be scaled by \textit{temperature} $T$. That is, having chosen a potential function $U$ and a temperature $T$, the true distribution to be sampled from will be
-
-\[\pi(x) = e^{-\frac{U(x)}{T}}.\]
-
-\subsection{Estimating error}
-
-In the following, let $\pi$ be the pdf of true distribution from which we attempt to sample and $X = \{x_i\}_{i=1}^N$ denote the collection of samples collected by a sampling algorithm. The notation $x_i(d)$ will be used to refer to the $d$-th coordinate of $x_i$. We also denote by $\{m_d\}_{d=1}^D$ and $\{M_d\}_{d=1}^D$ the coordinate-wise minimums and maximums among $x_i$, that is:
-
-$$ 
-    m_d = \min \{x_i(d)\}_{i=1}^N \ \ \text{ and } \ \ M_d = \max \{x_i(d)\}_{i=1}^N
-$$
-
-For some of the error estimation methods, it will be necessary to construct multi-dimensional histograms. For this purpose, we define the following set of points (this is a minimal mesh that spans all of the samples):
-
-$$
-\#_X := \left\{ \left(c_1^{(k_1)}, c_2^{(k_2)}, \dots, c_D^{(k_D)}\right)\ |\ (k_1, k_2, \dots, k_D) \in \{0, 1, \dots, \text{bins - 1}\}^D, \ c_d^{(k_d)} = m_d + \left(k_d + \frac 1 2\right) \frac{M_d - m_d}{\text{bins}} \right\}
-$$
-
-where $bins$ is a parameter describing the fineness of the mesh. The histogram of the collection of samples $X$ will be understood to be the following function $h: \#_X \rightarrow \mathbb R$:
-
-$$
-    h(c) = |\{x \in X\ |\ \arg \min_{c' \in \#_X} \norm{c' - x} = c \}|
-$$
-
-i.e. count of points $x$ such that the closes point of mesh to $x$ is $c$. This defines the discrete probability measure 
-
-$$H_X := \sum_{c \in \#_X} \frac {h(c)} N   \delta_c,$$
-
-which we will understand to be the sampled approximation of the true distribution from which we are sampling. Finally, denote also by $Z$ the sum of the true distribution pdf values over the values of the mesh.
-
-\[Z := \sum_{c \in \#_X} \pi(c)\]
-
-
-
-\subsubsection{The Curse of dimensionality}
-
-In short, since the size of the mesh $|\#_X| = \text{bins}^D$ is exponential in dimension, it is impossible to construct histograms in high dimensions. Even within smaller dimensions, a fundamental trade-off arises; either one can construct a desirably fine mesh with many bins being empty (that is, $h(c) = 0$), or construct a coarse mesh with sufficiently many samples. The quality of the error estimation suffers in both cases. \\\\
-For this reason, the implemented  histogram/KDE-based  error metrics are only feasible for smaller dimensions\footnote{Around $1 \leq D \leq 4$.}, whereas the other metrics should be considered only indicative with increasing dimensions, rather than precise measures of error.
-
-\subsubsection{Histograms vs. KDE}
-Due to the curse of dimensionality, it may be the case that for many points $c$ of the mesh, we have $h(c) = 0$. To smoothen (and improve) our approximation of the sampled distribution, we make use of Kernel Density Estimation. KDE can be thought of as an extension of the idea of histogram.
-
-\begin{defn}[KDE]
-A kernel density estimator for a i.i.d. set of samples $X = \{x_i\}_{i=1}^N$ is
-\[\hat{\pi}_{X} (x) = \frac 1 {Ns} \sum_{i=1}^N K\left( \frac{x - x_i}{s} \right)\]
-where $s > 0$ is a smoothing parameter known as the bandwidth and $K$ is a kernel function.  For our purposes, a Gaussian kernel was assumed for a minimum working model which provided unbounded support.  As time did not permit an in-depth review of the literature on Kernel Density Estimation, 
-\end{defn}
-
-\noindent Based on this estimation, we define the following discrete probability measure:
-
-\[ \text{KDE}_X := \frac 1 {\hat Z} \sum_{c \in \#_X} \hat{\pi}_X(c) \delta_c \qquad \text{with the normalizing constant } \hat Z = \sum_{c \in \#_X} \hat{\pi}_X(c).\]
-
-\subsection{Implemented metrics}
-
-\subsubsection{Visualizations}
-In special cases when the dimension is $1$ or $2$, we have implemented an option to visualize the samples either as a histogram plot (in 1D) or as a scatter or trace plot (in 2D or 3D).
-
-
-\begin{figure}[H]
-\centering
-  \begin{minipage}[b]{0.3\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/histo_example.png}
-  \end{minipage} %
-  \begin{minipage}[b]{0.3\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/scatter_example.png}
-  \end{minipage} %
-  \begin{minipage}[b]{0.3\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/trace_example.png}
-  \end{minipage}
-   \caption{Example of a histogram plot, scatter plot and a trace plot.}
-\end{figure}
-
-
-
-\subsubsection{First/Second moments}
-The first and second moments are implemented in the standard way. By default, the result is computed \textit{in the first coordinate only\footnote{With option to use $\frac 1 N\sum_{i=1}^N \norm{x_i}$ and $\frac 1 N\sum_{i=1}^N \norm{x_i^2}$ instead.}}.
-
-$$ 
-    \text{first moment} = \frac 1 N\sum_{i=1}^N x_i(1) \qquad \text{ and } \qquad \text{second moment} = \frac 1 N\sum_{i=1}^N x_i(1)^2
-$$
-
-
-\subsubsection{Total variation}
-The total variation, being the first of implemented histogram measures, is calculated as
-
-\[\text{total variation} = \norm{H_X - \frac 1 Z \sum_{c \in \#_X} \pi(c) \delta_c}_{\text{TV}} = \frac 1 2\sum_{c \in \#_X} \left|\frac{h(c)}{N} - \frac{\pi(c)}{Z}\right| .\]
-
-\subsubsection{KL Divergence}
-The next histogram-based measure is KL divergence.
-
-\[\text{KL divergence} = \text{KL} \left(H_X \bigg| \frac 1 Z \sum_{c \in \#_X} \pi(c) \delta_c\right) =  \sum_{c \in \#_X} \frac{h(c)}{N} \log\left(\frac {h(c) Z} {\pi(c) N} \right).\]
-
-\subsubsection{Sliced Wasserstein}
-
-The Sliced Wasserstein distance, being defined via a multi-dimensional integral, cannot be computed exactly. Therefore, we resort to a simple Monte Carlo scheme where $L$ samples $\{\theta_i\}$ are drawn uniformly from the $(d-1)$-dimensional sphere $\mathbb S^{d-1}$.
-
-$$ 
-SW_p(P, Q) \approx \left( \frac 1 L \sum_{i=1}^L W_p^p\left(\mathcal{RI}_P(\cdot, \theta_i), \mathcal{RI}_Q(\cdot, \theta_i) \right) \right)^{\frac 1 p}
-$$
-
-The first, histogram based, implemented metric for Sliced Wasserstein distance further approximates the above Monte Carlo scheme for $SW_1$ as
-
-\[\text{SW}_{histogram} = \begin{cases}
-W_1 \left( H_X,\  \frac 1 Z \sum_{c \in \#_X} \pi(c) \delta_c \right) & \text{if dimension } = 1 \\
-\sum_{i = 1}^L W_1 \left( \frac 1 N \sum_{c \in \#_X} h(c) \delta_{\left<c, \theta_i \right>},\  \frac 1 Z \sum_{c \in \#_X} \pi(c) \delta_{\left<c, \theta_i \right>}  \right) & \text{ otherwise }
-\end{cases},\]
-
-where $\left< \cdot \right>$ is the dot product, $\theta_i = \frac{\theta'_i}{\norm{\theta'_i}}$ is a point on $(d-1)$-dimensional sphere with $
-\theta'_i \sim \mathcal N(0, I_D)$ and $W_1$ is computed explicitly. \\\\
-
-The second, \textbf{heuristic-based}, approximation of the Sliced Wasserstein distance is calculated as follows:
-
-\[\text{SW}_{no\ histogram} = \begin{cases}
-W_1 \left( \frac 1 N \sum_{x \in X} \delta_x,\  \frac 1 {Z'} \sum_{x \in X} \pi(x) \delta_x \right) & \text{if dimension } = 1 \\
-\sum_{i = 1}^L W_1 \left(  \frac 1 N \sum_{x \in X} \delta_{\left<x, \theta_i \right>},\ \frac 1 {Z'} \frac 1 N \sum_{x \in X} \pi(x) \delta_{\left<x, \theta_i \right>}  \right) & \text{ otherwise }
-\end{cases}.\]
-where $Z' = \sum_{x \in X} \pi(x) $ is a normalizing constant. Intuitivelly, this measure of error describes whether the spatial distribution of samples is proportional to the true distribution, \textit{at the same points}.
-
-
-\subsection{KDE-based metrics}
-
-All three of the above histogram-based metrics are available in their KDE version as well. 
-
-\[\text{total variation}^{\text{KDE}} = \norm{\text{KDE}_X - \frac 1 Z \sum_{c \in \#_X} \pi(c) \delta_c}_{\text{TV}} \]
-
-\[\text{KL divergence}^{\text{KDE}} = \text{KL} \left(\text{KDE}_X \ \bigg|\  \frac 1 Z \sum_{c \in \#_X} \pi(c) \delta_c\right) \]
-
-\[\text{SW}_{histogram}^{\text{KDE}} = \begin{cases}
-W_1 \left( \text{KDE}_X,\  \frac 1 Z \sum_{c \in \#_X} \pi(c) \delta_c \right) & \text{if dimension } = 1 \\
-\sum_{i = 1}^L W_1 \left( \frac 1 {\hat Z} \sum_{c \in \#_X} \hat{\pi}_X(c) \delta_{\left<c, \theta_i \right>},\  \frac 1 Z \sum_{c \in \#_X} \pi(c) \delta_{\left<c, \theta_i \right>}  \right) & \text{ otherwise }
-\end{cases}\]
