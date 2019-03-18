@@ -21,7 +21,6 @@ def sliced_wasserstein_distance(p, q, bin_coors, dim, iters=20):
         Utility function for the 1-Sliced Wasserstein distance.
         Assumes that p, q are represented as histograms.
     '''
-
     if dim == 1: # Use explicit formula
         return wasserstein_distance(bin_coors.flatten(), bin_coors.flatten(), p, q)
 
@@ -39,7 +38,7 @@ def sliced_wasserstein_distance(p, q, bin_coors, dim, iters=20):
             qs.append( q[idx] )
 
         dist += wasserstein_distance(bins, bins, ps, qs)
-        return dist/iters
+    return dist/iters
 
 
 def sliced_wasserstein_no_histogram(p, q, iters=20):
@@ -47,9 +46,7 @@ def sliced_wasserstein_no_histogram(p, q, iters=20):
         Utility function for the 1-Sliced Wasserstein distance.
         Tries to fight the course of dimensionality by only considering the
         "bins" around the sampled values.
-
         If the sampled values are entirely wrong, this method will not work >> use first moment test first.
-
         p = sampled values
         q = density function at the sampled values
     '''
@@ -285,18 +282,17 @@ class Sampler:
         return self.tMALA(lambda g, step: np.divide(g, 1. + step * np.absolute(g)))
 
     def HOLA(self):
-        ''' Higher Order Langevin Algorithm. '''
-        x = np.array(self.x0)
-        while 1:
-            yield x
-            grad_U = self.potential.gradient(x)
-            grad2_U = self.potential.gradient2(x)
-            laplacian_grad_U = self.potential.vector_lap_grad(x)
-            grad2_U_grad_U = np.matmul(grad2_U, grad_U).A1
+       ''' Higher Order Langevin Algorithm. '''
+       x = np.array(self.x0)
+       while 1:
+           yield x
+           grad_U = self.potential.gradient(x)
+           grad2_U = self.potential.gradient2(x)
+           laplacian_grad_U = self.potential.vector_lap_grad(x)
+           grad2_U_grad_U = np.matmul(grad2_U, grad_U).A1
 
-            x = x - self.step * grad_U + 0.5 * self.step**2 * (grad2_U_grad_U - laplacian_grad_U) + \
-                  np.sqrt(2*self.step) * normal(size=self.dim) - np.sqrt(2) * np.matmul(grad2_U, normal(size=self.dim)).A1 * np.sqrt(self.step**3/3)
-
+           x = x - self.step * grad_U + 0.5 * self.step**2 * (grad2_U_grad_U - laplacian_grad_U) + \
+                 np.sqrt(2*self.step) * normal(size=self.dim) - np.sqrt(2) * np.matmul(grad2_U, normal(size=self.dim)).A1 * np.sqrt(self.step**3/3)
 
     def tHOLA(self):
         ''' Tamed Higher Order Langevin Algorithm. '''
@@ -395,7 +391,7 @@ class Sampler:
 
 class Evaluator:
     ''' Analyses a set of sampling algoritms based on given parameters. '''
-    def __init__(self, potential="gaussian", dimension=1, x0=np.array([0.0]), step=0.01, N=10, burn_in=10**2, N_sim=3, N_chains=1, measuring_points=None, \
+    def __init__(self, potential="gauFssian", dimension=1, x0=np.array([0.0]), step=0.01, N=10, burn_in=10**2, N_sim=3, N_chains=1, measuring_points=None, \
                 timer=None, gaussian_sigma=None, temperature=1):
         self.potential = potential
         self.dim = dimension
@@ -443,10 +439,10 @@ class Evaluator:
                 elif measure == "histogram":
                     measurement = np.histogram(samples, bins=bins, range=(-5, 5), density=True)
 
-                elif measure in ["FFTKDE_KL", "FFTKDE_TV", "FFTKDE_SW1", "FFTKDE_SW2"]:
+                elif measure in ["FFTKDE_KL", "FFTKDE_TV", "FFTKDE_SW"]:
                     measurement = samples
 
-                elif measure in ["KL_divergence", "total_variation", "sliced_wasserstein_1","sliced_wasserstein_2"]:
+                elif measure in ["KL_divergence", "total_variation", "sliced_wasserstein"]:
                     try: # some algorithms blow up
                         measurement = np.histogramdd(samples, bins=bins)
                     except:
@@ -482,7 +478,6 @@ class Evaluator:
                     for algo in algorithms:
                         plt.scatter([p[0] for p in measurements[algo][0] if norm(p)<1e6], [p[1] for p in measurements[algo][0] if norm(p)<1e6], s=1)
                     plt.legend(algorithms)
-                    plt.savefig("Figures/transparentDoubleWell.png", transparent=True)
 
                 elif self.dim == 3:
                     fig = plt.figure()
@@ -501,23 +496,25 @@ class Evaluator:
                 self.sampler.potential.plot_density()
                 plt.legend(['true density'] + algorithms)
 
-        elif measure in ["FFTKDE_KL", "FFTKDE_TV", "FFTKDE_SW1", "FFTKDE_SW2"]:
+        elif measure in ["FFTKDE_KL", "FFTKDE_TV", "FFTKDE_SW"]:
             data = []
             for algo in algorithms:
                 scores = []
                 for s in range(self.N_sim):
+                    weights = np.arange(len(measurements[algo][s])) + 1
+                    # Don't know what this does ^
                     estimator = FFTKDE(kernel = 'gaussian')
                     x, ys = estimator.fit(measurements[algo][s], weights=weights).evaluate(30) # 30 is arbitrary
                     true_ys = self.sampler.potential.get_density(x)
 
                     if measure == "FFTKDE_KL":
-                        scores.append( entropy( true_ys/np.sum(true_ys), ys/np.sum(ys) ))
+                        scores.append( entropy(ys/np.sum(ys), true_ys/np.sum(true_ys) ))
                     if measure == "FFTKDE_TV":
                         scores.append( sum(abs( ys/np.sum(ys) - true_ys/np.sum(true_ys) ))/2 )
                     if measure == "FFTKDE_SW":
                         # print(ys, true_ys, x)
                         scores.append( sliced_wasserstein_distance( ys/np.sum(ys), true_ys/np.sum(true_ys), x, self.dim))
-                    data.append(scores)
+                data.append(scores)
 
             if not experiment_mode:
                 plt.boxplot(data, labels=algorithms)
@@ -536,12 +533,12 @@ class Evaluator:
 
                     if measure == "KL_divergence":
                         ps, qs = p.flatten(), q.flatten()
-                        scores.append( entropy( qs/sum(qs), ps/sum(ps) ))
+                        scores.append( entropy(ps/sum(ps), qs/sum(qs) ))
                     elif measure == "total_variation":
                         ps, qs = p.flatten(), q.flatten()
                         scores.append( sum(abs( ps/sum(ps) - qs/sum(qs) ))/2 )
                     elif measure == "sliced_wasserstein":
-                        scores.append( sliced_wasserstein_distance( p/np.sum(p), q/np.sum(q), bin_coors, self.dim))
+                        scores.append( sliced_wasserstein_distance( p/np.sum(p), q/np.sum(q), bin_coors, self.dim ))
                 data.append(scores)
 
             if not experiment_mode:
@@ -593,23 +590,23 @@ class Evaluator:
 
 
 
+
+
 ####################################
 # Using evaluator
 ####################################
-d = 10 # dimension
-
-e = Evaluator(potential="double_well", dimension=d, x0=normed_start, burn_in=0, N=10**2, N_sim=5, step=0.01, N_chains=1, \
-              measuring_points=None, timer=None, temperature=1)
+d = 2 # dimension
+e = Evaluator(potential="double_well", dimension=d, x0=np.array([0]+[0]*(d-1)), burn_in=2, N=5000, N_sim=2, step=0.01, N_chains=2, \
+              measuring_points=None, timer=None, temperature=0.1)
 
 # Example of an analysis - produces a plot, doesn't store anything
-e.analysis(algorithms=["ULA", "tULA", "tULAc", "MALA", "RWM", "tMALA", "tMALAc", "HOLA", "tHOLA","LM","tLM","tLMc"],\
-                        measure='first_moment')
+e.analysis(algorithms=["ULA", "HOLA"], measure='scatter', bins=40)
 
 # Example of an experiment - only a single algorithm - does not produce a plot, stores the given path.
-# exp_name = 'Experiments/my_little_experiment'
-# e.run_experiment(file_path=exp_name, algorithm='ULA', measure='total_variation', bins=10)
-#
-# # How to read an experiment in the future:
-# my_little_experiment = pickle.load(open( exp_name, 'rb' ))
-# for k, v in my_little_experiment.items():
-#    print(k, ':', v)
+exp_name = 'Experiments/my_little_experiment'
+e.run_experiment(file_path=exp_name, algorithm='ULA', measure='total_variation', bins=10)
+
+# How to read an experiment in the future:
+my_little_experiment = pickle.load(open( exp_name, 'rb' ))
+for k, v in my_little_experiment.items():
+   print(k, ':', v)
