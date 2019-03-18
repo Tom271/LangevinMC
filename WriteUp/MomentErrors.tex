@@ -6,3 +6,22 @@ For the purposes of testing, four qualitatively different potentials have been m
 Any of the above potentials may also be scaled by \textit{temperature} $T$. That is, having chosen a potential function $U$ and a temperature $T$, the true distribution to be sampled from will be
 \[\pi(x) = e^{-\frac{U(x)}{T}}.\]
 This is common in the molecular dynamics literature and is also useful in MCMC to find modes of distributions more quickly, a technique known as tempering.
+
++++ BoxPlots +++
+\begin{figure}
+\centering
+  \begin{minipage}[b]{0.32\textwidth}
+  \centering
+    \includegraphics[width=\textwidth]{Figures/tula_fm.png}
+  \end{minipage} %
+  \begin{minipage}[b]{0.32\textwidth}
+  \centering
+    \includegraphics[width=\textwidth]{Figures/tulac_fm.png}
+  \end{minipage} %
+  \begin{minipage}[b]{0.32\textwidth}
+  \centering
+    \includegraphics[width=\textwidth]{Figures/tmala_fm.png}
+  \end{minipage}
+   \caption{Comparison of \texttt{tULA}, \texttt{tULAc} and \texttt{tMALA} for the first moment evolving as a function of step size.}
+\end{figure}
+

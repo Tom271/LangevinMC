@@ -1,66 +1,11 @@
-We have implemented a suite of tools for analysis of error for all of the aforementioned Langevin Monte Carlo algorithms. This section contains a selection of results, as well as a description of error metrics available and any other design choices made. The \textsc{Python} code and a how-to-use guide can be found at the following
+We have implemented a suite of tools for analysis of error for all of the aforementioned Langevin Monte Carlo algorithms. This section contains a selection of results, as well as a description of error metrics available and any other design choices made. The \textsc{Python} code and a how-to
+guide can be found at the following
 \textsc{url}: \\
 
    \centerline{ \url{https://github.com/Tom271/LangevinMC}}
 
 
 \subsection{Results}
-
-\begin{figure}[H]
-\centering
-  \begin{minipage}[b]{0.49\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/ula_tula_step_01.png}
-  \end{minipage} %
-  \begin{minipage}[b]{0.49\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/ula_tula_step_02.png}
-  \end{minipage}
-   \caption{\textbf{Demonstration of the stiffness problem with \texttt{ULA}}, resolved by taming. Both \texttt{ULA} and \texttt{tULA} work well for step size $h = 0.1$ on the left, however \texttt{ULA} becomes stiff for a larger step size $h = 0.2$ on the right. For ever higher step sizes, \texttt{ULA} diverges. The distribution here is Gaussian with covariance matrix $\text{diag}(1.0, 0.1)$.}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-  \begin{minipage}[b]{0.49\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/tula_tulac_rwm_stiff.png}
-  \end{minipage} %
-   \caption{\textbf{Coordinate-wise taming} can deal with stiffness in one axis (Ill-conditioned Gaussian distribution with covariance $\text{diag}(1.0, 0.01)$).}
-\end{figure}
-
-
-
-\begin{figure}[H]
-\centering
-  \begin{minipage}[b]{0.49\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/tula_tmala_step_1.png}
-  \end{minipage} %
-  \begin{minipage}[b]{0.49\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/tula_tmala_step_10.png}
-  \end{minipage}
-   \caption{\textbf{Trade-off between rejection-based algorithms and \texttt{tULA} for large step-sizes} ($h = 1$ on the left and $h = 10$ on the right, distribution is Gaussian with covariance matrix $\text{diag}(1.0, 0.1)$). With increasing step size, even \texttt{tULA} starts to suffer from stiffness problems. Rejection-based algorithms resolve the issue, however, their acceptance rate drops very low ($\approx 0.2$ on the left and $\approx 0.03$ on the right). }
-\end{figure}
-
-
-
-\begin{figure}[H]
-\centering
-  \begin{minipage}[b]{0.32\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/tula_fm.png}
-  \end{minipage} %
-  \begin{minipage}[b]{0.32\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/tulac_fm.png}
-  \end{minipage} %
-  \begin{minipage}[b]{0.32\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/tmala_fm.png}
-  \end{minipage}
-   \caption{Comparison of \texttt{tULA}, \texttt{tULAc} and \texttt{tMALA} for the first moment evolving as a function of step size.}
-\end{figure}
 
 
 \begin{figure}[H]
