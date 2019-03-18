@@ -66,9 +66,18 @@ $$
 where $\mathbb S^{d-1}$ is the $(d-1)$-dimensional sphere and $\mathcal RI$ denotes the Inverse Radon transform. In the above references, it is also proved that $SW_p$ is indeed a metric. The main reason why we can use the Sliced Wasserstein distance as an approximation to the Wasserstein distance is that these two metrics are equivalent\cite{Santa}.
 
 \subsubsection{Numerical Comparison}
-In this section we present a numerical comparison of the algorithms considered, extending the results of \cite{Brosse18tULA} which only considered first and second moments.  It should be noted that the results in the aforementioned paper are in dimension 100, while here our results are in dimension 2.  This is due to the bin-filling problem when approximating the density function, which is explained in section \ref{sec:Imp}.  We do not have evidence to suggest the performance of these algorithms would be similar in higher dimensions.  Due to lack of space in this report, total variation
+In this section we present a numerical comparison of the algorithms considered, extending the results of \cite{Brosse18tULA} which only considered first and second moments.  It should be noted that the results in the aforementioned paper are in dimension 100, while here our results are in dimension 2.  This is due to the bin-filling problem when approximating the density function, which is explained in section \ref{sec:Imp}.  We do not have evidence to suggest the performance of these algorithms would be similar in higher dimensions.  Due to lack of space in this report, the results here are mostly in total variation distance.  The functionality for the experiments is available in our GitHub repository (see section \ref{sec:Imp}), and tests can easily be performed in Sliced 1-Wasserstein distance and Kullback--Leibler divergence.
 
-The results for total variation in the case of the Gaussian (Figure \ref{fig:TVgauss}) support the claim of \cite{Brosse18tULA} that tamed algorithms have similar performance to untamed for small step size.  As expected, they do perform slightly worse than the untamed equivalent, but this difference is relatively small.  For the ill-conditioned case (Figure \ref{fig:TV_ICgauss}), the unadjusted versions of each algorithm diverge, but the tamed versions are stable.  As predicted, coordinate-wise taming improves performance in this case, and we expect this effect to be more pronounced in high dimensions.
+\begin{note}
+    It is important to state here that the accuracy of our implementation of these measures has not been thoroughly tested.  The number of bins chosen for the histogram heavily influences results, and our default choice of 100 bins for 2 dimensions is somewhat arbitrary.  As such, the results presented here should be treated with some caution.
+\end{note}
+  
+
+The results for total variation in the case of the Gaussian (Figure \ref{fig:TVgauss}) support the claim of \cite{Brosse18tULA} that tamed algorithms have similar performance to untamed for small step size.  As expected, they do perform slightly worse than the untamed equivalent, but this difference is relatively small.  For the ill-conditioned case (Figure \ref{fig:TV_ICgauss}), the unadjusted versions of each algorithm diverge, but the tamed versions are stable.  While the performance of all Langevin-based methods is poor, coordinate-wise taming, as predicted, improves performance, and we expect this effect to be more pronounced in higher dimensions.
+
+The double well presents a more interesting case.  For small step size (Figure \ref{fig:TVdouble02}) there is not much difference between the algorithms, with \texttt{LM} performing the poorest of all the Langevin-based methods, for higher step sizes (Figures \ref{fig:TVdouble1}, \ref{fig:TVdouble2}) it outperforms all other algorithms, even those with Metropolis--Hastings adjustments.  For step size 0.1 and higher, the matrix multiplication step in \texttt{HOLA} results in an overflow, while for step size 0.2, \texttt{ULA} diverges.  It is only for step size 0.3 that \texttt{LM} finally diverges (Figure \ref{fig:TVdouble3}).  The reasons for this behaviour is unclear, but these results seem to support the claims made in \cite{LM12}.  To verify this, the experiment for the double well with step size 0.1 was repeated in Sliced 1-Wasserstein distance (Figure \ref{fig:SWdouble1}).  The results broadly agree with those of the total variation, although Metropolised algorithms appear to be favoured by this metric, and tamed algorithms graded more harshly.
+
+The final three plots (Figures \ref{fig:TVginz01}-\ref{fig:TVrosen01}) are included mostly for completeness.  It is interesting to note however, that on the Rosenbrock distribution (Figure \ref{fig:TVrosen001}) \texttt{LM} again outperforms \texttt{ULA} for step size 0.001.
 \begin{figure}[ht!]
 	\centering
 		\includegraphics[height=0.43\textheight]{Figures/TV_gaussian11_step0pt02.png}
@@ -99,6 +108,13 @@ The results for total variation in the case of the Gaussian (Figure \ref{fig:TVg
 
 \begin{figure}[ht!]
 	\centering
+		\includegraphics[height=0.43\textheight]{WriteUp/SW_doublewell_0pt1.pdf}
+	\caption{SW1 distance $10^5$ samples from double well with step size 0.1}
+	\label{fig:SWdouble1}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
 		\includegraphics[height=0.43\textheight]{WriteUp/TV_doublewell_step0pt2.png}
 	\caption{$10^5$ samples from double well with step size 0.2}
 	\label{fig:TVdouble2}
@@ -114,21 +130,21 @@ The results for total variation in the case of the Gaussian (Figure \ref{fig:TVg
 \begin{figure}[ht!]
 	\centering
 		\includegraphics[height=0.43\textheight]{WriteUp/TV_ginzburg_step0pt01.png}
-	\caption{$10^5$ samples from 1D Ginzburg Landau with step size 0.3}
+	\caption{$10^5$ samples from 1D Ginzburg Landau with step size 0.01}
 	\label{fig:TVginz01}
 \end{figure}
 
 \begin{figure}[ht!]
 	\centering
 		\includegraphics[height=0.43\textheight]{WriteUp/TV_rosenbrock_step0pt001.png}
-	\caption{$10^5$ samples from Rosenbrock with set size 0.001}
+	\caption{$10^5$ samples from Rosenbrock with step size 0.001}
 	\label{fig:TVrosen001}
 \end{figure}
 
 \begin{figure}[ht!]
 	\centering
 		\includegraphics[height=0.43\textheight]{WriteUp/TV_rosenbrock_step0pt01.png}
-	\caption{$10^5$ samples from Rosenbrock with set size 0.01}
+	\caption{$10^5$ samples from Rosenbrock with step size 0.01}
 	\label{fig:TVrosen01}
 \end{figure}
 
@@ -213,3 +229,4 @@ The triangle inequality gives our desired bound on $\norm{\pi - \nu_N}_{TV}$.  W
     If $U$ is bounded below by a constant, say $U \geq 0$, this provides an easily computable upper bound on $W_2(\nu_0, \pi)$.
 \end{note}
 
+\subsubsection{Numerical Tests}
