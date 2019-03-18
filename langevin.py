@@ -10,7 +10,6 @@ from scipy.stats import wasserstein_distance
 from scipy.stats import norm as norm_dist
 from scipy.optimize import rosen, rosen_der
 from KDEpy import FFTKDE
-import ot
 
 import pickle
 import itertools as it
