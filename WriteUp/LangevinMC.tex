@@ -1,10 +1,10 @@
-\documentclass[a4paper, titlepage]{article}
+\documentclass[a4paper, titlepage, 11pt]{article}
 \usepackage{amsmath}
 \usepackage{amsthm}
 \usepackage{amssymb}
 \usepackage{amsfonts}
 \usepackage{graphicx}
-\usepackage[left=2cm,right=2cm,bottom=2.5cm,top=2.5cm]{geometry}
+\usepackage[left=3cm,right=3cm,bottom=3.5cm,top=3.5cm]{geometry}
 \usepackage{fancyhdr}
 \usepackage{subcaption}
 \usepackage{hyperref}
@@ -20,6 +20,7 @@
 	\newtheorem{cor}[theorem]{Corollary}
 	\newtheorem*{lemma}{Lemma}
 	\newtheorem{prop}[theorem]{Proposition}
+	\newtheorem{remark}[theorem]{Remark}
 	\theoremstyle{definition}
 	\newtheorem*{note}{Note}
 	\newtheorem{defn}[theorem]{Definition}
@@ -106,7 +107,7 @@
 
 \title{Langevin MC, \\
   \large or the curse of dimensionality}
-\author{B. Han, T.M. Hodgson, M. Holden \& M. Puza}
+\author{B. Han, T.M. Hodgson, M. Holden \& M. Puza\\supervised by\\Dr Sotirios Sabanis}
 
 % Define new commands for typesetting here
 \newcommand{\R}{\mathbb{R}}
@@ -130,9 +131,15 @@
 	
 	\section{Langevin Monte Carlo Algorithms}
 	\input{algotheory}
-
+    
+    \section{Approximation Error}
+    \input{MomentErrors}
+    
 	\section{Beyond Moments}
 	\input{BeyondMoments}
+	
+	\section{Comparison of Methods}
+	\input{Comparison}
 
     \section{Future Work: SGLD}
     \input{report}
