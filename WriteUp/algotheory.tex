@@ -8,7 +8,7 @@ Here, \(X_t\) is the displacement of the particle from the origin at time \(t\),
 
 From the form of the equation, it can be seen that the particle moves down the slope of the well, ``sliding'' towards the minimum energy state. As each particle moves randomly, it is natural to ask what is the average position of many particles in such a well? One would expect the average position to be the one that has lowest energy. To recast the question in statistical language, we ask what is the expected value of the random variable \(X_t\)? This is exactly the goal of MCMC given in Section \ref{sec:intro}. In fact for the Langevin equation, we can give the probability of a particle being at any given displacement. This probability is given exactly by the measure \(\pi\), the Boltzmann distribution. For a diffusion process such as Equation \ref{eq:ODLang} this is called the \emph{stationary distribution}\footnote{Another common term is \emph{invariant measure}}. To show that \(\pi\) is indeed the stationary distribution we use the following lemma.
 
-\begin{lemma}
+\begin{lemma}[\cite{OttobreDiffProc}]
 	For a one-dimensional It\^o diffusion\footnote{That is \(X_t\) solves \(\dif X_t = \mu(X_t)\dif t +\sigma^2(X_t)\dif W_t\)}, suppose \(\sigma^2(t,x)\) is bounded. Suppose that the transition probabilities of \(X_t\) admit a density for every \(t>0\). Further assume that \(\mu(X_t),\sigma^2(X_t) \in C^2\). Define the Fokker-Planck operator, \(\L^*\), as
 	\[\L^*:= -\partial_x(\mu(x)\cdot)+\frac{1}{2}\partial^2_x(\sigma^2(x)\cdot).\]
 	Then a measure \(\pi\) is invariant for the diffusion if and only if
@@ -58,8 +58,13 @@ Here the \(Z_n \) are i.i.d. standard normal random variables and \(h\) is the s
 \end{align*}
 So the chain converges immediately, but to the wrong distribution. Let \(\pi^{\text{ULA}}_{h} \) denote the stationary distribution of \texttt{ULA} with a stepsize \(h\). This is not the only issue that can occur. As well as not converging to the correct distribution, the discretised chain may not be  ergodic, even when the continuous diffusion is exponentially ergodic \cite{RT96}. In particular, the algorithm misbehaves when the gradient of the potential is superlinear. That is,
 \[\liminf_{\|x\|\to \infty} \frac{\|\grad U(x)\|}{\|x\|} = +\infty. \]
-To mitigate these issues there are two main approaches: taming the gradient and Metropolisation. A further third method involves using a different discretisation scheme.  Our main focus will be the former, although all three approaches will be discussed.
-
+Figure \ref{fig:ULAdiverge} illustrates this problem. To mitigate these issues there are two main approaches: taming the gradient and Metropolisation. A further third method involves using a different discretisation scheme.  Our main focus will be the former, although all three approaches will be discussed.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.75\textwidth]{Figures/ula_doublewell_divergence_step0_2_trace.png}
+    \caption{}
+    \label{fig:ULAdiverge}
+\end{figure}
 \subsection{Metropolis Adjustment}
 Before describing the Metropolis-adjusted Langevin algorithm \texttt{MALA}, it is pertinent at this point to recall the random walk Metropolis-Hastings algorithm \texttt{RWM }\cite{Hastings70, Metropolis53}. This popular variant of the Metropolis-Hastings algorithm \emph{proposes} values and then accepts/rejects them according to some probability \(\alpha\).  So given \(X_n\), propose a candidate \(Y_{n+1}\) as
 
@@ -118,7 +123,7 @@ So far, the gradient has only been tamed globally. This means that the informati
   \[T^c_{h}(x) =\left(\frac{\partial_i U(x)}{1+h|\partial_i U(x)|}\right)_{i=\lbrace 1, \dots, d\rbrace} \]
 This allows each dimension to be scaled individually. Any algorithm with coordinate-wise taming will be suffixed with a lowercase \texttt{c}.
 
-\subsubsection{Stiff Problems}
+\subsubsection{Stiff Problems}\label{sec:stiff}
 To illustrate the effectiveness of coordinatewise taming, consider an ill-conditioned Gaussian distribution with mean \(\mu,\) covariance matrix \(\Sigma\) as follows.
 \begin{align*}
     \mu &= \mathbf{0}, && \Sigma = \begin{bmatrix}  1 & 0 \\ 0 & 0.0001 \end{bmatrix}
@@ -178,7 +183,7 @@ The Leimkuhler-Matthews method was developed in \cite{LM12} and cleverly exploit
 
 Note that this method is non-Markovian as it incorporates the noise term from the previous iteration. At first glance it appears that this is almost identical to the standard EM scheme, however the slight modification drastically improves convergence.  It is derived by considering both positions and momenta in Langevin dynamics (as opposed to the overdamped equation we have considered thus far which neglects momenta).
 
-\begin{align} \dif X_t = P_t \dif t && \dif P_t = \lbrack -\grad U(X_t) - \gamma P_t \rbrack \dif t + \sqrt{2} \dif W_t \label{eq:LMLang} \end{align}
+\begin{align} \dif X_t = P_t \dif t, && \dif P_t = \lbrack -\grad U(X_t) - \gamma P_t \rbrack \dif t + \sqrt{2} \dif W_t \label{eq:LMLang} \end{align}
 
 Here, \(\gamma\) is the friction coefficient. It does no appear in the overdamped Langevin equation as it is the high friction limit of the above system.  Equation \eqref{eq:LMLang} can be seen as a combination of an Ornstein-Uhlenbeck process and Hamiltonian dynamics. Splitting the system in this way allows the exact solution of each part in each time step.
 
