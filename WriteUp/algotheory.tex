@@ -58,11 +58,11 @@ Here the \(Z_n \) are i.i.d. standard normal random variables and \(h\) is the s
 \end{align*}
 So the chain converges immediately, but to the wrong distribution. Let \(\pi^{\text{ULA}}_{h} \) denote the stationary distribution of \texttt{ULA} with a stepsize \(h\). This is not the only issue that can occur. As well as not converging to the correct distribution, the discretised chain may not be  ergodic, even when the continuous diffusion is exponentially ergodic \cite{RT96}. In particular, the algorithm misbehaves when the gradient of the potential is superlinear. That is,
 \[\liminf_{\|x\|\to \infty} \frac{\|\grad U(x)\|}{\|x\|} = +\infty. \]
-Figure \ref{fig:ULAdiverge} illustrates this problem. To mitigate these issues there are two main approaches: taming the gradient and Metropolisation. A further third method involves using a different discretisation scheme.  Our main focus will be the former, although all three approaches will be discussed.
+Figure \ref{fig:ULAdiverge} illustrates this problem for a double well potential. To mitigate these issues there are two main approaches: taming the gradient and Metropolisation. A further third method involves using a different discretisation scheme.  Our main focus will be the former, although all three approaches will be discussed.
 \begin{figure}
     \centering
     \includegraphics[width=0.75\textwidth]{Figures/ula_doublewell_divergence_step0_2_trace.png}
-    \caption{}
+    \caption{Trace plot of the \texttt{ULA} applied to a double well potential with \(h=0.2\) started from \((0,0)\). The algorithm gets progressively worse until it diverges to infinity.}
     \label{fig:ULAdiverge}
 \end{figure}
 \subsection{Metropolis Adjustment}
@@ -81,7 +81,9 @@ It is perhaps better understood as \texttt{ULA} but with an added Metropolis rej
 \begin{theorem}[Theroem 4.2, \cite{RT96}]
 	If \(\pi\) is bounded, and
 		\[\liminf_{\|x\|\to \infty} \frac{\|\grad U(x)\|}{\|x\|} > \frac{4}{h}\]
-	then the \texttt{MALA} chain is not exponentially ergodic. +++define exp ergodic+++
+	then the \texttt{MALA} chain is not exponentially ergodic. That is, there exists \(R_x <\infty, \rho<1\) such that for all \(x\in \R^d\),
+	\[\|P^t_{\tiny \sc MALA}(x,\cdot) - \pi \| \leq R_x\rho^t,\]
+	where \(P^t_{\tiny \sc MALA}\) is the transition kernel of the \texttt{MALA} chain/
 \end{theorem}
 So it can be seen that \texttt{MALA} is not without its issues, and does not solve all the problems of \texttt{ULA}. The concept of taming was introduced to try and reduce the magnitude of these problems.
 \begin{figure}[H]
@@ -94,7 +96,7 @@ So it can be seen that \texttt{MALA} is not without its issues, and does not sol
   \centering
     \includegraphics[width=\textwidth]{Figures/tula_tmala_step_10.png}
   \end{minipage}
-   \caption{\textbf{Trade-off between rejection-based algorithms and \texttt{tULA} for large step-sizes} ($h = 1$ on the left and $h = 10$ on the right, distribution is Gaussian with covariance matrix $\text{diag}(1.0, 0.1)$). With increasing step size, even \texttt{tULA} starts to suffer from stiffness problems. Rejection-based algorithms resolve the issue, however, their acceptance rate drops very low ($\approx 0.2$ on the left and $\approx 0.03$ on the right). }
+   \caption{\textbf{Trade-off between rejection-based algorithms and \texttt{tULA} for large step-sizes} ($h = 1$ on the left and $h = 10$ on the right, distribution is Gaussian with covariance matrix $\text{diag}(1.0, 0.1)$). With increasing step size, even \texttt{tULA} starts to suffer. Rejection-based algorithms resolve the issue, however, their acceptance rate drops very low ($\approx 0.2$ on the left and $\approx 0.03$ on the right). }
 \end{figure}
 
 \subsection{Taming the Gradient}
@@ -118,7 +120,7 @@ Brosse et al. introduced and studied \(T_h\) whilst Roberts \& Tweedie suggested
 When \(T_h\) is the taming function, the algorithm will be referred to as \texttt{tULA}, the tamed unadjusted Langevin algorithm. When the second is applied, it will be called \texttt{MALTA}, the Metropolis adjusted Langevin truncated algorithm after \cite{RT96}. Any tamed algorithm using \(T_h\) will be prefixed with a lowercase \texttt{t}. For a proof that \(T_h\) satisfies \ref{A1} and \ref{A2}, see \cite[Lemma~2]{Brosse18tULA}.
 \\
 When the problem is ill-conditioned, taming the gradient does not help. 
-\subsubsection{tULA/c}
+\subsubsection{Coordinatewise Taming}
 So far, the gradient has only been tamed globally. This means that the information the gradient gives is reduced in dimensions where it is not causing divergence. A solution to this is to use coordinatewise taming with the following drift.
   \[T^c_{h}(x) =\left(\frac{\partial_i U(x)}{1+h|\partial_i U(x)|}\right)_{i=\lbrace 1, \dots, d\rbrace} \]
 This allows each dimension to be scaled individually. Any algorithm with coordinate-wise taming will be suffixed with a lowercase \texttt{c}.
@@ -128,18 +130,18 @@ To illustrate the effectiveness of coordinatewise taming, consider an ill-condit
 \begin{align*}
     \mu &= \mathbf{0}, && \Sigma = \begin{bmatrix}  1 & 0 \\ 0 & 0.0001 \end{bmatrix}
 \end{align*}
-Figure \ref{fig:stiffULA} shows the trajectory of the unadjusted and tamed unadjusted Langevin algorithms (\texttt{ULA} and \texttt{tULA}, respectively) applied to this problem. It can be seen that past a certain threshold in stepsize, \texttt{ULA} begins to overestimate the width of the distribution, and indeed diverges when the stepsize gets too high. Notice that the tamed algorithm still overestimates the width in one dimension due to the global taming. Contrast this with Figure \ref{fig:stifftULAc}, using the \texttt{tULAc} algorithm. it greatly reduces the variance in samples in one dimension. The problem still remains in the other dimension, however this is almost unavoidable with an explicit scheme.  
+Figure \ref{fig:stiffULA} shows the samples generated by the tamed unadjusted and coordinatewise tamed unadjusted Langevin algorithms (\texttt{tULA} and \texttt{tULAc}, respectively) applied to this problem. It can be seen that \texttt{tULA} overestimates the width of the distribution in both dimensions by a large margin. This is because the slope fo the potential well is relatively shallow in this direction, meaning that the strong taming generated by the gradient in the other direction reduces this shallow well to almost flat. This means that the particle does not `slide down' as quickly back to the minimum. Contrast this with \texttt{tULAc} which provides a range of samples much closer to the true distribution in one dimension. The problem still remains in the other dimension, however this is almost unavoidable with an explicit scheme.  
 \begin{figure}[H]
 \centering
   \begin{minipage}[b]{0.49\textwidth}
   \centering
-    \includegraphics[width=\textwidth]{Figures/ula_tula_step_01.png}
+    \includegraphics[width=\textwidth]{Figures/ic_gaussian_tula.png}
   \end{minipage} %
   \begin{minipage}[b]{0.49\textwidth}
   \centering
-    \includegraphics[width=\textwidth]{Figures/ula_tula_step_02.png}
+    \includegraphics[width=\textwidth]{Figures/ic_gaussian_tulac.png}
   \end{minipage}
-   \caption{\textbf{Demonstration of the stiffness problem with \texttt{ULA}}, resolved by taming. Both \texttt{ULA} and \texttt{tULA} work well for step size $h = 0.1$ on the left, however \texttt{ULA} becomes stiff for a larger step size $h = 0.2$ on the right. For ever higher step sizes, \texttt{ULA} diverges. The distribution here is Gaussian with covariance matrix $\text{diag}(1.0, 0.0001)$.}
+   \caption{\textbf{Overestimation of Global Taming:} \texttt{tULA} (left) generates samples that are greatly overdispersed in both dimensions. Contrast with \texttt{tULAc} (right) which gives a much tighter spread over one dimension. In both plots, orange shows samples drawn from the \texttt{RWM} algorithm as reference for `true' samples.}
    \label{fig:stiffULA}
 \end{figure}
 
@@ -147,9 +149,9 @@ Figure \ref{fig:stiffULA} shows the trajectory of the unadjusted and tamed unadj
 \centering
   \begin{minipage}[b]{0.49\textwidth}
   \centering
-    \includegraphics[width=\textwidth]{Figures/tula_tulac_rwm_stiff.png}
+    \includegraphics[width=\textwidth]{Figures/transparentBoth.png}
   \end{minipage} %
-   \caption{\textbf{Coordinate-wise taming} can deal with stiffness in one axis (Ill-conditioned Gaussian distribution with covariance $\text{diag}(1.0, 0.0001)$).}
+   \caption{\textbf{Coordinatewise Improvement:} A more visible comparison of the improvement coordinatewise taming offers over global taming.}
    \label{fig:stifftULAc}
 \end{figure}
 
@@ -178,7 +180,6 @@ Like in the classical case, the aim here is to improve the rate of convergence b
 
 \subsubsection{Leimkuhler-Matthews Method}
 The Leimkuhler-Matthews method was developed in \cite{LM12} and cleverly exploits the link between the sampling problem and molecular dynamics. The scheme they developed is as follows:
-
 \begin{equation} X_{n+1} = X_n - h \grad U (X_n) +\sqrt{\frac{h}{2}} (Z_n+Z_{n+1}) \label{eq:LM} \end{equation}
 
 Note that this method is non-Markovian as it incorporates the noise term from the previous iteration. At first glance it appears that this is almost identical to the standard EM scheme, however the slight modification drastically improves convergence.  It is derived by considering both positions and momenta in Langevin dynamics (as opposed to the overdamped equation we have considered thus far which neglects momenta).
@@ -197,18 +198,12 @@ The Hamiltonian dynamics have been split further in to A and B.  As well as solv
     \langle R_n,R_{n-k} \rangle &= 0,   \quad k=2,3,\dots 
 \end{align*}
 
-{\bf +++ LINK IN TO NEXT SECTION +++ }
-
-
-
-
-
-
 
 \subsection{Visualization}
 A demonstration of the above methods has been implemented using the visualization library of \cite{rogozhnikov2016hmc}\footnote{With kind permission of Alex Rogozhnikov, \url{https://arogozhnikov.github.io/about/}.}. The visualization dynamically follows the trace of a chosen method applied to a chosen two-dimensional distribution. Distributions of various qualitative properties are available. This can be found at the following \textsc{url}: \\
+\\
    \centerline{ \url{http://goatleaps.xyz/assets/ULA/ULA.html}}
-
+\\
 \begin{figure}[H]
 \centering
   \begin{minipage}[b]{0.8\textwidth}

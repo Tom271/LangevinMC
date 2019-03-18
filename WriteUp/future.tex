@@ -1,11 +1,9 @@
-There are many possible ways in which the work presented here could be extended, both from a research and personal perspective. 
+There are many possible ways in which the work presented here could be extended, both from a research and personal perspective. First, there is great scope for the improvement of our program. It is possible to add new analytic distributions to sample from, including those with non-smooth potentials as in \cite{durmus2018efficient}. Another obvious avenue would be to apply all the methods and analysis here to real (large) datasets, when the gradient is not known analytically. This would give the end user a much clearer impression of which algorithm to use in their given case. It would also slow down all gradient based methods as an unbiased estimator for the gradient would have to be calculated at every iteration. It may also be possible to speed up the higher order methods (\texttt{HOLA,tHOLA,tHOLAc}) by implementing a parallelised version, breaking up the complex iteration into smaller easier to manage sections. This in general is highly non-trivial due to the inherent dependence on the previous step in a Markov chain.
 
--- Test accuracy of our measures!!!!!
--- Other methods (mMALA, HMC <- big one, SGLD, underdamped LD)\\
--- Apply to actual data, will affect performance as unbiassed estimators of the gradient have to be calculated\\
--- Parallelisation\\
--- Non-smooth potentials (give Marcelo a citation \cite{durmus2018efficient})\\
--- Stiffness (give Kostas a citation too \cite{abdulle2013weak})\\
-Research: \\
--- tighten nonasymptotic bounds, get in terms of an implementable metric\\
--- develop methods to calculate 2-Wass
+It is also important that we test the accuracy of our measures. This is difficult, especially in high dimensions as no methods exist for numerically calculating the 2-Wasserstein metric that many of the theoretical bounds use. Furthermore, using kernel density estimation or histograms with few bins introduces an error that is difficult to quantify and reduce. Here we have only qualitative comparisons between metrics. This is a well known problem in numerical optimal transport and inherent in dealing with high dimensional datasets and problems.
+\\
+
+Many other methods exist in MCMC that remain to be tested against the tamed algorithms, or incorporated in to our program. These include Hamiltonian Monte Carlo (HMC), manifold MALA (mMALA), underdamped Langevin Monte Carlo and stochastic gradient Langevin dynamics (SGLD) \cite{betancourt2017conceptual, Girolami2011,cheng2018,pitfalls}. For dealing with stiff problems, specific methods also exist that could be used as benchmarks for taming algorithms \cite{abdulle2013weak}. In the next section SGLD will be expanded on due to its popularity in machine learning and high dimensional problems. 
+\\
+For the wider field, it is important that either `user-friendly' bounds on error are developed in terms of a numerically implementable metric, or that methods are developed to accurately calculate the 2-Wasserstein metric. Even this will not solve the problem of approximating a high dimensional distribution using samples from a distribution; it is simply infeasible to be able to generate enough samples to get a good representation. 
+
