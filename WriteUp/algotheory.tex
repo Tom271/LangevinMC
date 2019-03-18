@@ -40,7 +40,7 @@ Although this shows that the Langevin equation has an invariant measure, the que
 	\label{fig:quadLD}
 \end{figure}
 
-The problem of sampling from the high dimensional distribution has been reduced to being able to accurately simulate Langevin dynamics. However, this is not as simple as it sounds. To simulate the continuous process  \eqref{eq:ODLang}, it must first be discretised. However, doing so may not preserve the convergence to the invariant measure. The discretised process may not have the same stationary measure or it may not even exist. This means that the method used to discretise must be chosen carefully to ensure good convergence properties. The most natural way to discretise an SDE is to use the stochastic analogue of the (forward) Euler method used on ordinary differential equations, known as the Euler-Maruyama (EM) method. Doing so leads to the Unadjusted Langevin Algorithm (\texttt{ULA}).
+The problem of sampling from the high dimensional distribution has been reduced to being able to accurately simulate Langevin dynamics. This is not as simple as it sounds. To simulate the continuous process  \eqref{eq:ODLang}, it must first be discretised. Doing so may not preserve the convergence to the invariant measure. The discretised process may not have the same stationary measure or it may not even exist. This means that the method used to discretise must be chosen carefully to ensure good convergence properties. The most natural way to discretise an SDE is to use the stochastic analogue of the (forward) Euler method used on ordinary differential equations, known as the Euler-Maruyama (EM) method. Doing so leads to the Unadjusted Langevin Algorithm (\texttt{ULA}).
 
 \subsection{The Unadjusted Langevin Algorithm}
 Applying the Euler-Maruyama method to Equation \eqref{eq:ODLang} gives the following iterative scheme.
@@ -57,7 +57,7 @@ So the chain converges immediately, but to the wrong distribution. Let \(\pi^{\t
 \[\liminf_{\|x\|\to \infty} \frac{\|\grad U(x)\|}{\|x\|} = +\infty. \]
 To mitigate these issues there are two main approaches: taming the gradient and Metropolisation. A further third method involves using a different discretisation scheme.  Our main focus will be the former, although all three approaches will be discussed.
 
-\subsection{MALA}
+\subsection{Metropolis Adjustment}
 Before describing the Metropolis-adjusted Langevin algorithm \texttt{MALA}, it is pertinent at this point to recall the random walk Metropolis-Hastings algorithm \texttt{RWM }\cite{Hastings70, Metropolis53}. This popular variant of the Metropolis-Hastings algorithm \emph{proposes} values and then accepts/rejects them according to some probability \(\alpha\).  So given \(X_n\), propose a candidate \(Y_{n+1}\) as
 
 \[Y_{n+1} = X_n  + \sqrt{2h} Z_{n+1}.\]
@@ -106,11 +106,11 @@ This allows each dimension to be scaled individually. Any algorithm with coordin
 \subsection{Discretise Differently}
 An alternative approach is to use a different discretisation of the SDE \eqref{eq:ODLang}, which we consider in this section. The first is an extension of the Euler method \cite{Sabanis18tHOLA}, while the latter uses a non-Markovian scheme developed for use in molecular dynamics \cite{LM12}.
 \subsubsection{Higher Order Langevin Algorithm}
-As in the ordinary case, the Euler-Maruyama method is not the only way of discretising an SDE. One can also take a higher order expansion, analagous to the Runge-Kutta method, known as the order 1.5 Wagner-Platen expansion\footnote{Or the stochastic Runge-Kutta method \cite{Schaffter10numericalintegration}}. For a one dimensional Langevin diffusion \eqref{eq:ODLang}, this is 
+As in the ordinary case, the Euler-Maruyama method is not the only way of discretising an SDE. One can also take a higher order expansion, analogous to the Runge-Kutta method in ODE theory, known as the order 1.5 Wagner-Platen expansion\footnote{Or the stochastic Runge-Kutta method \cite{Schaffter10numericalintegration}}. For a one dimensional Langevin diffusion \eqref{eq:ODLang}, this is 
 \[X_{n+1} = X_n -hU'(X_n)+\sqrt{2h}Z_n -\sqrt{2} U''(X_n) \tilde{Z}_n +\frac{ h^2 }{2}\bigg\lbrack U'(X_n)U''(X_n)-U'''(X_n)\bigg\rbrack.  \]
 Here, \(\tilde{Z}_n\) is defined as
 \[  \tilde{Z}_n = \int_{t_n}^{t_{n+1}} \int_{t_n}^s \dif W_r \dif s. \]
-This is a Gaussian random variable with mean \(0\) and variance \(\frac{1}{3}h^3 \). Extending this to \(d\)-dimensions and applying to the Langevin SDE \eqref{eq:ODLang} and taming as above gives the following iterative scheme, {+++ \bf WHERE HAS Z tilde GONE? +++}
+This is a Gaussian random variable with mean \(0\) and variance \(\frac{1}{3}h^3 \). Extending this to \(d\)-dimensions and applying to the Langevin SDE \eqref{eq:ODLang} and taming as above gives the following iterative scheme. The untamed version is the same, but with all subscripts removed. {+++ \bf WHERE HAS Z tilde GONE? +++}
 \[X_{n+1} = X_n + \mu_{h}(X_n)h +\sigma_{h}(X_n)\sqrt{h}Z_{n+1},\]
 where
 \[\mu_{h}(x) = -\grad U_{h}(x) +\frac{h}{2}\left( \left( \grad^2U\grad U\right)_{h}(x) - \vec{\Delta}(\grad U)_{h}(x)\right) ,\]
@@ -121,14 +121,32 @@ The subscript \(h\) indicates a taming of the variable has occurred as follows. 
     \grad U_h(x) &=\frac{\grad U(x)}{(1+h^{3/2}|\grad U(x)|^{3/2})^{2/3}}\, , && \grad^2U_h(x) = \frac{\grad^2 U(x)}{1+h|\grad^2 U(x)|} ,\\
     (\grad U\grad^2U)_h(x) =&\frac{\grad^2U(x)\grad U(x)}{1+h|x||\grad^2U(x)||\grad U(x)|}\, , && \vec{\Delta}(\grad U)_h(x) = \frac{\vec{\Delta}(\grad U)(x)}{1+h^{1/2}|x||\vec{\Delta}(\grad U)(x)|}.
 \end{align*}
+Like in the classical case, the aim here is to improve the rate of convergence by using a more accurate discretisation of the underlying diffusion.
 
+\subsubsection{Leimkuhler-Matthews Method}
+Leimkuhler-Matthews Method
 
-\subsubsection{LM}
-\cite{LM12}
-Non-Markovian scheme,
-\[X_{n+1} = X_n +h \grad U(X_n) + \sqrt{\frac{h}{2}} \left(Z_n + Z_{n+1}\right) \]
+The Leimkuhler-Matthews method was developed in \cite{LM12} and cleverly exploits the link between the sampling problem and molecular dynamics. The scheme they developed is as follows:
 
+\begin{equation} X_{n+1} = X_n - h \grad U (X_n) +\sqrt{\frac{h}{2}} (Z_n+Z_{n+1}) \label{eq:LM} \end{equation}
 
+Note that this method is non-Markovian as it incorporates the noise term fro the previous iteration. At first glance it appears that this is almost identical to the standard EM scheme, however the slight modification drastically improves convergence.  It is derived by considering both positions and momenta in Langevin dynamics (as opposed to the overdamped equation we have considered thus far which neglects momenta).
+
+\begin{align} \dif X_t = P_t dif t && \dif P_t = \lbrack -\grad U(X_t) - \gamma P_t \rbrack \dif t + \sqrt{2} \dif W_t \label{eq:LMLang} \end{align}
+
+Here, \(\gamma\) is the friction coefficient. It does no appear in the overdamped Langevin equation as it is the high friction limit of the above system.  Equation \eqref{eq:LMLang} can be seen as a combination of an Ornstein-Uhlenbeck process and Hamiltonian dynamics. Splitting the system in this way allows the exact solution of each part in each time step.
+
+\[ \dif \begin{bmatrix} X_t\\P_t \end{bmatrix} = \underbrace{\begin{bmatrix} P_t \\ 0 \end{bmatrix}} \dif t + \underbrace{\begin{bmatrix}  0\\-\grad U \end{bmatrix}} \dif t + \underbrace{\begin{bmatrix} 0\\ -\gamma P_t \dif t + \dif W_t \end{bmatrix}} \]
+
+The Hamiltonian dynamics have been split further in to A and B.  As well as solving these sections separately at each time step, it is also possible to do fractions of a time step for each term. If we solve in the order BAOAB, that is, half a time step each of B and A before a full time step of the OU process before solving the rest of A and B, we recover Equation \eqref{eq:LM} upon taking the high friction limit. Despite the dependence of iterates, the noise quickly decorrelates. Let \(R_n = (Z_n+Z_{n+1})/\sqrt{2}\). Then,
+
+\begin{align*}
+    \langle R_n,R_n\rangle  &= \frac{1}{2} \left( \langle Z_{n+1},Z_{n+1}\rangle +\langle Z_{n},Z_{n}\rangle\right) =1\\
+    \langle R_n,R_n\rangle = \langle Z_n,Z_n\rangle = \frac{1}{2}\\
+    \langle R_n,R_{n-k} \rangle &= 0,   \quad k=2,3,\dots 
+\end{align*}
+
+{\bf +++ LINK IN TO NEXT SECTION +++ }
 
 \subsection{Visualization}
 A demonstration of the above methods has been implemented using the visualization library of \cite{rogozhnikov2016hmc}\footnote{With kind permission of Alex Rogozhnikov, \url{https://arogozhnikov.github.io/about/}.}. The visualization dynamically follows the trace of a chosen method applied to a chosen two-dimensional distribution. Distributions of various qualitative properties are available. This can be found at the following \textsc{url}: \\
