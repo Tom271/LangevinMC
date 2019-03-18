@@ -17,52 +17,29 @@ import itertools as it
 from time import process_time
 EPS = 1e-12
 
-def sliced_wasserstein_distance(p, q, bin_coors, dim, lp=1, iters=20):
+def sliced_wasserstein_distance(p, q, bin_coors, dim, iters=20):
     '''
         Utility function for the 1-Sliced Wasserstein distance.
         Assumes that p, q are represented as histograms.
     '''
-    if lp==1:
-        if dim == 1: # Use explicit formula
-            return wasserstein_distance(bin_coors.flatten(), bin_coors.flatten(), p, q)
 
-        dist = 0
-        for _ in range(iters):
-            # Sample (almost uniformly) at random from the (dim-1) sphere
-            proj_vec = normal(size=dim)
-            proj_vec = proj_vec / norm(proj_vec)
+    if dim == 1: # Use explicit formula
+        return wasserstein_distance(bin_coors.flatten(), bin_coors.flatten(), p, q)
 
-            bins, ps, qs = [], [], []
-            # Compute projections
-            for idx in it.product(*[range(d) for d in p.shape]):
-                bins.append(np.dot( proj_vec, bin_coors[idx] ))
-                ps.append( p[idx] )
-                qs.append( q[idx] )
+    dist = 0
+    for _ in range(iters):
+        # Sample (almost uniformly) at random from the (dim-1) sphere
+        proj_vec = normal(size=dim)
+        proj_vec = proj_vec / norm(proj_vec)
 
-            dist += wasserstein_distance(bins, bins, ps, qs)
-        return dist/iters
-    elif lp==2:
-        # To do: case d=1
-        dist = 0
-        for _ in range(iters):
-            # Sample (almost uniformly) at random from the (dim-1) sphere
-            proj_vec = normal(size=dim)
-            proj_vec = proj_vec / norm(proj_vec)
+        bins, ps, qs = [], [], []
+        # Compute projections
+        for idx in it.product(*[range(d) for d in p.shape]):
+            bins.append(np.dot( proj_vec, bin_coors[idx] ))
+            ps.append( p[idx] )
+            qs.append( q[idx] )
 
-            bins, ps, qs = [], [], []
-            # Compute projections
-            for idx in it.product(*[range(d) for d in p.shape]):
-                bins.append(np.dot( proj_vec, bin_coors[idx] ))
-                ps.append( p[idx] )
-                qs.append( q[idx] )
-            bins = np.array(bins)
-            ps = np.array(ps) # shape (n,)
-            qs = np.array(qs) # ^
-            bins = bins.reshape((len(bins),1)) # must be (n,1) for input to M
-            M = ot.dist(bins, bins, metric="sqeuclidean")
-            G0 = ot.emd(ps, qs, M, numItermax=1000000, log=True)
-            Wp = G0[1]["cost"]
-            dist += Wp
+        dist += wasserstein_distance(bins, bins, ps, qs)
         return dist/iters
 
 
@@ -538,20 +515,17 @@ class Evaluator:
                         scores.append( entropy( true_ys/np.sum(true_ys), ys/np.sum(ys) ))
                     if measure == "FFTKDE_TV":
                         scores.append( sum(abs( ys/np.sum(ys) - true_ys/np.sum(true_ys) ))/2 )
-                    if measure == "FFTKDE_SW1":
+                    if measure == "FFTKDE_SW":
                         # print(ys, true_ys, x)
-                        scores.append( sliced_wasserstein_distance( ys/np.sum(ys), true_ys/np.sum(true_ys), x, self.dim, lp=1))
-                    if measure == "FFTKDE_SW2":
-                        # print(ys, true_ys, x)
-                        scores.append( sliced_wasserstein_distance( ys/np.sum(ys), true_ys/np.sum(true_ys), x, self.dim, lp=2))
-                data.append(scores)
+                        scores.append( sliced_wasserstein_distance( ys/np.sum(ys), true_ys/np.sum(true_ys), x, self.dim))
+                    data.append(scores)
 
             if not experiment_mode:
                 plt.boxplot(data, labels=algorithms)
             else:
                 self.experiment_data["results"] = data
 
-        elif measure in ["KL_divergence", "total_variation", "sliced_wasserstein_1", "sliced_wasserstein_2"]:
+        elif measure in ["KL_divergence", "total_variation", "sliced_wasserstein"]:
             data = []
             for algo in algorithms:
                 scores = []
@@ -567,10 +541,8 @@ class Evaluator:
                     elif measure == "total_variation":
                         ps, qs = p.flatten(), q.flatten()
                         scores.append( sum(abs( ps/sum(ps) - qs/sum(qs) ))/2 )
-                    elif measure == "sliced_wasserstein_1":
-                        scores.append( sliced_wasserstein_distance( p/np.sum(p), q/np.sum(q), bin_coors, self.dim, lp=1))
-                    elif measure == "sliced_wasserstein_2":
-                        scores.append( sliced_wasserstein_distance( p/np.sum(p), q/np.sum(q), bin_coors, self.dim, lp=2))
+                    elif measure == "sliced_wasserstein":
+                        scores.append( sliced_wasserstein_distance( p/np.sum(p), q/np.sum(q), bin_coors, self.dim))
                 data.append(scores)
 
             if not experiment_mode:
@@ -626,10 +598,7 @@ class Evaluator:
 # Using evaluator
 ####################################
 d = 10 # dimension
-# random_start = np.array(normal(size=[1,d]))
-# normed_start= np.array(10* random_start/norm(random_start))
-# size(normed_start)
-# np.array([0]+[0]*(d-1))
+
 e = Evaluator(potential="double_well", dimension=d, x0=normed_start, burn_in=0, N=10**2, N_sim=5, step=0.01, N_chains=1, \
               measuring_points=None, timer=None, temperature=1)
 
