@@ -68,8 +68,71 @@ where $\mathbb S^{d-1}$ is the $(d-1)$-dimensional sphere and $\mathcal RI$ deno
 \subsubsection{Numerical Comparison}
 In this section we present a numerical comparison of the algorithms considered, extending the results of \cite{Brosse18tULA} which only considered first and second moments.  It should be noted that the results in the aforementioned paper are in dimension 100, while here our results are in dimension 2.  This is due to the bin-filling problem when approximating the density function, which is explained in section \ref{sec:Imp}.  We do not have evidence to suggest the performance of these algorithms would be similar in higher dimensions.
 
+The results for total variation in the case of the Gaussian (Figure \ref{fig:TVgauss}) support the claim of \cite{Brosse18tULA} that tamed algorithms have similar performance to untamed for small step size.  As expected, they do perform slightly worse than the untamed equivalent, but this difference is relatively small.  For the ill-conditioned case (Figure \ref{fig:TV_ICgauss}), the unadjusted versions of each algorithm diverge, but the tamed versions are stable.  As predicted, coordinate-wise taming improves performance in this case, and we expect this effect to be more pronounced in high dimensions.
+\begin{figure}[ht!]
+	\centering
+		\includegraphics[height=0.43\textheight]{Figures/TV_gaussian11_step0pt02.png}
+	\caption{$10^5$ samples from standard Gaussian with step size 0.02}
+	\label{fig:TVgauss}
+\end{figure}
 
+\begin{figure}[ht!]
+	\centering
+		\includegraphics[height=0.43\textheight]{Figures/TV_ICgaussian10pt0001_step0pt02.png}
+	\caption{$10^5$ samples from ill-conditioned Gaussian with step size 0.02}
+	\label{fig:TV_ICgauss}
+\end{figure}
 
+\begin{figure}[ht!]
+	\centering
+		\includegraphics[height=0.43\textheight]{WriteUp/TV_doublewell_step0pt02.png}
+	\caption{$10^5$ samples from double well with step size 0.02}
+	\label{fig:TVdouble02}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+		\includegraphics[height=0.43\textheight]{WriteUp/TV_doublewell_step0pt1.png}
+	\caption{$10^5$ samples from double well with step size 0.1}
+	\label{fig:TVdouble1}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+		\includegraphics[height=0.43\textheight]{WriteUp/TV_doublewell_step0pt2.png}
+	\caption{$10^5$ samples from double well with step size 0.2}
+	\label{fig:TVdouble2}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+		\includegraphics[height=0.43\textheight]{WriteUp/TV_doublewell_step0pt3.png}
+	\caption{$10^5$ samples from double well with step size 0.3}
+	\label{fig:TVdouble3}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+		\includegraphics[height=0.43\textheight]{WriteUp/TV_ginzburg_step0pt01.png}
+	\caption{$10^5$ samples from 1D Ginzburg Landau with step size 0.3}
+	\label{fig:TVginz01}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+		\includegraphics[height=0.43\textheight]{WriteUp/TV_rosenbrock_step0pt001.png}
+	\caption{$10^5$ samples from Rosenbrock with set size 0.001}
+	\label{fig:TVrosen001}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+		\includegraphics[height=0.43\textheight]{WriteUp/TV_rosenbrock_step0pt01.png}
+	\caption{$10^5$ samples from Rosenbrock with set size 0.01}
+	\label{fig:TVrosen01}
+\end{figure}
+
+\newpage
 \subsection{Theoretical Non-asymptotic Error Bounds}
 
 While the asymptotic behaviour of \texttt{ULA} and \texttt{MALA} is well-understood \cite{RT96}, the results do not consider the effect of dimension on the complexity of the algorithms.  For practical purposes, an understanding of the non-asymptotic behaviour of the algorithms would be useful and, in particular, theoretical results which could determine the step size and number of iterations required to guarantee an error of no more than some acceptable value $\epsilon$.
@@ -102,7 +165,7 @@ Denote the unique minimiser of $U$ by $y=\arg \min_{x \in \R^d} U(x)$.  Let $\nu
     Then
     \begin{align*}
         \norm{\pi_h - \pi}_{TV} &\leq (4 \pi)^{-1/2} \left\{ h^2 E_1(h, d) + 2dh^2 E_2(h)/(\kappa m)\right\}^{1/2}\\
-        &+ (4 \pi)^{-1/2} \lceil log(h^{-1}/log(2) \rceil \left\{ h^2 E_1(h,d) + h^2 E_2(h)(2 \kappa^{-1}d + d/m) \right\}^{1/2}\\
+        &+ (4 \pi)^{-1/2} \lceil \log(h^{-1}/\log(2) \rceil \left\{ h^2 E_1(h,d) + h^2 E_2(h)(2 \kappa^{-1}d + d/m) \right\}^{1/2}\\
         &+ 2^{-3/2} M \left\{ 2d h^3 L^2/(3\kappa) + dh^2\right\}^{1/2}
     \end{align*}
     where $E_1(h,d)$ and $E_2(h)$ are defined as

@@ -79,6 +79,18 @@ It is perhaps better understood as \texttt{ULA} but with an added Metropolis rej
 	then the \texttt{MALA} chain is not exponentially ergodic. +++define exp ergodic+++
 \end{theorem}
 So it can be seen that \texttt{MALA} is not without its issues, and does not solve all the problems of \texttt{ULA}. The concept of taming was introduced to try and reduce the magnitude of these problems.
+\begin{figure}[H]
+\centering
+  \begin{minipage}[b]{0.49\textwidth}
+  \centering
+    \includegraphics[width=\textwidth]{Figures/tula_tmala_step_1.png}
+  \end{minipage} %
+  \begin{minipage}[b]{0.49\textwidth}
+  \centering
+    \includegraphics[width=\textwidth]{Figures/tula_tmala_step_10.png}
+  \end{minipage}
+   \caption{\textbf{Trade-off between rejection-based algorithms and \texttt{tULA} for large step-sizes} ($h = 1$ on the left and $h = 10$ on the right, distribution is Gaussian with covariance matrix $\text{diag}(1.0, 0.1)$). With increasing step size, even \texttt{tULA} starts to suffer from stiffness problems. Rejection-based algorithms resolve the issue, however, their acceptance rate drops very low ($\approx 0.2$ on the left and $\approx 0.03$ on the right). }
+\end{figure}
 
 \subsection{Taming the Gradient}
 We have seen that both \texttt{ULA} and \texttt{MALA} run into issues when the gradient of the potential is superlinear. Given an SDE such as \eqref{eq:ODLang}, taming adjusts the drift coefficient in such a way that preserves the invariant measure and improves speed of convergence \cite{Brosse18tULA,RT96,Sabanis13}. To do this, a family of drift functions \((G_h)_{h>0}, \ G_h:\R^d \to \R^d\) are introduced. The SDE to be discretised is thus
@@ -100,18 +112,45 @@ Here we consider two specific taming functions,
 Brosse et al. introduced and studied \(T_h\) whilst Roberts \& Tweedie suggested \(T^{\text{\sc \tiny RT}}_h\), later analysed by Bou-Rabee \& Vanden-Eijnden \cite{BV10MALTA,Brosse18tULA,RT96}. Both taming functions retain the direction of the gradient, only reducing the magnitude of its effect. The latter is the usual \texttt{ULA} until the gradient gets large enough \((\|\grad U(x)\|> 1/h)\), at which point it begins normalising. In contrast, the first will always tame, regardless of size of the gradient. However for the scaling to have noticeable effect, the gradient must be \(\mathcal{O}(h^{-1})\).
 When \(T_h\) is the taming function, the algorithm will be referred to as \texttt{tULA}, the tamed unadjusted Langevin algorithm. When the second is applied, it will be called \texttt{MALTA}, the Metropolis adjusted Langevin truncated algorithm after \cite{RT96}. Any tamed algorithm using \(T_h\) will be prefixed with a lowercase \texttt{t}. For a proof that \(T_h\) satisfies \ref{A1} and \ref{A2}, see \cite[Lemma~2]{Brosse18tULA}.
 \\
-When the problem is ill-conditioned, taming the gradient does not help +++Kostas' example, ill-cond Gauss does this motivate coordinatewise?+++. 
+When the problem is ill-conditioned, taming the gradient does not help. 
 \subsubsection{tULA/c}
 So far, the gradient has only been tamed globally. This means that the information the gradient gives is reduced in dimensions where it is not causing divergence. A solution to this is to use coordinatewise taming with the following drift.
   \[T^c_{h}(x) =\left(\frac{\partial_i U(x)}{1+h|\partial_i U(x)|}\right)_{i=\lbrace 1, \dots, d\rbrace} \]
 This allows each dimension to be scaled individually. Any algorithm with coordinate-wise taming will be suffixed with a lowercase \texttt{c}.
 
 \subsubsection{Stiff Problems}
-To illustrate the effectiveness of coordinatewise taming, consider an ill-conditioned Gaussian distribution with mean \(\mathbf{\mu},\) covariance matrix \(\Sigma\) as follows.
+To illustrate the effectiveness of coordinatewise taming, consider an ill-conditioned Gaussian distribution with mean \(\mu,\) covariance matrix \(\Sigma\) as follows.
 \begin{align*}
-    \mathbf{\mu} &= \mathbf{0} && \Sigma = \begin{bmatrix}  \end{bmatrix}
-    
+    \mu &= \mathbf{0}, && \Sigma = \begin{bmatrix}  1 & 0 \\ 0 & 0.0001 \end{bmatrix}
 \end{align*}
+Figure \ref{fig:stiffULA} shows the trajectory of the unadjusted and tamed unadjusted Langevin algorithms (\texttt{ULA} and \texttt{tULA}, respectively) applied to this problem. It can be seen that past a certain threshold in stepsize, \texttt{ULA} begins to overestimate the width of the distribution, and indeed diverges when the stepsize gets too high. Notice that the tamed algorithm still overestimates the width in one dimension due to the global taming. Contrast this with Figure \ref{fig:stifftULAc}, using the \texttt{tULAc} algorithm. it greatly reduces the variance in samples in one dimension. The problem still remains in the other dimension, however this is almost unavoidable with an explicit scheme.  
+\begin{figure}[H]
+\centering
+  \begin{minipage}[b]{0.49\textwidth}
+  \centering
+    \includegraphics[width=\textwidth]{Figures/ula_tula_step_01.png}
+  \end{minipage} %
+  \begin{minipage}[b]{0.49\textwidth}
+  \centering
+    \includegraphics[width=\textwidth]{Figures/ula_tula_step_02.png}
+  \end{minipage}
+   \caption{\textbf{Demonstration of the stiffness problem with \texttt{ULA}}, resolved by taming. Both \texttt{ULA} and \texttt{tULA} work well for step size $h = 0.1$ on the left, however \texttt{ULA} becomes stiff for a larger step size $h = 0.2$ on the right. For ever higher step sizes, \texttt{ULA} diverges. The distribution here is Gaussian with covariance matrix $\text{diag}(1.0, 0.0001)$.}
+   \label{fig:stiffULA}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+  \begin{minipage}[b]{0.49\textwidth}
+  \centering
+    \includegraphics[width=\textwidth]{Figures/tula_tulac_rwm_stiff.png}
+  \end{minipage} %
+   \caption{\textbf{Coordinate-wise taming} can deal with stiffness in one axis (Ill-conditioned Gaussian distribution with covariance $\text{diag}(1.0, 0.0001)$).}
+   \label{fig:stifftULAc}
+\end{figure}
+
+
+
+
 \subsection{Discretise Differently}
 An alternative approach is to use a different discretisation of the SDE \eqref{eq:ODLang}, which we consider in this section. The first is an extension of the Euler method \cite{Sabanis18tHOLA}, while the latter uses a non-Markovian scheme developed for use in molecular dynamics \cite{LM12}.
 \subsubsection{Higher Order Langevin Algorithm}
@@ -119,7 +158,7 @@ As in the ordinary case, the Euler-Maruyama method is not the only way of discre
 \[X_{n+1} = X_n -hU'(X_n)+\sqrt{2h}Z_n -\sqrt{2} U''(X_n) \tilde{Z}_n +\frac{ h^2 }{2}\bigg\lbrack U'(X_n)U''(X_n)-U'''(X_n)\bigg\rbrack.  \]
 Here, \(\tilde{Z}_n\) is defined as
 \[  \tilde{Z}_n = \int_{t_n}^{t_{n+1}} \int_{t_n}^s \dif W_r \dif s. \]
-This is a Gaussian random variable with mean \(0\) and variance \(\frac{1}{3}h^3 \). Extending this to \(d\)-dimensions and applying to the Langevin SDE \eqref{eq:ODLang} and taming as above gives the following iterative scheme. The untamed version is the same, but with all subscripts removed. {+++ \bf WHERE HAS Z tilde GONE? +++}
+This is a Gaussian random variable with mean \(0\) and variance \(\frac{1}{3}h^3 \). Extending this to \(d\)-dimensions and applying to the Langevin SDE \eqref{eq:ODLang} and taming as above gives the following iterative scheme. The untamed version is the same, but with all subscripts removed. 
 \[X_{n+1} = X_n + \mu_{h}(X_n)h +\sigma_{h}(X_n)\sqrt{h}Z_{n+1},\]
 where
 \[\mu_{h}(x) = -\grad U_{h}(x) +\frac{h}{2}\left( \left( \grad^2U\grad U\right)_{h}(x) - \vec{\Delta}(\grad U)_{h}(x)\right) ,\]
@@ -143,7 +182,7 @@ Note that this method is non-Markovian as it incorporates the noise term from th
 
 Here, \(\gamma\) is the friction coefficient. It does no appear in the overdamped Langevin equation as it is the high friction limit of the above system.  Equation \eqref{eq:LMLang} can be seen as a combination of an Ornstein-Uhlenbeck process and Hamiltonian dynamics. Splitting the system in this way allows the exact solution of each part in each time step.
 
-\[ \dif \begin{bmatrix} X_t\\P_t \end{bmatrix} = \underbrace{\begin{bmatrix} P_t \\ 0 \end{bmatrix}} \dif t + \underbrace{\begin{bmatrix}  0\\-\grad U \end{bmatrix}} \dif t + \underbrace{\begin{bmatrix} 0\\ -\gamma P_t \dif t + \dif W_t \end{bmatrix}} \]
+\[ \dif \begin{bmatrix} X_t\\P_t \end{bmatrix} = \underbrace{\begin{bmatrix} P_t \\ 0 \end{bmatrix}}_{\text{A}} \dif t + \underbrace{\begin{bmatrix}  0\\-\grad U \end{bmatrix}}_{\text{B}} \dif t + \underbrace{\begin{bmatrix} 0\\ -\gamma P_t \dif t + \dif W_t \end{bmatrix}}_{\text{O}} \]
 
 The Hamiltonian dynamics have been split further in to A and B.  As well as solving these sections separately at each time step, it is also possible to do fractions of a time step for each term. If we solve in the order BAOAB, that is, half a time step each of B and A before a full time step of the OU process before solving the rest of A and B, we recover Equation \eqref{eq:LM} upon taking the high friction limit. Despite the dependence of iterates, the noise quickly decorrelates. Let \(R_n = (Z_n+Z_{n+1})/\sqrt{2}\). Then,
 
@@ -154,42 +193,9 @@ The Hamiltonian dynamics have been split further in to A and B.  As well as solv
 \end{align*}
 
 {\bf +++ LINK IN TO NEXT SECTION +++ }
-\begin{figure}[H]
-\centering
-  \begin{minipage}[b]{0.49\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/ula_tula_step_01.png}
-  \end{minipage} %
-  \begin{minipage}[b]{0.49\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/ula_tula_step_02.png}
-  \end{minipage}
-   \caption{\textbf{Demonstration of the stiffness problem with \texttt{ULA}}, resolved by taming. Both \texttt{ULA} and \texttt{tULA} work well for step size $h = 0.1$ on the left, however \texttt{ULA} becomes stiff for a larger step size $h = 0.2$ on the right. For ever higher step sizes, \texttt{ULA} diverges. The distribution here is Gaussian with covariance matrix $\text{diag}(1.0, 0.1)$.}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-  \begin{minipage}[b]{0.49\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/tula_tulac_rwm_stiff.png}
-  \end{minipage} %
-   \caption{\textbf{Coordinate-wise taming} can deal with stiffness in one axis (Ill-conditioned Gaussian distribution with covariance $\text{diag}(1.0, 0.01)$).}
-\end{figure}
 
 
 
-\begin{figure}[H]
-\centering
-  \begin{minipage}[b]{0.49\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/tula_tmala_step_1.png}
-  \end{minipage} %
-  \begin{minipage}[b]{0.49\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/tula_tmala_step_10.png}
-  \end{minipage}
-   \caption{\textbf{Trade-off between rejection-based algorithms and \texttt{tULA} for large step-sizes} ($h = 1$ on the left and $h = 10$ on the right, distribution is Gaussian with covariance matrix $\text{diag}(1.0, 0.1)$). With increasing step size, even \texttt{tULA} starts to suffer from stiffness problems. Rejection-based algorithms resolve the issue, however, their acceptance rate drops very low ($\approx 0.2$ on the left and $\approx 0.03$ on the right). }
-\end{figure}
 
 
 
