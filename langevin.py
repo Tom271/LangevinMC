@@ -591,22 +591,24 @@ class Evaluator:
 
 
 
-
+for step in np.linspace(10**(-4), 0.2, 100):
+    print(step)
 ####################################
 # Using evaluator
 ####################################
-d = 2 # dimension
-e = Evaluator(potential="double_well", dimension=d, x0=np.array([0]+[0]*(d-1)), burn_in=2, N=5000, N_sim=2, step=0.01, N_chains=2, \
-              measuring_points=None, timer=None, temperature=0.1)
+    d = 2 # dimension
+    e = Evaluator(potential="gaussian", dimension=d, x0=np.array([0]+[0]*(d-1)), burn_in=0, N=500, N_sim=1, step=0.01, N_chains=2, \
+                  measuring_points=None, timer=None, temperature=1, gaussian_sigma=np.array([1,1]))
 
-# Example of an analysis - produces a plot, doesn't store anything
-e.analysis(algorithms=["ULA", "HOLA"], measure='scatter', bins=40)
+    # Example of an analysis - produces a plot, doesn't store anything
+    # e.analysis(algorithms=["ULA", "HOLA"], measure='scatter', bins=40)
 
-# Example of an experiment - only a single algorithm - does not produce a plot, stores the given path.
-exp_name = 'Experiments/my_little_experiment'
-e.run_experiment(file_path=exp_name, algorithm='ULA', measure='total_variation', bins=10)
 
-# How to read an experiment in the future:
-my_little_experiment = pickle.load(open( exp_name, 'rb' ))
-for k, v in my_little_experiment.items():
-   print(k, ':', v)
+    # Example of an experiment - only a single algorithm - does not produce a plot, stores the given path.
+    exp_name = 'Experiments/my_little_experiment'
+    e.run_experiment(file_path=exp_name, algorithm='ULA', measure='total_variation', bins=10)
+
+    # How to read an experiment in the future:
+    my_little_experiment = pickle.load(open( exp_name, 'rb' ))
+    for k, v in my_little_experiment.items():
+       print(k, ':', v)
