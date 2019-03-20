@@ -4,31 +4,40 @@ guide can be found at the following
 
    \centerline{ \url{https://github.com/Tom271/LangevinMC}}
 
+\subsection{Overview}\label{overviewprogram}
+\begin{itemize}
+\item In the program, we first defined 'Sliced Wasserstein Distance' for dimension 1 and other. \\
+\item We then defined the class of the potential: Gaussian, Gaussian Gradient; Double Wells, Double Wells Gradient; Ginzburg Landau, Ginzburg Landau Gradient;     Rosenbrock etc.\\
+\item We then defined the algorithms we will be using to analyse our samples. The algorithms we will be using are: ULA, MALA, RWM, LM, HOLA, HPH; Taming Algorithms are: tULA, tMALA, tHOLA, tLM etc.\\
+\item To evaluate and compare which method is better, we will compare some properties obtained by each method. For example, we will compare 'first moment', 'second moment', 'trace', 'scatter', 'histogram', 'KL-divergence', 'total variation', 'Sliced Wasserstein' \\
+\item The experiment will then be performed for each method and each property. We could increase the accuracy of our results by increasing the number of steps in each experiment. \\
+\item To know the accuracy of a method, we will calculate the difference between the results obtained from our algorithm and the result obtained from the theory. \\ The smaller the difference is, the more accurate the approximated result is, therefore, the better the algorithm.\\
+\end{itemize}
+% \subsection{Results}
+% 
+% omit this figure
 
-\subsection{Results}
-
-
-\begin{figure}[H]
-\centering
-  \begin{minipage}[b]{0.32\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/tula_tv.png}
-  \end{minipage} %
-  \begin{minipage}[b]{0.32\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/tulac_tv.png}
-  \end{minipage} %
-  \begin{minipage}[b]{0.32\textwidth}
-  \centering
-    \includegraphics[width=\textwidth]{Figures/tmala_tv.png}
-  \end{minipage}
-   \caption{Comparison of \texttt{tULA}, \texttt{tULAc} and \texttt{tMALA} for the total variation error evolving as a function of step size.}
-\end{figure}
+% \begin{figure}[H]
+% \centering
+%   \begin{minipage}[b]{0.32\textwidth}
+%   \centering
+%     \includegraphics[width=\textwidth]{Figures/tula_tv.png}
+%   \end{minipage} %
+%   \begin{minipage}[b]{0.32\textwidth}
+%   \centering
+%     \includegraphics[width=\textwidth]{Figures/tulac_tv.png}
+%   \end{minipage} %
+%   \begin{minipage}[b]{0.32\textwidth}
+%   \centering
+%     \includegraphics[width=\textwidth]{Figures/tmala_tv.png}
+%   \end{minipage}
+%   \caption{Comparison of \texttt{tULA}, \texttt{tULAc} and \texttt{tMALA} for the total variation error evolving as a function of step size.}
+% \end{figure}
 
 
 
 
-\subsection{Sampling approaches}
+\subsection{Sampling Approaches}
 
 Throughout this project, we have encountered two main approaches for sampling. To obtain a set of samples, one may:
 
@@ -39,7 +48,7 @@ Throughout this project, we have encountered two main approaches for sampling. T
 
 To accommodate for both possibilities, given positive integers $b, N_{\text{chains}}, N$ and a set $I \subset \mathbb \{1, 2, \dots, N - b\}$ of indices, our program aggregates samples with indices in $\{i+b\ |\ i \in I\} $  from $ N_{\text{chains}}$ independent chains.
 
-\subsection{Estimating error}
+\subsection{Estimating Error}
 
 In the following, let $\pi$ be the pdf of true distribution from which we attempt to sample and $X = \{x_i\}_{i=1}^N$ denote the collection of samples collected by a sampling algorithm. The notation $x_i(d)$ will be used to refer to the $d$-th coordinate of $x_i$. We also denote by $\{m_d\}_{d=1}^D$ and $\{M_d\}_{d=1}^D$ the coordinate-wise minimums and maximums among $x_i$, that is:
 
@@ -70,7 +79,7 @@ which we will understand to be the sampled approximation of the true distributio
 
 
 
-\subsubsection{The Curse of dimensionality}
+\subsubsection{The Curse of Dimensionality}
 
 In short, since the size of the mesh $|\#_X| = \text{bins}^D$ is exponential in dimension, it is impossible to construct histograms in high dimensions. Even within smaller dimensions, a fundamental trade-off arises; either one can construct a desirably fine mesh with many bins being empty (that is, $h(c) = 0$), or construct a coarse mesh with sufficiently many samples. The quality of the error estimation suffers in both cases. \\\\
 For this reason, the implemented  histogram  error metrics are only feasible for smaller dimensions\footnote{Around $1 \leq D \leq 4$.}, whereas the other metrics should be considered only indicative with increasing dimension, rather than precise measures of error.
@@ -92,7 +101,7 @@ Without theoretical justification for our choices, we did not use KDE for the re
 
 \noindent 
 
-\subsection{Implemented metrics}
+\subsection{Implemented Metrics}
 
 \subsubsection{Visualizations}
 In special cases when the dimension is $1$ or $2$, we have implemented an option to visualize the samples either as a histogram plot (in 1D) or as a scatter or trace plot (in 2D or 3D).
@@ -117,7 +126,7 @@ In special cases when the dimension is $1$ or $2$, we have implemented an option
 
 
 
-\subsubsection{First/Second moments}
+\subsubsection{First/Second Moments}
 The first and second moments are implemented in the standard way. By default, the result is computed \textit{in the first coordinate only\footnote{With option to use $\frac 1 N\sum_{i=1}^N \norm{x_i}$ and $\frac 1 N\sum_{i=1}^N \norm{x_i^2}$ instead.}}.
 
 $$ 
@@ -125,7 +134,7 @@ $$
 $$
 
 
-\subsubsection{Total variation}
+\subsubsection{Total Variation}
 The total variation, being the first of implemented histogram measures, is calculated as
 
 \[\text{total variation} = \norm{H_X - \frac 1 Z \sum_{c \in \#_X} \pi(c) \delta_c}_{\text{TV}} = \frac 1 2\sum_{c \in \#_X} \left|\frac{h(c)}{N} - \frac{\pi(c)}{Z}\right| .\]
@@ -151,15 +160,15 @@ W_1 \left( H_X,\  \frac 1 Z \sum_{c \in \#_X} \pi(c) \delta_c \right) & \text{if
 \end{cases}\]
 
 where $\left< \cdot \right>$ is the dot product, $\theta_i = \frac{\theta'_i}{\norm{\theta'_i}}$ is a point on $(d-1)$-dimensional sphere with $
-\theta'_i \sim \mathcal N(0, I_D)$ and $W_1$ is computed explicitly.  A \\\\
+\theta'_i \sim \mathcal N(0, I_D)$ and $W_1$ is computed explicitly.   No computationally efficient method was found for $SW_2$ \footnote{It is possible to calculate $SW_2$ using \cite{flamary2017pot}, which solves the optimal transport problem using linear programming techniques.  This is many orders of magnitude slower than $SW_1$}.   \\\\
 
 The second, \textbf{heuristic-based}, approximation of the Sliced Wasserstein distance is calculated as follows:
 
 \[\text{SW}_{no\ histogram} = \begin{cases}
 W_1 \left( \frac 1 N \sum_{x \in X} \delta_x,\  \frac 1 {Z'} \sum_{x \in X} \pi(x) \delta_x \right) & \text{if dimension } = 1 \\
-\sum_{i = 1}^L W_1 \left(  \frac 1 N \sum_{x \in X} \delta_{\left<x, \theta_i \right>},\ \frac 1 {Z'} \frac 1 N \sum_{x \in X} \pi(x) \delta_{\left<x, \theta_i \right>}  \right) & \text{ otherwise. }
+\sum_{i = 1}^L W_1 \left(  \frac 1 N \sum_{x \in X} \delta_{\left<x, \theta_i \right>},\ \frac 1 {Z'} \sum_{x \in X} \pi(x) \delta_{\left<x, \theta_i \right>}  \right) & \text{ otherwise. }
 \end{cases}\]
-where $Z' = \sum_{x \in X} \pi(x) $ is a normalizing constant. Intuitivelly, this measure of error describes whether the spatial distribution of samples is proportional to the true distribution, \textit{at the same points}.
+where $Z' = \sum_{x \in X} \pi(x) $ is a normalizing constant. Intuitively, this measure of error describes whether the spatial distribution of samples is proportional to the true distribution, \textit{at the same points}.
 
 
 \subsection{KDE-based metrics}

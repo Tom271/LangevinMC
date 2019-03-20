@@ -230,4 +230,32 @@ The triangle inequality gives our desired bound on $\norm{\pi - \nu_N}_{TV}$.  W
 \end{note}
 
 \subsubsection{Numerical Tests}
-De
+Despite the `user-friendly' nature of the bounds in Wasserstein distance, it was not possible to verify them numerically, as computing the $W_2$ distance is computationally infeasible.  This problem is explained in more detail in section \ref{sec:Imp}.  We were, however, able to test the bounds in total variation.  The only distribution we have implemented which satisfies the assumptions above was the Gaussian.  For the following results, we test on a 1-dimensional $N(0,1)$ distribution.
+
+\begin{figure}[H]
+	\centering
+		\includegraphics[height=0.35\textheight]{WriteUp/DM_Pih.pdf}
+	\caption{Bound in $\norm{\pi_h - \pi}_{TV}$ as function of $h$.  This bound can be used to select a suitable step size to give error $\epsilon/2$}
+	\label{fig:DM_Pih}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+		\includegraphics[height=0.35\textheight]{WriteUp/DM_EM_step0pt01.pdf}
+	\caption{Bound in $\norm{\pi_h - \nu_N}_{TV}$ as function of $N$, for $h=0.01$.  Having chosen a suitable $h$ according to the bound above, a suitable $N$ can be chosen to give error $\epsilon/2$}
+	\label{fig:DM_Pih}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+		\includegraphics[height=0.35\textheight]{Figures/DM_plot_nth_sample.png}
+	\caption{$\norm{\pi - \nu_N}_{TV}$ as function of $N$, plotted against theoretical bounds.  The experiment was run with 600 chains, to produce a histogram with 80 bins.  This number of chains is insufficient to calculate the total variation to a higher level of accuracy, which may explain the difference between our calculated result and the theoretical bound.}
+	\label{fig:DMnth}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+		\includegraphics[height=0.35\textheight]{Figures/DM_plot_whole_chain.png}
+	\caption{Total Variation distance between distribution taken by pooling all $N$ samples from multiple chains and true (standard normal) distribution as function of $N$, plotted against theoretical bounds.  Although the error for the pooled distribution should be worse than that for the $N^{\text{th}}$ sample, a much higher accuracy is achieved.  This supports our claim that the higher than expected error in the above plot is a result of too few chains being run.}
+	\label{fig:DMwhole}
+\end{figure}

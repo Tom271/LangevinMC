@@ -14,16 +14,15 @@ SGLD – use unbiased estimator of the gradient of log-posterior based on subsam
 \subsubsection{Governing Equation}
 Recall the following equations:
 Euler discretization of the Langevin SDE:
-$$\theta_{n+1} = \theta_n - h \nabla U(\theta_n)+\sqrt{2h} Z_{n+1}$$, where $h > 0$ is a constant step size and $(Z_n)_{n\geq1}$ is a sequence of i.i.d standard d - dimensional Guassian vectors. 
+$$\theta_{n+1} = \theta_n - h \nabla U(\theta_n)+\sqrt{2h} Z_{n+1}$$ where $h > 0$ is a constant step size and $(Z_n)_{n\geq1}$ is a sequence of i.i.d standard d - dimensional Guassian vectors. 
 To reduce the costs of the algorithms, we will switch to SGLD, for which we will replace $\nabla U$ with an unbiased estimate $\nabla U_0+(\frac{N}{p}) \sum_{i\in S}\nabla U_i$, where S is a minibatch of \{1,...., N\} with replacement of size p. Our iterations were then updated as
 $$\theta_{n+1} = \theta_{n}-h \Bigg (\nabla U_0(\theta_n)+\frac{N}{p}\sum_{i\in S_{n+1}}\nabla U_i(\theta_n)\Bigg )+\sqrt{2h}Z_{n+1}$$
 Stochastic Gradient Descent (SGD) is characterised by the same recursion as SGLD without the Gaussian noise, (the last term):
 
 
 $$\theta_{n+1} = \theta_{n}-h \Bigg (\nabla U_0(\theta_n)+\frac{N}{p}\sum_{i\in S_{n+1}}\nabla U_i(\theta_n)\Bigg)$$
-
-\subsubsection{Analysis in Wasserstein distance}
-\subsubsection{Definitions and Notations in Markov chain theory}
+\textbf{Analysis in Wasserstein distance}
+\subsubsection{Definitions and Notations in Markov Chain theory}
 Recall the following definitions:
 $\mathcal{P}_2(\mathbb{R}^d)$ the set of probablity measures with finite second momet.\\
 $\mathcal{B}(\mathbb{R}^d)$ the Borel $\sigma$ - algebra of $\mathbb{R}^d$.\\
@@ -37,7 +36,13 @@ A probablity measure $\bar{\pi}$ is invariant for R if $\bar{\pi}R = \bar{\pi}$.
 Our algorithms LMC, SGLD, SGD and SGLDFP algorithms are homogeneous Markov chains with Markov kernels denoted $R_{LMC}, R_{SGLD}, R_{SGD}$ and $R_{FP}$.
 
 \subsubsection{Results}
-For lemma 1, Theorem 2 and Corollary 3, we assume H1, H2 and H3.
+Recall our assumptions:
+\begin{enumerate}[label={\bf H\arabic*}]
+    \item For all $i \in \{0,...,N\}, \ U_i$ is four times continuously differentiable and for all $j \in \{2, 3, 4\},$$sup_{\theta \in \mathbb{R}^d}||D^j U_i(\theta)||\leq \Tilde{L}.$ In particular for all $i\in \{0, ..., N\}$, $U_i$ $\Tilde{L}$-gradient Lipschitz, i.e. for all $\theta_1, \theta_2\in \mathbb{R}^d$, $||\nabla U_i(\theta_1) - \nabla U_i (\theta_2)|| \leq \Tilde{L}||\theta_1 - \theta_2||.$
+    \item U is m-strongly convex, i.e. for all $\theta_1, \theta_2 \in \mathbb{R}^d$,$\left< \nabla U(\theta_1) - \nabla U(\theta_2), \theta_1 - \theta_2\right>\geq m ||\theta_1 - \theta_2||^2.$
+    \item For all $i\in\{0,...,N\}$, $U_i$ is convex.
+\end{enumerate}
+For the below Lemma, Theorem and Corollary, we assume H1, H2 and H3.
 \begin{lemma}
 For any step size $h \in (0, \frac{2}{L})$, $R_{SGLD}$(respectively $R_{LMC}, R_{SGD}, R_{FP}$) has a unique invariant measure $\pi_{SGLD}\in \mathcal{P}_2(\mathbb{R}^d)$(respectively $\pi_{LMC}, \pi_{SGD}, \pi_{FP}$). In addition, for all $h \in (0, \frac{1}{L}], \theta\in \mathbb{R}^d and k\in\mathbb{N}$,
 $$W_2^2(R_{SGLD}^k(\theta, \cdot), \pi_{SGLD})\leq(1-mh)^k\int_{\mathbb{R}^d}||\theta-\vartheta||^2\pi_{SGLD}(d\vartheta)$$

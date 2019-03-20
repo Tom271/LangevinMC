@@ -18,7 +18,7 @@
 	\renewcommand{\ref}[1]{(\oldref{#1})}
 	\newtheorem{theorem}{Theorem}[section]
 	\newtheorem{cor}[theorem]{Corollary}
-	\newtheorem*{lemma}{Lemma}
+	\newtheorem{lemma}[theorem]{Lemma}
 	\newtheorem{prop}[theorem]{Proposition}
 	\newtheorem{remark}[theorem]{Remark}
 	\theoremstyle{definition}
@@ -123,9 +123,10 @@
 \begin{document}
 	\maketitle
 	\section*{Abstract}
+	Monte Carlo methods are introduced, with a focus on Langevin-based samplers (Section \ref{sec:LMC}). The method of taming is studied and compared to Metropolised algorithms using a variety of metrics (Sections \ref{sec:MomentErrors},\ref{sec:Beyond}). Our main contribution is an extension of the paper by Brosse et al. (2018) on the tamed unadjusted Langevin algorithm, via an open source \textsc{Python} package for comparison of a variety of Langevin Monte Carlo (LMC) algorithms on a range of distributions. We have also extended the visualisation library of \cite{rogozhnikov2016hmc} to include LMC algorithms. This is presented in Section \ref{sec:Imp}, along with a discussion of the implemented metrics and pitfalls.
 	\section*{Author Contribution}
-	The introduction and \ref{sec:Beyond} were written by Matthew.  Tom wrote \ref{sec:LMC}, \ref{sec:MomentErrors} and \ref{subsec:future}.  Marko wrote \ref{sec:Imp}. Bowen wrote \ref{subsec:SGLD}
-	
+	Sections \ref{sec:intro} and \ref{sec:Beyond} were written by Matthew.  Tom wrote \ref{sec:LMC}, \ref{sec:MomentErrors} and \ref{subsec:future}.  Marko wrote 5.2
+	- 5.5. Bowen wrote \ref{overviewprogram} and \ref{subsec:SGLD}.\\
 	The \textsc{Python} package available on GitHub was contributed to by Tom, Matthew and Marko, and is primarily the work of Marko.
 	\tableofcontents
 	\newpage
@@ -148,8 +149,7 @@
  
     \section{Conclusion}
     \input{conclusion}
-    \subsection{Future Work}
-    \input{future} \label{subsec:future}
+     
     \subsection{Stochastic Gradient Langevin Dynamics} \label{subsec:SGLD}
     \input{report}
     \section{Acknowledgements}

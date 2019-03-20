@@ -69,7 +69,7 @@ Figure \ref{fig:ULAdiverge} illustrates this problem for a double well potential
 Before describing the Metropolis-adjusted Langevin algorithm \texttt{MALA}, it is pertinent at this point to recall the random walk Metropolis-Hastings algorithm \texttt{RWM }\cite{Hastings70, Metropolis53}. This popular variant of the Metropolis-Hastings algorithm \emph{proposes} values and then accepts/rejects them according to some probability \(\alpha\).  So given \(X_n\), propose a candidate \(Y_{n+1}\) as
 
 \[Y_{n+1} = X_n  + \sqrt{2h} Z_{n+1}.\]
-Once again, \(h\) is the stepsize and \(Z\) is a normal random variable. Then, accept or reject this proposal using Metropolis rejection, that is with some probability
+Once again, \(h\) is the step size and \(Z\) is a normal random variable. Then, accept or reject this proposal using Metropolis rejection, that is with some probability
 \[\alpha(X_n,Y_{n+1}) = 1\wedge \frac{\pi(Y_{n+1})q(Y_{n+1},X_n)}{\pi(X_n)q(X_n,Y_{n+1})}.\footnote{Here \(t\wedge s = \min\lbrace t,s\rbrace.\) }\]
 Here \(q(x,y)\) is the transition probability, \(\P(Y_{n+1}=y | X_{n}=x)\sim N(X_n, h^2)\). This rejection step is key in creating a kernel that is reversible and thus invariant for the measure \(\pi\). \\
 
@@ -83,7 +83,7 @@ It is perhaps better understood as \texttt{ULA} but with an added Metropolis rej
 		\[\liminf_{\|x\|\to \infty} \frac{\|\grad U(x)\|}{\|x\|} > \frac{4}{h}\]
 	then the \texttt{MALA} chain is not exponentially ergodic. That is, there exists \(R_x <\infty, \rho<1\) such that for all \(x\in \R^d\),
 	\[\|P^t_{\tiny \sc MALA}(x,\cdot) - \pi \| \leq R_x\rho^t,\]
-	where \(P^t_{\tiny \sc MALA}\) is the transition kernel of the \texttt{MALA} chain/
+	where \(P^t_{\tiny \sc MALA}\) is the transition kernel of the \texttt{MALA} chain.
 \end{theorem}
 So it can be seen that \texttt{MALA} is not without its issues, and does not solve all the problems of \texttt{ULA}. The concept of taming was introduced to try and reduce the magnitude of these problems.
 \begin{figure}[H]
@@ -209,7 +209,7 @@ A demonstration of the above methods has been implemented using the visualizatio
   \begin{minipage}[b]{0.8\textwidth}
   \centering
     \includegraphics[width=0.8\textwidth]{Figures/ulavis.PNG}
-    \caption{Screenshot from the visualization;  tULAc applied to a Gaussian mixture distribution.}
+    \caption{Screenshot from the visualization;  \texttt{tULAc} applied to a Gaussian mixture distribution.}
   \end{minipage}
 \end{figure}
 
